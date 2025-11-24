@@ -1,6 +1,6 @@
 export default function ScrollingBanner() {
   return (
-    <div className="relative overflow-hidden bg-black text-white py-2">
+    <div className="relative overflow-hidden bg-brand text-white py-2">
       <div className="flex animate-scroll whitespace-nowrap">
         {/* First set of text */}
         <div className="flex items-center">

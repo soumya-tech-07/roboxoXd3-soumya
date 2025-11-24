@@ -1,13 +1,15 @@
 // components/ProductGrid.jsx
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function ProductGrid({ products }) {
   return (
     <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
       {products.map((product) => (
-        <div
+        <Link
           key={product.id}
-          className="group cursor-pointer transition-transform duration-300 hover:-translate-y-1"
+          href={`/product/${product.slug}`}
+          className="group cursor-pointer transition-transform duration-300 hover:-translate-y-1 block"
         >
           <div className="relative mb-3 w-full overflow-hidden bg-black/95 pt-[130%]">
             <Image
@@ -27,7 +29,7 @@ export default function ProductGrid({ products }) {
               RS. {product.price.toLocaleString('en-IN')}
             </p>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );

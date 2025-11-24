@@ -137,10 +137,10 @@ export default function StoreGallery() {
 
         {/* Text Content */}
         <div className="mt-8 sm:mt-12 max-w-3xl">
-          <p className="text-[10px] sm:text-xs tracking-wide text-gray-800 mb-4">
+          <p className="text-[10px] sm:text-xs tracking-wide text-brand mb-4">
             FEEL THE LUXURY OF PREMIUM STREETWEAR WITH RETRO LOUVE - BEST UNISEX CLOTHING BRAND IN INDIA
           </p>
-          <button className="text-[10px] sm:text-xs tracking-wide text-gray-800 hover:text-black transition-colors underline underline-offset-4">
+          <button className="text-[10px] sm:text-xs tracking-wide text-brand hover:text-brand/70 transition-colors underline underline-offset-4">
             READ MORE...
           </button>
         </div>

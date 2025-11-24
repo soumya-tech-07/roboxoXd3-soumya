@@ -85,8 +85,8 @@ export default function CategoryAndFilterBar({
               onClick={() => handleCategoryClick(cat)}
               className={`whitespace-nowrap cursor-pointer pb-1 px-1 transition-all duration-200 font-medium ${
                 activeCategory === cat
-                  ? 'border-b border-black text-black'
-                  : 'border-b border-transparent text-[#777] hover:text-black hover:border-gray-300'
+                  ? 'border-b border-brand text-brand'
+                  : 'border-b border-transparent text-[#777] hover:text-brand hover:border-brand/40'
               }`}
             >
               {cat}
@@ -121,8 +121,8 @@ export default function CategoryAndFilterBar({
                   }}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm border transition-all duration-200 text-[10px] uppercase tracking-[0.18em] font-medium ${
                     selectedSize !== 'ALL'
-                      ? 'border-black text-black bg-black/5'
-                      : 'border-gray-300 text-[#555] hover:border-gray-400 hover:text-[#222] bg-white'
+                    ? 'border-brand text-brand bg-brand/10'
+                    : 'border-gray-300 text-[#555] hover:border-brand/50 hover:text-brand bg-white'
                   }`}
                 >
                   <span>SIZE{selectedSize !== 'ALL' ? `: ${selectedSize}` : ''}</span>
@@ -137,8 +137,8 @@ export default function CategoryAndFilterBar({
                         onClick={() => handleSizeSelect(size)}
                         className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.18em] transition-colors duration-150 ${
                           selectedSize === size
-                            ? 'bg-black text-white font-semibold'
-                            : 'text-[#555] hover:bg-gray-50 hover:text-[#222]'
+                            ? 'bg-brand text-white font-semibold'
+                            : 'text-[#555] hover:bg-gray-50 hover:text-brand'
                         }`}
                       >
                         {size}
@@ -158,8 +158,8 @@ export default function CategoryAndFilterBar({
                   }}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-sm border transition-all duration-200 text-[10px] uppercase tracking-[0.18em] font-medium ${
                     selectedAvailability !== 'ALL'
-                      ? 'border-black text-black bg-black/5'
-                      : 'border-gray-300 text-[#555] hover:border-gray-400 hover:text-[#222] bg-white'
+                    ? 'border-brand text-brand bg-brand/10'
+                    : 'border-gray-300 text-[#555] hover:border-brand/50 hover:text-brand bg-white'
                   }`}
                 >
                   <span>
@@ -177,8 +177,8 @@ export default function CategoryAndFilterBar({
                         onClick={() => handleAvailabilitySelect(option)}
                         className={`w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.18em] transition-colors duration-150 ${
                           selectedAvailability === option
-                            ? 'bg-black text-white font-semibold'
-                            : 'text-[#555] hover:bg-gray-50 hover:text-[#222]'
+                            ? 'bg-brand text-white font-semibold'
+                            : 'text-[#555] hover:bg-gray-50 hover:text-brand'
                         }`}
                       >
                         {option}
@@ -203,14 +203,14 @@ export default function CategoryAndFilterBar({
                 <select
                   value={sortBy}
                   onChange={(e) => handleSortChange(e.target.value)}
-                  className="appearance-none bg-white border border-gray-300 rounded-sm px-3 py-1.5 pr-8 text-[10px] uppercase tracking-[0.18em] text-[#222] cursor-pointer focus:outline-none focus:border-black transition-colors duration-200 hover:border-gray-400"
+                  className="appearance-none bg-white border border-gray-300 rounded-sm px-3 py-1.5 pr-8 text-[10px] uppercase tracking-[0.18em] text-[#222] cursor-pointer focus:outline-none focus:border-brand transition-colors duration-200 hover:border-brand/60"
                 >
                   <option value="FEATURED">FEATURED</option>
                   <option value="PRICE_LOW_HIGH">PRICE: LOW TO HIGH</option>
                   <option value="PRICE_HIGH_LOW">PRICE: HIGH TO LOW</option>
                   <option value="NEWEST">NEWEST</option>
                 </select>
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] pointer-events-none text-[#555]">▼</span>
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] pointer-events-none text-brand">▼</span>
               </div>
             </div>
 

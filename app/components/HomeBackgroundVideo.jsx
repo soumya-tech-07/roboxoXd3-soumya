@@ -187,7 +187,7 @@ export default function HomeBackgroundVideo() {
         {/* Left Navigation Button - Mid Height */}
         <button
           onClick={goToPrevious}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-50 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all duration-300 rounded-sm opacity-80 hover:opacity-100 cursor-pointer"
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all duration-300 rounded-sm opacity-80 hover:opacity-100 cursor-pointer"
           aria-label="Previous slide"
           type="button"
         >
@@ -209,7 +209,7 @@ export default function HomeBackgroundVideo() {
         {/* Right Navigation Button - Mid Height */}
         <button
           onClick={goToNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-50 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all duration-300 rounded-sm opacity-80 hover:opacity-100 cursor-pointer"
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all duration-300 rounded-sm opacity-80 hover:opacity-100 cursor-pointer"
           aria-label="Next slide"
           type="button"
         >
@@ -229,7 +229,7 @@ export default function HomeBackgroundVideo() {
         </button>
 
         {/* Navigation Dots */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex gap-2">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
           {carouselItems.map((_, index) => (
             <button
               key={index}

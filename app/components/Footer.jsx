@@ -100,7 +100,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="bg-black text-white">
+      <div className="bg-brand text-white">
         <div className="mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-[10px] tracking-wider">
             <span>CONNECT</span>

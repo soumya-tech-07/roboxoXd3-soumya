@@ -50,7 +50,7 @@ export default function AutoplayVideo() {
       </video>
 
       {/* Optional Overlay */}
-      <div className="absolute inset-0 bg-black/30 z-10" />
+      <div className="absolute inset-0 z-10" />
 
       {/* Content Overlay (Optional) */}
       <div className="relative z-10 flex items-center justify-center h-full px-4">
@@ -76,8 +76,8 @@ export default function AutoplayVideo() {
               
               {/* Center Icon */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center">
-                  <span className="text-black text-lg sm:text-xl font-bold">B</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-brand rounded-full flex items-center justify-center">
+                  <span className="text-white text-lg sm:text-xl font-bold">B</span>
                 </div>
               </div>
             </div>
