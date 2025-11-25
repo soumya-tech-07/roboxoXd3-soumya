@@ -8,6 +8,7 @@ import AutoplayVideo from "./components/AutoplayVideo";
 import Navbar from "./components/NavbarWithCustomGif";
 import NavbarWithCustomGif from "./components/NavbarWithCustomGif";
 import HomeBackgroundVideo from "./components/HomeBackgroundVideo";
+import SplitHeroSection from "./components/SplitHeroSection";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
     <HomeBackgroundVideo/>
     <div className="relative z-10">
       <LatestDrop/>
+      <SplitHeroSection/>
       <AutoplayVideo/>
       <ProductGrid/>
       <StoreGallery/>
