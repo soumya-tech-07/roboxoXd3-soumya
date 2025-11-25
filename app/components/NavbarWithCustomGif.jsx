@@ -54,7 +54,7 @@ export default function NavbarWithCustomGif() {
         </div>
       </div>
 
-      {/* Main Navbar */}
+      {/*Navbar*/}
       <nav className="border-b border-gray-200">
         <div className="px-4 sm:px-6">
           <div className="flex items-center justify-between h-14 sm:h-16">
