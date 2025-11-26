@@ -1,14 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 
 export default function SplitHeroSection() {
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="w-full h-screen flex flex-col md:flex-row">
       {/* Left Side - Men's Section */}
-      <Link
-        href="/new-in"
+      <div
+        onClick={() => scrollToSection('mens-section')}
         className="relative w-full md:w-1/2 h-1/2 md:h-full group overflow-hidden cursor-pointer"
       >
         {/* Background Image */}
@@ -32,11 +38,11 @@ export default function SplitHeroSection() {
             EXPLORE
           </div>
         </div>
-      </Link>
+      </div>
 
       {/* Right Side - Women's Section */}
-      <Link
-        href="/new-in"
+      <div
+        onClick={() => scrollToSection('womens-section')}
         className="relative w-full md:w-1/2 h-1/2 md:h-full group overflow-hidden cursor-pointer"
       >
         {/* Background Image */}
@@ -60,7 +66,7 @@ export default function SplitHeroSection() {
             EXPLORE
           </div>
         </div>
-      </Link>
+      </div>
     </div>
   );
 }

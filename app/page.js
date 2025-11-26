@@ -9,6 +9,8 @@ import Navbar from "./components/NavbarWithCustomGif";
 import NavbarWithCustomGif from "./components/NavbarWithCustomGif";
 import HomeBackgroundVideo from "./components/HomeBackgroundVideo";
 import SplitHeroSection from "./components/SplitHeroSection";
+import MensSection from "./components/MensSection";
+import WomensSection from "./components/WomensSection";
 
 export default function Home() {
   return (
@@ -17,6 +19,8 @@ export default function Home() {
     <div className="relative z-10">
       <LatestDrop/>
       <SplitHeroSection/>
+      <MensSection/>
+      <WomensSection/>
       <AutoplayVideo/>
       <ProductGrid/>
       <StoreGallery/>
