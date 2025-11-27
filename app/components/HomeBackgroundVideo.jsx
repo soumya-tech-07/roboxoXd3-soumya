@@ -139,6 +139,13 @@ export default function HomeBackgroundVideo() {
     setCurrentSlide(newIndex);
   };
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <section
       className="relative w-full h-screen overflow-hidden"
@@ -227,6 +234,26 @@ export default function HomeBackgroundVideo() {
             />
           </svg>
         </button>
+
+        {/* Shop Men and Women Buttons */}
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 flex flex-col sm:flex-row gap-4 items-center">
+          <button
+            onClick={() => scrollToSection('mens-section')}
+            className="px-6 md:px-8 py-2 md:py-3  text-brand text-xs md:text-sm tracking-wider font-medium transition-all duration-300 cursor-pointer"
+            aria-label="Shop Mens"
+            type="button"
+          >
+            SHOP MENS
+          </button>
+          <button
+            onClick={() => scrollToSection('womens-section')}
+            className="px-6 md:px-8 py-2 md:py-3  text-white text-xs md:text-sm tracking-wider font-medium transition-all duration-300 cursor-pointer"
+            aria-label="Shop Womens"
+            type="button"
+          >
+            SHOP WOMENS
+          </button>
+        </div>
 
         {/* Navigation Dots */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">

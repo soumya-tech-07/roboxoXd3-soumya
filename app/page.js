@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Footer from "./components/Footer";
 import ScrollingBanner from "./components/ScrollingBanner";
-import StoreGallery from "./components/StoreGallery";
 import ProductGrid from "./components/ProductCollection";
 import LatestDrop from "./components/LatestDrop";
 import AutoplayVideo from "./components/AutoplayVideo";
@@ -23,7 +22,6 @@ export default function Home() {
       <WomensSection/>
       <AutoplayVideo/>
       <ProductGrid/>
-      <StoreGallery/>
       <ScrollingBanner/>
     </div>
     </>
