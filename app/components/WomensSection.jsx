@@ -9,7 +9,7 @@ export default function WomensSection() {
   const [hoveredProduct, setHoveredProduct] = useState(null);
   // For now, using second half of products as women's products
   // You can filter by gender tag later if you add it to products
-  const womensProducts = PRODUCT_CATALOG.slice(Math.ceil(PRODUCT_CATALOG.length / 2));
+  const womensProducts = PRODUCT_CATALOG.slice(0, 8);
 
   return (
     <section id="womens-section" className="bg-gray-100 py-8 sm:py-12 md:py-16 scroll-mt-20">

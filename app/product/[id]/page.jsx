@@ -86,12 +86,11 @@ export default function ProductPage() {
     };
   }, [catalogProduct]);
 
-  const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [openAccordion, setOpenAccordion] = useState('');
+  const [openAccordion, setOpenAccordion] = useState('characteristics');
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
   
@@ -106,7 +105,6 @@ export default function ProductPage() {
     }
 
     addToCart(catalogProduct.id, selectedSize || null, quantity);
-    // Optional: Show success message or redirect to cart
   };
 
   if (!derivedProduct) {
@@ -133,6 +131,14 @@ export default function ProductPage() {
 
   const product = derivedProduct;
 
+  const fallbackImage = 'https://placehold.co/800x1200/e5d4e8/666666?text=Image';
+  const mainImage = product.images?.[0] ?? fallbackImage;
+  const additionalImages = product.images?.slice(1) ?? [];
+  const additionalImagePairs = [];
+  for (let i = 0; i < additionalImages.length; i += 2) {
+    additionalImagePairs.push(additionalImages.slice(i, i + 2));
+  }
+
   const accordionSections = [
     { id: 'characteristics', title: 'CHARACTERISTICS' },
     { id: 'measurements', title: 'PRODUCT MEASUREMENTS' },
@@ -142,162 +148,135 @@ export default function ProductPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white pt-20 md:pt-24">
+    <div className="min-h-screen bg-white pt-28 md:pt-32">
       <SizeGuideModal
         isOpen={isSizeGuideOpen}
         onClose={() => setIsSizeGuideOpen(false)}
         productName={product.name}
-        productImage={
-          product.images?.[selectedImage] ?? product.images?.[0] ?? undefined
-        }
       />
-      
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <nav className="text-xs text-gray-500 py-4 mb-4">
-          <Link href="/" className="hover:text-black transition-colors">HOME</Link>
+      {/* Breadcrumb */}
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <nav className="text-xs text-gray-500">
+          <Link href="/" className="hover:text-black">HOME</Link>
           <span className="mx-2">/</span>
-          <Link href="/apparel" className="hover:text-black transition-colors">APPAREL</Link>
-          <span className="mx-2">/</span>
-          <span className="text-black">{product.category}</span>
+          <span className="text-black">PRODUCT</span>
         </nav>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 lg:gap-12 pb-16">
-          {/* Left Side - Images with Vertical Thumbnails */}
-          <div className="flex gap-4">
-            {/* Vertical Thumbnails */}
-            <div className="hidden lg:flex flex-col gap-2 shrink-0">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`relative w-16 h-20 bg-gray-100 overflow-hidden border transition-all ${
-                    selectedImage === index
-                      ? 'border-black'
-                      : 'border-gray-200 hover:border-gray-400'
-                  }`}
-                >
-                  <Image
-                    src={image}
-                    alt={`Product ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-
-            {/* Main Image */}
-            <div className="relative w-full aspect-2/3 bg-gray-50 overflow-hidden flex-1">
-              <Image
-                src={product.images[selectedImage]}
-                alt={product.name}
-                fill
-                className="object-contain"
-                priority
-              />
-              {product.badge && (
-                <div className="absolute top-4 left-4 bg-white px-3 py-1 text-[10px] font-medium tracking-wider uppercase">
-                  {product.badge}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Mobile Thumbnails */}
-          <div className="lg:hidden grid grid-cols-4 gap-2 mt-4">
-            {product.images.map((image, index) => (
-              <button
-                key={index}
-                onClick={() => setSelectedImage(index)}
-                className={`relative aspect-2/3 bg-gray-100 overflow-hidden border transition-all ${
-                  selectedImage === index
-                    ? 'border-black'
-                    : 'border-gray-200 hover:border-gray-400'
-                }`}
-              >
-                <Image
-                  src={image}
-                  alt={`Product ${index + 1}`}
-                  fill
-                  className="object-cover"
-                />
-              </button>
-            ))}
-          </div>
-
-          {/* Right Side - Product Info (Sticky) */}
-          <div className="lg:sticky lg:top-20 lg:self-start lg:h-screen lg:overflow-y-auto">
-            <div className="pb-8">
-              {/* Product Title & Price */}
-              <div className="mb-6">
-                <h1 className="text-xl md:text-2xl font-normal text-gray-900 mb-3 leading-tight">
-                  {product.name}
-                </h1>
-                <p className="text-lg font-normal text-gray-900 mb-1">{product.price}</p>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-                  {product.sku}
-                </p>
+      <div className="max-w-7xl mx-auto px-6 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+          {/* Left Side - Main Image */}
+          <div className="relative aspect-3/4 bg-gray-100 overflow-hidden">
+            <Image
+              src={mainImage}
+              alt={product.name}
+              fill
+              className="object-cover"
+            />
+            {product.badge && (
+              <div className="absolute top-4 left-4 bg-white/10 px-3 py-1 text-xs font-semibold tracking-wider">
+                {product.badge}
               </div>
+            )}
+          </div>
+
+          {/* Right Side - Product Info */}
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            {/* Product Title */}
+            <div className="mb-6">
+              {product.badge && (
+                <span className="text-xs tracking-[0.2em] text-gray-800 mb-2 block">
+                  {product.badge}
+                </span>
+              )}
+              <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 leading-snug mb-3">
+                {product.name}
+              </h1>
+              <p className="text-2xl font-light text-gray-900 mb-2">{product.price}</p>
+              <p className="text-xs text-gray-600 tracking-[0.2em]">
+                MRP INCL. OF ALL TAXES
+              </p>
+            </div>
+
+            <div className="border-t border-gray-200 pt-6 mb-6">
+              <p className="text-xs text-gray-800 mb-4 tracking-[0.25em]">
+                {product.sku}
+              </p>
 
               {/* Size Selection */}
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-3">
-                  <label className="text-xs uppercase tracking-wider text-gray-900 font-medium">
-                    Size
+                  <label className="text-sm tracking-wide text-gray-900">
+                    SELECT SIZE
                   </label>
                   <button
                     type="button"
-                    className="text-xs text-gray-900 underline hover:no-underline transition-all"
+                    className="text-xs text-gray-900 underline hover:no-underline"
                     onClick={() => setIsSizeGuideOpen(true)}
                   >
-                    Size guide
+                    SIZE GUIDE
                   </button>
                 </div>
-                <div className="grid grid-cols-4 gap-2 mb-4">
+                <div className="grid grid-cols-5 gap-2">
                   {product.sizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`py-3 text-sm border transition-all font-light ${
+                      className={`py-3 text-sm border transition-all ${
                         selectedSize === size
                           ? 'border-black bg-black text-white'
-                          : 'border-gray-300 hover:border-black text-gray-900'
+                          : 'border-gray-300 hover:border-black'
                       }`}
                     >
                       {size}
                     </button>
                   ))}
                 </div>
-                {selectedSize && (
-                  <p className="text-xs text-gray-600 mb-4">
-                    Selected size: <span className="font-medium">{selectedSize}</span>
-                  </p>
-                )}
               </div>
 
-              {/* Add to Bag Button */}
+              {/* Quantity Selector */}
+              <div className="mb-6">
+                <label className="text-sm tracking-wide text-gray-900 block mb-3">
+                  QUANTITY
+                </label>
+                <div className="flex items-center border border-gray-300 w-32 text-gray-900">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="px-4 py-2 hover:bg-gray-100"
+                  >
+                    -
+                  </button>
+                  <span className="flex-1 text-center">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="px-4 py-2 hover:bg-gray-100"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Add to Cart Button */}
               <button
                 type="button"
                 onClick={handleAddToCart}
-                disabled={!selectedSize && product.sizes.length > 0}
-                className={`w-full py-4 text-sm uppercase tracking-wider font-medium transition-all mb-3 ${
-                  !selectedSize && product.sizes.length > 0
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-black text-white hover:bg-gray-800'
-                }`}
+                className="w-full py-4 bg-brand text-white text-sm tracking-[0.2em] hover:bg-brand/90 transition-colors mb-4"
               >
-                Add to bag
+                ADD
               </button>
 
               {/* Wishlist Button */}
               <button
                 type="button"
                 onClick={() => catalogProduct && toggleWishlist(catalogProduct.id)}
-                className="w-full py-3 border border-gray-300 text-sm uppercase tracking-wider font-medium text-gray-900 hover:border-black transition-all flex items-center justify-center gap-2"
+                className={`w-full py-4 border text-sm tracking-[0.2em] transition-colors flex items-center justify-center gap-2 ${
+                  isWishlisted
+                    ? 'border-brand bg-brand/5 text-brand hover:bg-brand/10'
+                    : 'border-gray-300 text-gray-900 hover:border-brand'
+                }`}
               >
                 <svg
-                  className="w-4 h-4"
+                  className="w-5 h-5"
                   fill={isWishlisted ? 'currentColor' : 'none'}
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -309,7 +288,7 @@ export default function ProductPage() {
                     d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                   />
                 </svg>
-                {isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                {isWishlisted ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST'}
               </button>
             </div>
 
@@ -427,6 +406,35 @@ export default function ProductPage() {
             </div>
           </div>
         </div>
+
+        {/* Additional Images */}
+        {additionalImagePairs.length > 0 && (
+          <div className="mt-10 space-y-8 lg:space-y-12">
+            {additionalImagePairs.map((pair, rowIndex) => (
+              <div
+                key={`additional-row-${rowIndex}`}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16"
+              >
+                {pair.map((image, imageIndex) => (
+                  <div
+                    key={`additional-image-${rowIndex}-${imageIndex}`}
+                    className="relative aspect-3/4 bg-gray-100 overflow-hidden"
+                  >
+                    <Image
+                      src={image || fallbackImage}
+                      alt={`${product.name} alternate view ${rowIndex * 2 + imageIndex + 2}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+                {pair.length === 1 && (
+                  <div className="hidden lg:block" />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -509,63 +509,103 @@ export default function NavbarWithCustomGif() {
           </div>
 
           {/* Menu Items */}
-          <nav className="flex-1 px-6 py-8">
+          <nav className="flex-1 px-6 py-8 overflow-hidden">
             {activeSubMenu === "shop" ? (
-              <div className="space-y-6">
+              <div className="space-y-0 animate-in slide-in-from-right duration-300">
+                {/* Back Button - Improved Styling */}
                 <button
                   onClick={() => setActiveSubMenu(null)}
-                  className="flex items-center text-brand hover:opacity-70 transition-opacity cursor-pointer"
+                  className="flex items-center mb-6 pb-4 border-b border-gray-200 text-gray-700 hover:text-brand transition-colors cursor-pointer group"
                 >
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                  Back
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 group-hover:bg-brand transition-colors mr-3">
+                    <svg
+                      className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium tracking-wide">Back</span>
                 </button>
-                <h3 className="text-base font-medium tracking-wide text-brand">
-                  Shop
-                </h3>
-                <ul className="space-y-4">
+                
+                {/* Submenu Title */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold tracking-wide text-brand uppercase">
+                    Shop
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-1">Browse our collections</p>
+                </div>
+                
+                {/* Submenu Items */}
+                <ul className="space-y-2">
                   <li>
                     <Link
                       href="/shop/men"
-                      className="block text-sm tracking-wide text-brand hover:opacity-70 transition-opacity"
+                      className="group block py-4 px-4 rounded-lg text-sm tracking-wide text-gray-900 hover:bg-brand hover:text-white transition-all duration-200 cursor-pointer border border-gray-200 hover:border-brand"
                       onClick={closeMenu}
                     >
-                      Men
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Men</span>
+                        <svg
+                          className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </div>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/shop/women"
-                      className="block text-sm tracking-wide text-brand hover:opacity-70 transition-opacity"
+                      className="group block py-4 px-4 rounded-lg text-sm tracking-wide text-gray-900 hover:bg-brand hover:text-white transition-all duration-200 cursor-pointer border border-gray-200 hover:border-brand"
                       onClick={closeMenu}
                     >
-                      Women
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Women</span>
+                        <svg
+                          className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </div>
                     </Link>
                   </li>
                 </ul>
               </div>
             ) : (
-              <ul className="space-y-1">
+              <ul className="space-y-0">
                 {/* Shop */}
                 <li className="border-b border-gray-200">
                   <button
                     onClick={() => setActiveSubMenu("shop")}
-                    className="w-full flex items-center justify-between py-4 text-left text-sm tracking-wide text-brand hover:opacity-70 transition-opacity cursor-pointer"
+                    className="w-full flex items-center justify-between py-4 text-left text-sm tracking-wide text-brand hover:opacity-70 transition-opacity cursor-pointer group"
                   >
-                    Shop
+                    <span className="font-medium">Shop</span>
                     <svg
-                      className="w-5 h-5"
+                      className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -584,7 +624,7 @@ export default function NavbarWithCustomGif() {
                 <li className="border-b border-gray-200">
                   <Link
                     href="/about-love"
-                    className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity"
+                    className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
                     onClick={closeMenu}
                   >
                     About Love
@@ -595,7 +635,7 @@ export default function NavbarWithCustomGif() {
                 <li className="border-b border-gray-200">
                   <Link
                     href="/blog"
-                    className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity"
+                    className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
                     onClick={closeMenu}
                   >
                     Blog
@@ -606,7 +646,7 @@ export default function NavbarWithCustomGif() {
                 <li className="border-b border-gray-200">
                   <Link
                     href="/contact"
-                    className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity"
+                    className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
                     onClick={closeMenu}
                   >
                     Contact Us
@@ -617,7 +657,7 @@ export default function NavbarWithCustomGif() {
                 <li className="border-b border-gray-200">
                   <Link
                     href="/wishlist"
-                    className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity"
+                    className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
                     onClick={closeMenu}
                   >
                     Wishlist

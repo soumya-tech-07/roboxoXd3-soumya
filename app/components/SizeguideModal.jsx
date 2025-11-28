@@ -98,24 +98,26 @@ export default function SizeGuideModal({
               </p>
 
               {/* Table */}
-              <div className="w-full overflow-x-auto -mx-2 px-2">
-                <div className="min-w-[480px] border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden text-[10px] md:text-xs text-gray-900">
+              <div className="w-full overflow-x-auto">
+                <div className="w-full border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden text-xs md:text-sm text-gray-900">
+                  {/* Header Row */}
                   <div className="flex">
-                    <div className="bg-brand text-white font-bold px-3 py-3 w-20 flex items-center justify-center text-[10px] uppercase tracking-wide">
+                    <div className="bg-brand text-white font-bold px-4 md:px-6 py-4 md:py-5 min-w-[100px] md:min-w-[120px] flex items-center justify-center text-xs md:text-sm uppercase tracking-wide">
                       SIZE
                     </div>
                     {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
                       <div
                         key={size}
-                        className="border-l border-gray-200 px-2 md:px-3 py-3 w-14 md:w-16 text-center font-bold bg-gray-50 text-gray-900"
+                        className="flex-1 border-l border-gray-200 px-3 md:px-4 py-4 md:py-5 text-center font-bold bg-gray-50 text-gray-900 min-w-[70px]"
                       >
                         {size}
                       </div>
                     ))}
                   </div>
 
+                  {/* Waist Row */}
                   <div className="flex border-t-2 border-gray-200">
-                    <div className="bg-gray-800 text-white font-bold px-3 py-3 w-20 flex items-center justify-center text-[10px] uppercase tracking-wide">
+                    <div className="bg-gray-800 text-white font-bold px-4 md:px-6 py-4 md:py-5 min-w-[100px] md:min-w-[120px] flex items-center justify-center text-xs md:text-sm uppercase tracking-wide">
                       WAIST
                     </div>
                     {[
@@ -128,24 +130,25 @@ export default function SizeGuideModal({
                     ].map((val, idx) => (
                       <div
                         key={idx}
-                        className="border-l border-gray-200 px-2 md:px-3 py-3 w-14 md:w-16 text-center bg-white hover:bg-gray-50 transition-colors"
+                        className="flex-1 border-l border-gray-200 px-3 md:px-4 py-4 md:py-5 text-center bg-white hover:bg-gray-50 transition-colors min-w-[70px]"
                       >
-                        <span className="whitespace-nowrap font-medium">{val}</span>
+                        <span className="font-medium text-xs md:text-sm">{val}</span>
                       </div>
                     ))}
                   </div>
 
+                  {/* Length Row */}
                   <div className="flex border-t-2 border-gray-200">
-                    <div className="bg-gray-800 text-white font-bold px-3 py-3 w-20 flex items-center justify-center text-[10px] uppercase tracking-wide">
+                    <div className="bg-gray-800 text-white font-bold px-4 md:px-6 py-4 md:py-5 min-w-[100px] md:min-w-[120px] flex items-center justify-center text-xs md:text-sm uppercase tracking-wide">
                       LENGTH
                     </div>
                     {["40", "40.5", "41", "41.5", "42", "42.5"].map(
                       (val, idx) => (
                         <div
                           key={idx}
-                          className="border-l border-gray-200 px-2 md:px-3 py-3 w-14 md:w-16 text-center bg-white hover:bg-gray-50 transition-colors"
+                          className="flex-1 border-l border-gray-200 px-3 md:px-4 py-4 md:py-5 text-center bg-white hover:bg-gray-50 transition-colors min-w-[70px]"
                         >
-                          <span className="font-medium">{val}</span>
+                          <span className="font-medium text-xs md:text-sm">{val}</span>
                         </div>
                       )
                     )}

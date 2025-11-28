@@ -2,7 +2,28 @@ import Image from 'next/image';
 
 const defaultHover = (img) => `${img}&auto=format`;
 
-export const PRODUCT_CATALOG = [
+const FALLBACK_GALLERY_IMAGES = [
+  'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=1000&fit=crop&q=90',
+  'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&h=1000&fit=crop&q=90',
+  'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&h=1000&fit=crop&q=90',
+  'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&h=1000&fit=crop&q=90',
+];
+
+const buildGallery = (primary, secondary) => {
+  const gallery = [];
+  const candidates = [primary, secondary, ...FALLBACK_GALLERY_IMAGES];
+
+  candidates.forEach((url) => {
+    if (!url) return;
+    if (!gallery.includes(url)) {
+      gallery.push(url);
+    }
+  });
+
+  return gallery.slice(0, 4);
+};
+
+const RAW_PRODUCT_CATALOG = [
   {
     id: 1,
     name: 'COTTON ESSENTIAL TEE',
@@ -14,6 +35,12 @@ export const PRODUCT_CATALOG = [
     description: 'Ultra-light cotton tee with a sleek modern cut.',
     image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=1000&fit=crop&q=90',
     hoverImage: 'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&h=1000&fit=crop&q=90',
+    gallery: [
+      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&h=1000&fit=crop&q=90',
+    ],
     slug: 'cotton-essential-tee',
     tags: ['latest-drop', 'catalog'],
   },
@@ -28,6 +55,12 @@ export const PRODUCT_CATALOG = [
     description: 'Vintage washed tee with tonal graphics.',
     image: 'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&h=1000&fit=crop&q=90',
     hoverImage: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=1000&fit=crop&q=90',
+    gallery: [
+      'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&h=1000&fit=crop&q=90',
+    ],
     slug: 'vintage-black-tee',
     tags: ['core-collection', 'catalog'],
   },
@@ -42,6 +75,12 @@ export const PRODUCT_CATALOG = [
     description: 'Tailored slim-fit tee in brushed cotton.',
     image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&h=1000&fit=crop&q=90',
     hoverImage: defaultHover('https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&h=1000&fit=crop&q=90'),
+    gallery: [
+      'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=800&h=1000&fit=crop&q=90',
+    ],
     slug: 'slim-fit-cotton-tee',
     tags: ['catalog'],
   },
@@ -56,6 +95,13 @@ export const PRODUCT_CATALOG = [
     description: 'Organic cotton tee with reinforced seams.',
     image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&h=1000&fit=crop&q=90',
     hoverImage: defaultHover('https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&h=1000&fit=crop&q=90'),
+    gallery: [
+      'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&h=1000&fit=crop&q=90',
+      'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=800&h=1000&fit=crop&q=90',
+    ],
     slug: 'premium-organic-tee',
     tags: ['catalog'],
   },
@@ -565,6 +611,20 @@ export const PRODUCT_CATALOG = [
     tags: ['catalog'],
   },
 ];
+
+export const PRODUCT_CATALOG = RAW_PRODUCT_CATALOG.map((product) => {
+  const existingGallery = Array.isArray(product.gallery)
+    ? product.gallery.filter(Boolean)
+    : [];
+
+  return {
+    ...product,
+    gallery:
+      existingGallery.length > 0
+        ? existingGallery
+        : buildGallery(product.image, product.hoverImage),
+  };
+});
 
 export const latestDropProductIds = [1, 6, 34, 38];
 export const coreCollectionProductIds = [2, 7, 10, 14, 17, 21, 35, 39];

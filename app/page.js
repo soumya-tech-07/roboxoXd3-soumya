@@ -17,7 +17,7 @@ export default function Home() {
     <HomeBackgroundVideo/>
     <div className="relative z-10">
       <LatestDrop/>
-      <SplitHeroSection/>
+      {/* <SplitHeroSection/> */}
       <MensSection/>
       <WomensSection/>
       <AutoplayVideo/>
