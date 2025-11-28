@@ -321,6 +321,33 @@ export default function NavbarWithCustomGif() {
     setActiveSubMenu(null);
   };
 
+  const scrollToSection = (sectionId) => {
+    closeMenu();
+    // Check if we're on the home page
+    if (window.location.pathname === '/') {
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    } else {
+      // Navigate to home page first, then scroll
+      router.push('/');
+      setTimeout(() => {
+        const checkElement = () => {
+          const element = document.getElementById(sectionId);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            setTimeout(checkElement, 100);
+          }
+        };
+        checkElement();
+      }, 500);
+    }
+  };
+
   return (
     <>
       <header
@@ -405,13 +432,13 @@ export default function NavbarWithCustomGif() {
 
               {/* Center - Logo */}
               <Link href="/" className="absolute left-1/2 transform -translate-x-1/2">
-                <div className="relative h-28 sm:h-40 w-auto">
+                <div className="relative h-24 w-auto">
                   <Image
-                    src="/images/retro.png"
+                    src={isScrolled ? "/images/scrollbg.png" : "/images/mainlogo.png"}
                     alt="Retro Louve"
-                    width={150}
-                    height={40}
-                    className="h-full w-auto object-contain"
+                    width={500}
+                    height={500}
+                    className="h-full w-auto object-contain transition-opacity duration-300"
                     priority
                   />
                 </div>
@@ -546,10 +573,9 @@ export default function NavbarWithCustomGif() {
                 {/* Submenu Items */}
                 <ul className="space-y-2">
                   <li>
-                    <Link
-                      href="/shop/men"
-                      className="group block py-4 px-4 rounded-lg text-sm tracking-wide text-gray-900 hover:bg-brand hover:text-white transition-all duration-200 cursor-pointer border border-gray-200 hover:border-brand"
-                      onClick={closeMenu}
+                    <button
+                      onClick={() => scrollToSection('mens-section')}
+                      className="group w-full block py-4 px-4 rounded-lg text-sm tracking-wide text-gray-900 hover:bg-brand hover:text-white transition-all duration-200 cursor-pointer border border-gray-200 hover:border-brand text-left"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-medium">Men</span>
@@ -567,13 +593,12 @@ export default function NavbarWithCustomGif() {
                           />
                         </svg>
                       </div>
-                    </Link>
+                    </button>
                   </li>
                   <li>
-                    <Link
-                      href="/shop/women"
-                      className="group block py-4 px-4 rounded-lg text-sm tracking-wide text-gray-900 hover:bg-brand hover:text-white transition-all duration-200 cursor-pointer border border-gray-200 hover:border-brand"
-                      onClick={closeMenu}
+                    <button
+                      onClick={() => scrollToSection('womens-section')}
+                      className="group w-full block py-4 px-4 rounded-lg text-sm tracking-wide text-gray-900 hover:bg-brand hover:text-white transition-all duration-200 cursor-pointer border border-gray-200 hover:border-brand text-left"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-medium">Women</span>
@@ -591,7 +616,7 @@ export default function NavbarWithCustomGif() {
                           />
                         </svg>
                       </div>
-                    </Link>
+                    </button>
                   </li>
                 </ul>
               </div>
