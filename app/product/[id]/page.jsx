@@ -148,7 +148,7 @@ export default function ProductPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white pt-28 md:pt-32">
+    <div className="min-h-screen bg-white pt-24 sm:pt-32 lg:pt-40">
       <SizeGuideModal
         isOpen={isSizeGuideOpen}
         onClose={() => setIsSizeGuideOpen(false)}

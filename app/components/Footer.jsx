@@ -9,12 +9,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
           {/* Logo and Copyright */}
           <div className='md:col-span-2 flex flex-col justify-between'>
-            <div className="relative h-28 sm:h-32 md:h-40 w-auto mb-4 sm:mb-8">
+            <div className="relative h-32 w-auto mb-4 sm:mb-8">
               <Image
-                src="/images/retro.png"
+                src="/images/4.png"
                 alt="Retro Louve"
                 width={200}
-                height={64}
+                height={200}
                 className="h-full w-auto object-contain"
               />
             </div>

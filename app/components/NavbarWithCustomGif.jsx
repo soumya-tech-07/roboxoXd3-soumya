@@ -385,7 +385,7 @@ export default function NavbarWithCustomGif() {
                 <button
                   onClick={() => setIsMenuOpen(true)}
                   className={`transition-colors cursor-pointer ${
-                    isScrolled ? "text-brand" : "text-white"
+                    isScrolled ? "text-black" : "text-brand"
                   } hover:opacity-70`}
                   aria-label="Open menu"
                 >
@@ -410,7 +410,7 @@ export default function NavbarWithCustomGif() {
                     setIsSearchOpen(true);
                   }}
                   className={`transition-colors cursor-pointer ${
-                    isScrolled ? "text-brand" : "text-white"
+                    isScrolled ? "text-black" : "text-brand"
                   } hover:opacity-70`}
                   aria-label="Search"
                 >
@@ -434,7 +434,7 @@ export default function NavbarWithCustomGif() {
               <Link href="/" className="absolute left-1/2 transform -translate-x-1/2">
                 <div className="relative h-24 w-auto">
                   <Image
-                    src={isScrolled ? "/images/scrollbg.png" : "/images/mainlogo.png"}
+                    src={isScrolled ? "/images/4.png" : "/images/mainlog.png"}
                     alt="Retro Louve"
                     width={500}
                     height={500}
@@ -450,7 +450,7 @@ export default function NavbarWithCustomGif() {
                 <Link
                   href="/login"
                   className={`transition-colors ${
-                    isScrolled ? "text-brand" : "text-white"
+                    isScrolled ? "text-black" : "text-brand"
                   } hover:opacity-70`}
                   aria-label="Login"
                 >
@@ -473,7 +473,7 @@ export default function NavbarWithCustomGif() {
                 <Link
                   href="/cart"
                   className={`transition-colors ${
-                    isScrolled ? "text-brand" : "text-white"
+                    isScrolled ? "text-black" : "text-brand"
                   } hover:opacity-70`}
                   aria-label="Cart"
                 >

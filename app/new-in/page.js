@@ -79,7 +79,7 @@ export default function NewInPage() {
   return (
     <>
       <NavbarWithCustomGif />
-      <div className="pt-24 pb-12">
+      <div className="pt-24 sm:pt-32 lg:pt-40 pb-12">
         <div className="">
           <FilterBar
             totalProducts={filteredAndSortedProducts.length}

@@ -9,7 +9,7 @@ export default function HomeBackgroundVideo() {
   const videoRef = useRef(null);
 
   // Video and image sources
-  const videoSrc = 'https://videos.pexels.com/video-files/3045163/3045163-hd_1920_1080_25fps.mp4';
+  const videoSrc = '/images/bg.mp4';
   const imageSrc = 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&h=1080&fit=crop&q=90';
 
   // Check internet speed and determine if video should be used
@@ -120,15 +120,16 @@ export default function HomeBackgroundVideo() {
         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 flex flex-col sm:flex-row gap-4 items-center">
           <button
             onClick={() => scrollToSection('mens-section')}
-            className="px-6 md:px-8 py-2 md:py-3 text-brand text-xs md:text-sm tracking-wider font-medium transition-all duration-300 cursor-pointer"
+            className="px-6 md:px-8 border hover:border-brand hover:bg-brand hover:text-white py-2 md:py-3 text-brand text-xs md:text-sm tracking-wider font-medium transition-all duration-300 cursor-pointer"
             aria-label="Shop Mens"
             type="button"
           >
             SHOP MENS
           </button>
+
           <button
             onClick={() => scrollToSection('womens-section')}
-            className="px-6 md:px-8 py-2 md:py-3 text-white text-xs md:text-sm tracking-wider font-medium transition-all duration-300 cursor-pointer"
+            className="px-6 md:px-8 border hover:border-brand hover:bg-brand hover:text-white py-2 md:py-3 text-white text-xs md:text-sm tracking-wider font-medium transition-all duration-300 cursor-pointer"
             aria-label="Shop Womens"
             type="button"
           >
