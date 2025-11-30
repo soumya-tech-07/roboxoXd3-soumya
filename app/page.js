@@ -28,4 +28,4 @@ export default function Home() {
   );
 }
 
-// updated for pushing
+// updated for pushing it to the remote repository.
