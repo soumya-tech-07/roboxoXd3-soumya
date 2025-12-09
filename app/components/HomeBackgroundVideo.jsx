@@ -226,14 +226,24 @@ export default function HomeBackgroundVideo() {
                 )}
               </>
             ) : (
-              <Image
-                src={item.type === 'video' && item.fallbackImage ? item.fallbackImage : item.src}
-                alt={item.alt}
-                fill
-                className="object-cover"
-                priority={index === 0}
-                sizes="100vw"
-              />
+              <>
+                <Image
+                  src={item.type === 'video' && item.fallbackImage ? item.fallbackImage : item.src}
+                  alt={item.alt}
+                  fill
+                  className="object-cover"
+                  priority={index === 0}
+                  sizes="100vw"
+                />
+                {/* Coming Soon text for all slides except the first one */}
+                {index > 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center z-10">
+                    <h2 className="text-5xl md:text-7xl lg:text-8xl font-bold text-brand tracking-wider uppercase">
+                      Coming Soon
+                    </h2>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ))}
