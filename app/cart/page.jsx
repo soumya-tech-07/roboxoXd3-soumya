@@ -101,7 +101,7 @@ export default function CartPage() {
                               item.quantity - 1
                             )
                           }
-                          className="px-3 py-2 hover:bg-gray-100 text-gray-700"
+                          className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
                           aria-label="Decrease quantity"
                         >
                           −
@@ -118,7 +118,7 @@ export default function CartPage() {
                               item.quantity + 1
                             )
                           }
-                          className="px-3 py-2 hover:bg-gray-100 text-gray-700"
+                          className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
                           aria-label="Increase quantity"
                         >
                           +
@@ -129,7 +129,7 @@ export default function CartPage() {
                       <button
                         type="button"
                         onClick={() => removeFromCart(item.productId, item.size)}
-                        className="text-xs text-gray-500 hover:text-brand underline sm:no-underline sm:hover:underline transition-colors"
+                        className="text-xs text-gray-500 hover:text-brand underline sm:no-underline sm:hover:underline transition-colors cursor-pointer"
                         aria-label="Remove item"
                       >
                         REMOVE
@@ -179,14 +179,14 @@ export default function CartPage() {
                   </p>
                 )}
 
-                <button className="w-full py-4 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors mb-3">
+                <button className="w-full py-4 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors mb-3 cursor-pointer">
                   PROCEED TO CHECKOUT
                 </button>
 
                 <button
                   type="button"
                   onClick={clearCart}
-                  className="w-full py-3 border border-gray-300 text-sm tracking-wide text-gray-700 hover:border-brand hover:text-brand transition-colors"
+                  className="w-full py-3 border border-gray-300 text-sm tracking-wide text-gray-700 hover:border-brand hover:text-brand transition-colors cursor-pointer"
                 >
                   CLEAR CART
                 </button>

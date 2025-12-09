@@ -269,6 +269,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import SearchComponent from "./SearchComponent";
+import { useAuthModal } from "../context/AuthModalContext";
+import { useCart } from "../context/CartContext";
 
 export default function NavbarWithCustomGif() {
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
@@ -277,6 +279,8 @@ export default function NavbarWithCustomGif() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const router = useRouter();
+  const { openLogin } = useAuthModal();
+  const { openCart } = useCart();
 
   const rotatingTexts = [
     "NEW DROP - NOW LIVE",
@@ -447,9 +451,9 @@ export default function NavbarWithCustomGif() {
               {/* Right Side - User & Cart Icons */}
               <div className="flex items-center space-x-4 sm:space-x-6">
                 {/* User/Login Icon */}
-                <Link
-                  href="/login"
-                  className={`transition-colors ${
+                <button
+                  onClick={openLogin}
+                  className={`transition-colors cursor-pointer ${
                     isScrolled ? "text-black" : "text-brand"
                   } hover:opacity-70`}
                   aria-label="Login"
@@ -467,12 +471,12 @@ export default function NavbarWithCustomGif() {
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                     />
                   </svg>
-                </Link>
+                </button>
 
                 {/* Shopping Cart Icon */}
-                <Link
-                  href="/cart"
-                  className={`transition-colors ${
+                <button
+                  onClick={openCart}
+                  className={`transition-colors cursor-pointer ${
                     isScrolled ? "text-black" : "text-brand"
                   } hover:opacity-70`}
                   aria-label="Cart"
@@ -490,7 +494,7 @@ export default function NavbarWithCustomGif() {
                       d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
                     />
                   </svg>
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -657,7 +661,7 @@ export default function NavbarWithCustomGif() {
                 </li>
 
                 {/* Blog */}
-                <li className="border-b border-gray-200">
+                {/* <li className="border-b border-gray-200">
                   <Link
                     href="/blog"
                     className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
@@ -665,7 +669,7 @@ export default function NavbarWithCustomGif() {
                   >
                     Blog
                   </Link>
-                </li>
+                </li> */}
 
                 {/* Contact Us */}
                 <li className="border-b border-gray-200">

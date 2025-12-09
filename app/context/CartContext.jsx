@@ -6,6 +6,7 @@ const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -91,6 +92,26 @@ export function CartProvider({ children }) {
     }, 0);
   };
 
+  const openCart = () => {
+    setIsCartOpen(true);
+  };
+
+  const closeCart = () => {
+    setIsCartOpen(false);
+  };
+
+  // Prevent body scroll when cart is open
+  useEffect(() => {
+    if (isCartOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isCartOpen]);
+
   return (
     <CartContext.Provider
       value={{
@@ -102,6 +123,9 @@ export function CartProvider({ children }) {
         getCartItem,
         getCartCount,
         getCartTotal,
+        isCartOpen,
+        openCart,
+        closeCart,
       }}
     >
       {children}

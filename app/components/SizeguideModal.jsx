@@ -215,7 +215,7 @@ export default function SizeGuideModal({
               <div className="flex justify-end pt-4 border-t border-gray-200">
                 <button
                   onClick={() => setShowCustomizeForm(true)}
-                  className="bg-brand text-white px-6 py-2.5 rounded-lg hover:bg-brand/90 active:scale-95 transition-all text-xs font-semibold tracking-wide shadow-md hover:shadow-lg"
+                  className="bg-brand text-white px-6 py-2.5 rounded-lg hover:bg-brand/90 active:scale-95 transition-all text-xs font-semibold tracking-wide shadow-md hover:shadow-lg cursor-pointer"
                 >
                   CUSTOMIZE YOUR SIZE
                 </button>
@@ -287,7 +287,7 @@ export default function SizeGuideModal({
                       onClick={() =>
                         setFormData((prev) => ({ ...prev, heightUnit: "CM" }))
                       }
-                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                         formData.heightUnit === "CM"
                           ? "bg-white text-brand shadow-sm"
                           : "text-gray-500 hover:text-gray-700"
@@ -300,7 +300,7 @@ export default function SizeGuideModal({
                       onClick={() =>
                         setFormData((prev) => ({ ...prev, heightUnit: "IN" }))
                       }
-                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                         formData.heightUnit === "IN"
                           ? "bg-white text-brand shadow-sm"
                           : "text-gray-500 hover:text-gray-700"
@@ -345,7 +345,7 @@ export default function SizeGuideModal({
                       onClick={() =>
                         setFormData((prev) => ({ ...prev, weightUnit: "KG" }))
                       }
-                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                         formData.weightUnit === "KG"
                           ? "bg-white text-brand shadow-sm"
                           : "text-gray-500 hover:text-gray-700"
@@ -358,7 +358,7 @@ export default function SizeGuideModal({
                       onClick={() =>
                         setFormData((prev) => ({ ...prev, weightUnit: "LBS" }))
                       }
-                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                         formData.weightUnit === "LBS"
                           ? "bg-white text-brand shadow-sm"
                           : "text-gray-500 hover:text-gray-700"
@@ -427,13 +427,13 @@ export default function SizeGuideModal({
                 <button
                   type="button"
                   onClick={() => setShowCustomizeForm(false)}
-                  className="flex-1 border-2 border-gray-300 text-gray-700 px-6 py-3.5 rounded-lg hover:bg-gray-50 hover:border-gray-400 active:scale-95 transition-all text-sm font-semibold tracking-wide"
+                  className="flex-1 border-2 border-gray-300 text-gray-700 px-6 py-3.5 rounded-lg hover:bg-gray-50 hover:border-gray-400 active:scale-95 transition-all text-sm font-semibold tracking-wide cursor-pointer"
                 >
                   BACK
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-brand text-white px-6 py-3.5 rounded-lg hover:bg-brand/90 active:scale-95 transition-all text-sm font-semibold tracking-wide shadow-md hover:shadow-lg"
+                  className="flex-1 bg-brand text-white px-6 py-3.5 rounded-lg hover:bg-brand/90 active:scale-95 transition-all text-sm font-semibold tracking-wide shadow-md hover:shadow-lg cursor-pointer"
                 >
                   SAVE PREFERENCES
                 </button>

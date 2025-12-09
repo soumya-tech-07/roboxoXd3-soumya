@@ -211,7 +211,7 @@ export default function ProductPage() {
                   </label>
                   <button
                     type="button"
-                    className="text-xs text-gray-900 underline hover:no-underline"
+                    className="text-xs text-gray-900 underline hover:no-underline cursor-pointer"
                     onClick={() => setIsSizeGuideOpen(true)}
                   >
                     SIZE GUIDE
@@ -222,7 +222,7 @@ export default function ProductPage() {
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`py-3 text-sm border transition-all ${
+                      className={`py-3 text-sm border transition-all cursor-pointer ${
                         selectedSize === size
                           ? 'border-black bg-black text-white'
                           : 'border-gray-300 hover:border-black'
@@ -242,14 +242,14 @@ export default function ProductPage() {
                 <div className="flex items-center border border-gray-300 w-32 text-gray-900">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-4 py-2 hover:bg-gray-100"
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   >
                     -
                   </button>
                   <span className="flex-1 text-center">{quantity}</span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="px-4 py-2 hover:bg-gray-100"
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   >
                     +
                   </button>
@@ -260,7 +260,7 @@ export default function ProductPage() {
               <button
                 type="button"
                 onClick={handleAddToCart}
-                className="w-full py-4 bg-brand text-white text-sm tracking-[0.2em] hover:bg-brand/90 transition-colors mb-4"
+                className="w-full py-4 bg-brand text-white text-sm tracking-[0.2em] hover:bg-brand/90 transition-colors mb-4 cursor-pointer"
               >
                 ADD
               </button>
@@ -269,7 +269,7 @@ export default function ProductPage() {
               <button
                 type="button"
                 onClick={() => catalogProduct && toggleWishlist(catalogProduct.id)}
-                className={`w-full py-4 border text-sm tracking-[0.2em] transition-colors flex items-center justify-center gap-2 ${
+                className={`w-full py-4 border text-sm tracking-[0.2em] transition-colors flex items-center justify-center gap-2 cursor-pointer ${
                   isWishlisted
                     ? 'border-brand bg-brand/5 text-brand hover:bg-brand/10'
                     : 'border-gray-300 text-gray-900 hover:border-brand'
@@ -299,7 +299,7 @@ export default function ProductPage() {
               </p>
               <button
                 onClick={() => setShowFullDescription(!showFullDescription)}
-                className="text-xs underline hover:no-underline mt-2 text-gray-900"
+                className="text-xs underline hover:no-underline mt-2 text-gray-900 cursor-pointer"
               >
                 {showFullDescription ? 'View less' : 'View more'}
               </button>
@@ -313,7 +313,7 @@ export default function ProductPage() {
                     onClick={() =>
                       setOpenAccordion(openAccordion === section.id ? '' : section.id)
                     }
-                    className="w-full py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                    className="w-full py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     <span className="text-xs tracking-wider font-medium text-gray-900">
                       {section.title}
@@ -370,7 +370,7 @@ export default function ProductPage() {
                           <p className="mb-3">
                             Check if this item is available in your nearest store
                           </p>
-                          <button className="text-xs underline hover:no-underline">
+                          <button className="text-xs underline hover:no-underline cursor-pointer">
                             FIND STORES
                           </button>
                         </div>
@@ -391,13 +391,13 @@ export default function ProductPage() {
 
             {/* Share & Contact */}
             <div className="mt-6 flex items-center gap-6 text-xs text-gray-900">
-              <button className="flex items-center gap-2 hover:underline">
+              <button className="flex items-center gap-2 hover:underline cursor-pointer">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
                 SHARE
               </button>
-              <button className="flex items-center gap-2 hover:underline">
+              <button className="flex items-center gap-2 hover:underline cursor-pointer">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
