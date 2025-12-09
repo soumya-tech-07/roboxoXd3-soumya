@@ -10,14 +10,37 @@ export default function SearchComponent({ isOpen, onClose }) {
   const [recentSearches, setRecentSearches] = useState([]);
   const inputRef = useRef(null);
 
-  // Popular search terms - extracted from product catalog
+  // Popular search terms with images - extracted from product catalog
   const popularTerms = useMemo(() => {
+    const termsWithImages = [];
+    
+    // Get categories with representative product images
     const categories = [...new Set(PRODUCT_CATALOG.map(p => p.category))];
-    const popularNames = PRODUCT_CATALOG
+    categories.slice(0, 4).forEach(category => {
+      const firstProduct = PRODUCT_CATALOG.find(p => p.category === category);
+      if (firstProduct) {
+        termsWithImages.push({
+          term: category,
+          image: firstProduct.image,
+          type: 'category'
+        });
+      }
+    });
+    
+    // Get popular product names with their images
+    const popularProducts = PRODUCT_CATALOG
       .filter(p => p.tags?.includes('latest-drop') || p.tags?.includes('core-collection'))
-      .slice(0, 5)
-      .map(p => p.name.toLowerCase());
-    return [...categories.slice(0, 4), ...popularNames].slice(0, 8);
+      .slice(0, 5);
+    
+    popularProducts.forEach(product => {
+      termsWithImages.push({
+        term: product.name.toLowerCase(),
+        image: product.image,
+        type: 'product'
+      });
+    });
+    
+    return termsWithImages.slice(0, 8);
   }, []);
 
   // Filter products based on search query
@@ -65,10 +88,11 @@ export default function SearchComponent({ isOpen, onClose }) {
 
   // Handle search submission
   const handleSearch = (term) => {
-    if (term.trim() && !recentSearches.includes(term.trim())) {
-      setRecentSearches([term.trim(), ...recentSearches]);
+    const searchTerm = typeof term === 'string' ? term : term.term || term;
+    if (searchTerm.trim() && !recentSearches.includes(searchTerm.trim())) {
+      setRecentSearches([searchTerm.trim(), ...recentSearches]);
     }
-    setSearchQuery(term);
+    setSearchQuery(searchTerm);
   };
 
   // Remove recent search
@@ -89,20 +113,20 @@ export default function SearchComponent({ isOpen, onClose }) {
       {/* Backdrop Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/20 z-40"
+          className="fixed inset-0 bg-black/20 z-40 animate-in fade-in duration-300"
           onClick={onClose}
         />
       )}
       
       {/* Search Modal - Top Half Only */}
       {isOpen && (
-        <div className="fixed top-0 left-0 right-0 h-3/5 bg-white z-50 overflow-y-auto border-b border-gray-200 shadow-lg">
+        <div className="fixed top-0 left-0 right-0 h-3/5 bg-white z-50 overflow-y-auto border-b border-gray-200 shadow-lg animate-in slide-in-from-top-4 fade-in duration-500 ease-out">
           {/* Header */}
           <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
             <div className="max-w-[1920px] mx-auto px-6 py-3 flex items-center justify-center relative">
               {/* Logo - Left Side */}
-              <Link href="/" className="absolute left-6 shrink-0" onClick={onClose}>
-                <div className="relative h-16 sm:h-20 w-auto">
+              <Link href="/" className="absolute left-6 shrink-0 animate-in fade-in slide-in-from-left-4 duration-500 delay-100" onClick={onClose}>
+                <div className="relative h-16 sm:h-20 w-auto transition-transform duration-300 hover:scale-105">
                   <Image
                     src="/images/retro.png"
                     alt="Retro Louve"
@@ -115,10 +139,10 @@ export default function SearchComponent({ isOpen, onClose }) {
               </Link>
 
               {/* Search Input - Centered */}
-              <div className="w-full max-w-2xl relative">
+              <div className="w-full max-w-2xl relative animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
                 <div className="relative">
                   <svg
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 transition-colors duration-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -141,12 +165,12 @@ export default function SearchComponent({ isOpen, onClose }) {
                       }
                     }}
                     placeholder="Search"
-                    className="w-full pl-10 pr-10 py-2.5 bg-gray-100 rounded-full text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/30 border border-transparent focus:border-brand/20 transition-all"
+                    className="w-full pl-10 pr-10 py-2.5 bg-gray-100 rounded-full text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/30 border border-transparent focus:border-brand/20 transition-all duration-300 focus:scale-[1.02] focus:shadow-md"
                   />
                   {searchQuery && (
                     <button
                       onClick={clearSearch}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer transition-all duration-300 hover:scale-110 animate-in fade-in zoom-in duration-200"
                     >
                       <svg
                         className="w-4 h-4"
@@ -169,7 +193,7 @@ export default function SearchComponent({ isOpen, onClose }) {
               {/* Cancel Button - Right Side */}
               <button
                 onClick={onClose}
-                className="absolute right-6 text-xs font-medium text-brand hover:text-brand/70 transition-colors cursor-pointer tracking-wider uppercase"
+                className="absolute right-6 text-xs font-medium text-brand hover:text-brand/70 transition-all duration-300 cursor-pointer tracking-wider uppercase animate-in fade-in slide-in-from-right-4 duration-500 delay-100 hover:scale-105"
               >
                 Cancel
               </button>
@@ -180,20 +204,37 @@ export default function SearchComponent({ isOpen, onClose }) {
           <div className="max-w-[1920px] mx-auto px-6 py-4">
             {!searchQuery ? (
               // Initial State - Popular & Recent Searches - Centered
-              <div className="max-w-4xl mx-auto">
+              <div className="max-w-4xl mx-auto animate-in fade-in duration-500 delay-300">
                 {/* Popular Search Terms */}
                 <div className="mb-6">
-                  <h3 className="text-gray-500 text-[10px] tracking-wider mb-3 uppercase text-center">
+                  <h3 className="text-gray-500 text-[10px] tracking-wider mb-3 uppercase text-center animate-in fade-in slide-in-from-bottom-2 duration-500 delay-400">
                     Popular Search Terms
                   </h3>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {popularTerms.map((term) => (
+                  <div className="flex flex-wrap gap-3 justify-center">
+                    {popularTerms.map((item, index) => (
                       <button
-                        key={term}
-                        onClick={() => handleSearch(term)}
-                        className="px-4 py-2 bg-gray-100 text-gray-900 hover:bg-brand hover:text-white rounded-full text-xs transition-all duration-300 cursor-pointer tracking-wide"
+                        key={item.term}
+                        onClick={() => handleSearch(item.term)}
+                        className="flex flex-col items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-brand hover:text-white rounded-lg text-xs transition-all duration-300 cursor-pointer tracking-wide group animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-500"
+                        style={{
+                          animationDelay: `${400 + index * 50}ms`,
+                          animationFillMode: 'both'
+                        }}
                       >
-                        {term}
+                        {/* Thumbnail Image */}
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-300 group-hover:border-white transition-all duration-300 group-hover:shadow-lg group-hover:shadow-brand/20">
+                          <Image
+                            src={item.image}
+                            alt={item.term}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-300"
+                            sizes="64px"
+                          />
+                        </div>
+                        {/* Term Text */}
+                        <span className="text-center max-w-[100px] line-clamp-2 transition-all duration-300 group-hover:scale-105">
+                          {item.term}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -201,95 +242,152 @@ export default function SearchComponent({ isOpen, onClose }) {
 
                 {/* Recent Searches */}
                 {recentSearches.length > 0 && (
-                  <div>
+                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-700">
                     <h3 className="text-gray-500 text-[10px] tracking-wider mb-3 uppercase text-center">
                       Recent searches
                     </h3>
-                    <div className="space-y-1 max-w-3xl mx-auto">
-                      {recentSearches.map((term) => (
-                        <div
-                          key={term}
-                          className="flex items-center justify-between py-2 border-b border-gray-200"
-                        >
-                          <button
-                            onClick={() => handleSearch(term)}
-                            className="text-sm text-gray-900 hover:text-brand transition-colors cursor-pointer tracking-wide"
+                    <div className="space-y-2 max-w-3xl mx-auto">
+                      {recentSearches.map((term, index) => {
+                        // Find product image for recent search term
+                        const matchingProduct = PRODUCT_CATALOG.find(
+                          p => 
+                            p.name.toLowerCase() === term.toLowerCase() ||
+                            p.category.toLowerCase() === term.toLowerCase() ||
+                            p.name.toLowerCase().includes(term.toLowerCase())
+                        );
+                        const searchImage = matchingProduct?.image || null;
+                        
+                        return (
+                          <div
+                            key={term}
+                            className="flex items-center justify-between py-2 px-3 border-b border-gray-200 hover:bg-gray-50 rounded transition-all duration-300 animate-in fade-in slide-in-from-left-4 hover:shadow-sm"
+                            style={{
+                              animationDelay: `${700 + index * 100}ms`,
+                              animationFillMode: 'both'
+                            }}
                           >
-                            {term}
-                          </button>
-                          <button
-                            onClick={() => removeRecentSearch(term)}
-                            className="text-gray-400 hover:text-brand transition-colors cursor-pointer"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
+                            <button
+                              onClick={() => handleSearch(term)}
+                              className="flex items-center gap-3 flex-1 text-left group"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
+                              {searchImage && (
+                                <div className="relative w-10 h-10 rounded-full overflow-hidden border border-gray-300 shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md">
+                                  <Image
+                                    src={searchImage}
+                                    alt={term}
+                                    fill
+                                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                    sizes="40px"
+                                  />
+                                </div>
+                              )}
+                              <span className="text-sm text-gray-900 hover:text-brand transition-all duration-300 cursor-pointer tracking-wide group-hover:translate-x-1">
+                                {term}
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => removeRecentSearch(term)}
+                              className="text-gray-400 hover:text-brand transition-all duration-300 cursor-pointer ml-2 hover:scale-110 hover:rotate-90"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
               </div>
             ) : (
               // Search Results State
-              <div className="flex gap-6">
+              <div className="flex gap-6 animate-in fade-in duration-500">
                 {/* Left Sidebar - Suggestions */}
-                <div className="w-56 shrink-0">
+                <div className="w-56 shrink-0 animate-in fade-in slide-in-from-left-4 duration-500 delay-200">
                   <h3 className="text-gray-500 text-[10px] tracking-wider mb-3 uppercase">
                     Top Suggestions
                   </h3>
-                  <div className="space-y-1.5">
-                    {topSuggestions.map((suggestion) => (
-                      <button
-                        key={suggestion}
-                        onClick={() => handleSearch(suggestion)}
-                        className="block text-left text-sm text-gray-900 hover:text-brand transition-colors py-1 cursor-pointer tracking-wide"
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
+                  <div className="space-y-2">
+                    {topSuggestions.map((suggestion, index) => {
+                      // Find product image for suggestion
+                      const matchingProduct = PRODUCT_CATALOG.find(
+                        p => 
+                          p.category.toLowerCase() === suggestion.toLowerCase() ||
+                          p.name.toLowerCase().includes(suggestion.toLowerCase())
+                      );
+                      const suggestionImage = matchingProduct?.image || null;
+                      
+                      return (
+                        <button
+                          key={suggestion}
+                          onClick={() => handleSearch(suggestion)}
+                          className="flex items-center gap-2 w-full text-left text-sm text-gray-900 hover:text-brand transition-all duration-300 py-2 px-2 rounded hover:bg-gray-50 cursor-pointer tracking-wide group animate-in fade-in slide-in-from-left-2"
+                          style={{
+                            animationDelay: `${200 + index * 50}ms`,
+                            animationFillMode: 'both'
+                          }}
+                        >
+                          {suggestionImage && (
+                            <div className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 shrink-0 group-hover:border-brand transition-all duration-300 group-hover:scale-110 group-hover:shadow-sm">
+                              <Image
+                                src={suggestionImage}
+                                alt={suggestion}
+                                fill
+                                className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                sizes="32px"
+                              />
+                            </div>
+                          )}
+                          <span className="line-clamp-1 transition-all duration-300 group-hover:translate-x-1">{suggestion}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Right Side - Product Grid */}
-                <div className="flex-1">
+                <div className="flex-1 animate-in fade-in slide-in-from-right-4 duration-500 delay-300">
                   {filteredProducts.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-                      {filteredProducts.map((product) => (
+                      {filteredProducts.map((product, index) => (
                         <Link
                           key={product.id}
                           href={`/product/${product.id}`}
-                          className="group"
+                          className="group animate-in fade-in slide-in-from-bottom-2 zoom-in-95"
                           onClick={onClose}
+                          style={{
+                            animationDelay: `${300 + index * 30}ms`,
+                            animationFillMode: 'both'
+                          }}
                         >
-                          <div className="aspect-square bg-gray-200 rounded-lg mb-2 overflow-hidden relative">
+                          <div className="aspect-square bg-gray-200 rounded-lg mb-2 overflow-hidden relative transition-all duration-300 group-hover:shadow-lg group-hover:shadow-gray-200">
                             <Image
                               src={product.image}
                               alt={product.name}
                               fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
                               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 20vw"
                             />
                           </div>
-                          <div>
-                            <h4 className="font-medium text-sm text-gray-900 mb-1 group-hover:text-brand transition-colors tracking-wide line-clamp-2">
+                          <div className="transition-all duration-300 group-hover:translate-y-[-2px]">
+                            <h4 className="font-medium text-sm text-gray-900 mb-1 group-hover:text-brand transition-colors duration-300 tracking-wide line-clamp-2">
                               {product.name}
                             </h4>
-                            <p className="text-gray-600 text-[10px] mb-1.5 tracking-wide uppercase">
+                            <p className="text-gray-600 text-[10px] mb-1.5 tracking-wide uppercase transition-colors duration-300 group-hover:text-gray-800">
                               {product.category}
                             </p>
-                            <p className="font-medium text-sm text-brand">
+                            <p className="font-medium text-sm text-brand transition-all duration-300 group-hover:scale-105">
                               MRP : ₹ {product.price.toLocaleString('en-IN')}
                             </p>
                           </div>
@@ -297,7 +395,7 @@ export default function SearchComponent({ isOpen, onClose }) {
                       ))}
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center py-8">
+                    <div className="flex items-center justify-center py-8 animate-in fade-in zoom-in duration-500">
                       <p className="text-gray-500 text-sm">
                         No products found matching &quot;{searchQuery}&quot;
                       </p>
