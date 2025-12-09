@@ -91,6 +91,7 @@ export default function ProductPage() {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [openAccordion, setOpenAccordion] = useState('characteristics');
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
   
@@ -132,15 +133,11 @@ export default function ProductPage() {
   const product = derivedProduct;
 
   const fallbackImage = 'https://placehold.co/800x1200/e5d4e8/666666?text=Image';
-  const mainImage = product.images?.[0] ?? fallbackImage;
-  const additionalImages = product.images?.slice(1) ?? [];
-  const additionalImagePairs = [];
-  for (let i = 0; i < additionalImages.length; i += 2) {
-    additionalImagePairs.push(additionalImages.slice(i, i + 2));
-  }
+  const allImages = product.images?.length > 0 ? product.images : [fallbackImage];
+  const mainImage = allImages[selectedImageIndex] ?? fallbackImage;
+  const thumbnailImages = allImages;
 
   const accordionSections = [
-    { id: 'characteristics', title: 'CHARACTERISTICS' },
     { id: 'measurements', title: 'PRODUCT MEASUREMENTS' },
     { id: 'composition', title: 'COMPOSITION, CARE & ORIGIN' },
     { id: 'availability', title: 'CHECK IN-STORE AVAILABILITY' },
@@ -165,17 +162,47 @@ export default function ProductPage() {
 
       <div className="max-w-7xl mx-auto px-6 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-          {/* Left Side - Main Image */}
-          <div className="relative aspect-3/4 bg-gray-100 overflow-hidden">
-            <Image
-              src={mainImage}
-              alt={product.name}
-              fill
-              className="object-cover"
-            />
-            {product.badge && (
-              <div className="absolute top-4 left-4 bg-white/10 px-3 py-1 text-xs font-semibold tracking-wider">
-                {product.badge}
+          {/* Left Side - Image Gallery */}
+          <div>
+            {/* Main Image Preview */}
+            <div className="relative aspect-3/4 bg-gray-100 overflow-hidden mb-4">
+              <Image
+                src={mainImage}
+                alt={product.name}
+                fill
+                className="object-cover"
+                priority
+              />
+              {product.badge && (
+                <div className="absolute top-4 left-4 bg-white/10 px-3 py-1 text-xs font-semibold tracking-wider">
+                  {product.badge}
+                </div>
+              )}
+            </div>
+            
+            {/* Thumbnail Images */}
+            {thumbnailImages.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+                {thumbnailImages.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 bg-gray-100 overflow-hidden border-2 transition-all cursor-pointer ${
+                      selectedImageIndex === index
+                        ? 'border-brand scale-105'
+                        : 'border-gray-200 hover:border-gray-400'
+                    }`}
+                    aria-label={`View image ${index + 1}`}
+                  >
+                    <Image
+                      src={image}
+                      alt={`${product.name} view ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="96px"
+                    />
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -256,39 +283,54 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              {/* Add to Cart Button */}
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                className="w-full py-4 bg-brand text-white text-sm tracking-[0.2em] hover:bg-brand/90 transition-colors mb-4 cursor-pointer"
-              >
-                ADD
-              </button>
-
-              {/* Wishlist Button */}
-              <button
-                type="button"
-                onClick={() => catalogProduct && toggleWishlist(catalogProduct.id)}
-                className={`w-full py-4 border text-sm tracking-[0.2em] transition-colors flex items-center justify-center gap-2 cursor-pointer ${
-                  isWishlisted
-                    ? 'border-brand bg-brand/5 text-brand hover:bg-brand/10'
-                    : 'border-gray-300 text-gray-900 hover:border-brand'
-                }`}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill={isWishlisted ? 'currentColor' : 'none'}
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              {/* Combined Add to Cart and Wishlist Button */}
+              <div className="flex rounded-lg overflow-hidden mb-4 border-2 border-transparent">
+                {/* Wishlist Button (Left Side) */}
+                <button
+                  type="button"
+                  onClick={() => catalogProduct && toggleWishlist(catalogProduct.id)}
+                  className={`shrink-0 w-16 sm:w-20 py-4 transition-colors flex items-center justify-center cursor-pointer rounded-l-lg ${
+                    isWishlisted
+                      ? 'bg-[#FFE8D9] text-brand hover:bg-[#FFD9C4]'
+                      : 'bg-[#FFF5F0] text-brand hover:bg-[#FFE8D9]'
+                  }`}
+                  aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                  <svg
+                    className="w-5 h-5 sm:w-6 sm:h-6"
+                    fill={isWishlisted ? 'currentColor' : 'none'}
+                    stroke="currentColor"
                     strokeWidth={1.5}
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                  />
-                </svg>
-                {isWishlisted ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST'}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    />
+                  </svg>
+                </button>
+                
+                {/* Add to Cart Button (Right Side) */}
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="flex-1 py-4 bg-brand text-white text-sm sm:text-base font-semibold tracking-wide hover:bg-brand/90 transition-colors cursor-pointer rounded-r-lg"
+                >
+                  ADD TO CART
+                </button>
+              </div>
+
+              {/* Buy Now Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  handleAddToCart();
+                  // TODO: Navigate to checkout page
+                }}
+                className="w-full py-4 bg-gray-900 text-white text-sm sm:text-base font-semibold tracking-wide hover:bg-gray-800 transition-colors cursor-pointer"
+              >
+                BUY NOW
               </button>
             </div>
 
@@ -332,24 +374,6 @@ export default function ProductPage() {
 
                   {openAccordion === section.id && (
                     <div className="pb-4 px-4">
-                      {section.id === 'characteristics' && (
-                        <div className="grid grid-cols-3 gap-4">
-                          {product.characteristics.map((char, index) => (
-                            <div key={index} className="text-center">
-                              <div className="relative w-20 h-20 mx-auto mb-2 bg-gray-100">
-                                <Image
-                                  src={char.image}
-                                  alt={char.title}
-                                  fill
-                                  className="object-contain p-2"
-                                />
-                              </div>
-                              <p className="text-xs text-gray-900">{char.title}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
                       {section.id === 'measurements' && (
                         <div className="text-sm text-gray-900 space-y-2">
                           <p>Model is wearing size: M</p>
@@ -406,35 +430,6 @@ export default function ProductPage() {
             </div>
           </div>
         </div>
-
-        {/* Additional Images */}
-        {additionalImagePairs.length > 0 && (
-          <div className="mt-10 space-y-8 lg:space-y-12">
-            {additionalImagePairs.map((pair, rowIndex) => (
-              <div
-                key={`additional-row-${rowIndex}`}
-                className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16"
-              >
-                {pair.map((image, imageIndex) => (
-                  <div
-                    key={`additional-image-${rowIndex}-${imageIndex}`}
-                    className="relative aspect-3/4 bg-gray-100 overflow-hidden"
-                  >
-                    <Image
-                      src={image || fallbackImage}
-                      alt={`${product.name} alternate view ${rowIndex * 2 + imageIndex + 2}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
-                {pair.length === 1 && (
-                  <div className="hidden lg:block" />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
