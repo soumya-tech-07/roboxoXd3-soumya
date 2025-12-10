@@ -661,7 +661,7 @@ export default function NavbarWithCustomGif() {
                 </li>
 
                 {/* Blog */}
-                {/* <li className="border-b border-gray-200">
+                <li className="border-b border-gray-200">
                   <Link
                     href="/blog"
                     className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
@@ -669,7 +669,7 @@ export default function NavbarWithCustomGif() {
                   >
                     Blog
                   </Link>
-                </li> */}
+                </li>
 
                 {/* Contact Us */}
                 <li className="border-b border-gray-200">

@@ -215,7 +215,7 @@ export default function SearchComponent({ isOpen, onClose }) {
                       <button
                         key={item.term}
                         onClick={() => handleSearch(item.term)}
-                        className="flex flex-col items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-brand hover:text-white rounded-lg text-xs transition-all duration-300 cursor-pointer tracking-wide group animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-500"
+                        className="flex flex-col text-black items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-brand hover:text-white rounded-lg text-xs transition-all duration-300 cursor-pointer tracking-wide group animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-500"
                         style={{
                           animationDelay: `${400 + index * 50}ms`,
                           animationFillMode: 'both'
