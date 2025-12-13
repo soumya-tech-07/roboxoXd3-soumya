@@ -70,23 +70,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/stores" className="hover:underline">
-                  OUR STORES
-                </Link>
-              </li>
-              <li>
-                <Link href="/careers" className="hover:underline">
-                  CAREERS
-                </Link>
-              </li>
-              <li>
                 <Link href="/contact" className="hover:underline">
                   CONTACT US
-                </Link>
-              </li>
-              <li>
-                <Link href="/collaborations" className="hover:underline">
-                  COLLABORATIONS
                 </Link>
               </li>
               <li>

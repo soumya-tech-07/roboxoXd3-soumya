@@ -296,23 +296,23 @@ export default function HomeBackgroundVideo() {
         </button>
 
         {/* Shop Men and Women Buttons */}
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 flex flex-col sm:flex-row gap-4 items-center">
+        <div className="absolute bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-30 flex flex-col justify-center items-center sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
           <button
             onClick={() => scrollToSection('mens-section')}
-            className="px-6 md:px-8 border hover:border-brand hover:bg-brand hover:text-white py-2 md:py-3 text-brand text-xs md:text-sm tracking-wider font-medium transition-all duration-300 cursor-pointer bg-white/80 backdrop-blur-sm"
+            className="w-[180px] sm:w-auto sm:min-w-[180px] px-6 sm:px-8 border-2 border-white hover:border-brand hover:bg-brand hover:text-white py-3  text-white text-xs sm:text-sm md:text-base tracking-wider font-medium transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm"
             aria-label="Shop Mens"
             type="button"
           >
-            SHOP MENS
+            SHOP MEN
           </button>
 
           <button
             onClick={() => scrollToSection('womens-section')}
-            className="px-6 md:px-8 border hover:border-brand hover:bg-brand hover:text-white py-2 md:py-3 text-white text-xs md:text-sm tracking-wider font-medium transition-all duration-300 cursor-pointer bg-black/20 backdrop-blur-sm"
+            className=" w-[180px] sm:w-auto sm:min-w-[180px] px-6 sm:px-8 border-2 border-white hover:border-brand hover:bg-brand hover:text-white py-3  text-white text-xs sm:text-sm md:text-base tracking-wider font-medium transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm"
             aria-label="Shop Womens"
             type="button"
           >
-            SHOP WOMENS
+            SHOP WOMEN
           </button>
         </div>
 

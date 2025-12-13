@@ -15,9 +15,9 @@ export default function RootLayout({ children }) {
         <WishlistProvider>
           <CartProvider>
             <AuthModalProvider>
-              <NavbarWithCustomGif/>
-              {children}
-              <Footer/>
+            <NavbarWithCustomGif/>
+            {children}
+            <Footer/>
               <AuthModals />
               <CartSidebar />
               <DiscountBanner />

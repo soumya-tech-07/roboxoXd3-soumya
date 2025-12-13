@@ -516,27 +516,26 @@ export default function NavbarWithCustomGif() {
         } overflow-y-auto`}
       >
         <div className="flex flex-col h-full">
-          {/* Close Button */}
-          <div className="flex justify-end p-6 border-b border-gray-200">
-            <button
+        
+
+          {/* Logo */}
+          <div className="px-6 py-6 border-b border-gray-200">
+            <Link
+              href="/"
               onClick={closeMenu}
-              className="text-brand hover:opacity-70 transition-opacity cursor-pointer"
-              aria-label="Close menu"
+              className="block"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
+              <div className="relative h-16 w-auto">
+                <Image
+                  src="/images/mainlog.png"
+                  alt="Retro Louve"
+                  width={200}
+                  height={80}
+                  className="h-full w-auto object-contain"
+                  priority
                 />
-              </svg>
-            </button>
+              </div>
+            </Link>
           </div>
 
           {/* Menu Items */}
@@ -626,37 +625,25 @@ export default function NavbarWithCustomGif() {
               </div>
             ) : (
               <ul className="space-y-0">
-                {/* Shop */}
+                {/* Home */}
                 <li className="border-b border-gray-200">
-                  <button
-                    onClick={() => setActiveSubMenu("shop")}
-                    className="w-full flex items-center justify-between py-4 text-left text-sm tracking-wide text-brand hover:opacity-70 transition-opacity cursor-pointer group"
+                  <Link
+                    href="/"
+                    className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
+                    onClick={closeMenu}
                   >
-                    <span className="font-medium">Shop</span>
-                    <svg
-                      className="w-5 h-5 text-gray-400 group-hover:text-brand transition-colors"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
+                    Home
+                  </Link>
                 </li>
 
-                {/* About Love */}
+                {/* About Retro Louve */}
                 <li className="border-b border-gray-200">
                   <Link
                     href="/about-love"
                     className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
                     onClick={closeMenu}
                   >
-                    About Love
+                    About Retro Louve
                   </Link>
                 </li>
 
@@ -671,14 +658,14 @@ export default function NavbarWithCustomGif() {
                   </Link>
                 </li>
 
-                {/* Contact Us */}
+                {/* FAQ */}
                 <li className="border-b border-gray-200">
                   <Link
-                    href="/contact"
+                    href="/faq"
                     className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
                     onClick={closeMenu}
                   >
-                    Contact Us
+                    FAQ
                   </Link>
                 </li>
 
@@ -690,6 +677,17 @@ export default function NavbarWithCustomGif() {
                     onClick={closeMenu}
                   >
                     Wishlist
+                  </Link>
+                </li>
+
+                {/* Contact Us */}
+                <li className="border-b border-gray-200">
+                  <Link
+                    href="/contact"
+                    className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
+                    onClick={closeMenu}
+                  >
+                    Contact Us
                   </Link>
                 </li>
               </ul>
