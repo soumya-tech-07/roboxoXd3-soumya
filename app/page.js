@@ -10,6 +10,7 @@ import HomeBackgroundVideo from "./components/HomeBackgroundVideo";
 import SplitHeroSection from "./components/SplitHeroSection";
 import MensSection from "./components/MensSection";
 import WomensSection from "./components/WomensSection";
+import PromoPopup from "./components/PromoPopup";
 
 export default function Home() {
   return (
@@ -24,6 +25,7 @@ export default function Home() {
       <ProductGrid/>
       <ScrollingBanner/>
     </div>
+    <PromoPopup/>
     </>
   );
 }

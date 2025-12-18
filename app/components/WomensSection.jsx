@@ -15,14 +15,18 @@ export default function WomensSection() {
   return (
     <section 
       id="womens-section" 
-      className=" py-8 sm:py-12 md:py-16 scroll-mt-20 relative"
+      className="py-8 sm:py-12 md:py-16 scroll-mt-20 relative overflow-hidden"
       style={{
-        backgroundImage: `url('data:image/svg+xml,%3Csvg width="100" height="100" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3Cpattern id="textile" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse"%3E%3Ccircle cx="25" cy="25" r="1" fill="%23e5e7eb" opacity="0.4"/%3E%3Ccircle cx="10" cy="10" r="0.5" fill="%23e5e7eb" opacity="0.3"/%3E%3Ccircle cx="40" cy="15" r="0.5" fill="%23e5e7eb" opacity="0.3"/%3E%3Ccircle cx="15" cy="40" r="0.5" fill="%23e5e7eb" opacity="0.3"/%3E%3Ccircle cx="45" cy="45" r="0.5" fill="%23e5e7eb" opacity="0.3"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23textile)"/%3E%3C/svg%3E')`,
+        backgroundImage: `url('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&h=1080&fit=crop&q=80')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}
     >
+      {/* Soft gradient overlay with warm tones */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-rose-100/40 via-transparent to-pink-50/30 z-0"></div>
+      {/* Reduced white overlay for more impact */}
+      <div className="absolute inset-0 bg-white/60 z-0"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         <h1 className="text-brand mb-4 sm:mb-6 text-lg">SHOP WOMENS</h1>
         {/* Product Grid */}
