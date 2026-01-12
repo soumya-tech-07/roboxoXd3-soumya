@@ -3,9 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuthModal } from '../context/AuthModalContext';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 export default function SignupModal() {
   const { isOpen, modalType, closeModal, switchToLogin } = useAuthModal();
+  const { signUp } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -16,6 +20,8 @@ export default function SignupModal() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   // Handle ESC key to close modal
@@ -39,36 +45,79 @@ export default function SignupModal() {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess(false);
+    setLoading(true);
 
     // Validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Please fill in all fields');
+      setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      setLoading(false);
       return;
     }
 
     if (formData.password.length < 8) {
       setError('Password must be at least 8 characters long');
+      setLoading(false);
       return;
     }
 
     if (!agreeToTerms) {
       setError('Please agree to the terms and conditions');
+      setLoading(false);
       return;
     }
 
-    // TODO: Implement actual registration logic
-    console.log('Signup attempt:', formData);
-    
-    // For now, just close modal
-    closeModal();
+    try {
+      const { data, error: signUpError } = await signUp(
+        formData.email,
+        formData.password,
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+        }
+      );
+
+      if (signUpError) {
+        const errorMessage = signUpError.message || 'Failed to create account. Please try again.';
+        setError(errorMessage);
+        showError(errorMessage);
+        setLoading(false);
+        return;
+      }
+
+      // Success
+      setSuccess(true);
+      setLoading(false);
+      showSuccess('Account created successfully!');
+      
+      // Close modal after 2 seconds
+      setTimeout(() => {
+        closeModal();
+        setSuccess(false);
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+        });
+        setAgreeToTerms(false);
+      }, 2000);
+    } catch (err) {
+      const errorMessage = 'An unexpected error occurred. Please try again.';
+      setError(errorMessage);
+      showError(errorMessage);
+      setLoading(false);
+    }
   };
 
   const handleOverlayClick = (e) => {
@@ -117,6 +166,11 @@ export default function SignupModal() {
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
                 {error}
+              </div>
+            )}
+            {success && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-sm">
+                Account created successfully! Redirecting...
               </div>
             )}
 
@@ -269,9 +323,10 @@ export default function SignupModal() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-4 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors cursor-pointer"
+              disabled={loading || success}
+              className="w-full py-4 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              CREATE ACCOUNT
+              {loading ? 'CREATING ACCOUNT...' : success ? 'ACCOUNT CREATED!' : 'CREATE ACCOUNT'}
             </button>
           </form>
 

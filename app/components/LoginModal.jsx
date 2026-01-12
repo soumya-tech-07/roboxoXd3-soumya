@@ -2,13 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { useAuthModal } from '../context/AuthModalContext';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 export default function LoginModal() {
   const { isOpen, modalType, closeModal, switchToSignup } = useAuthModal();
+  const { signIn, resetPassword } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -23,21 +30,68 @@ export default function LoginModal() {
 
   if (!isOpen || modalType !== 'login') return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     // Basic validation
     if (!email || !password) {
       setError('Please fill in all fields');
+      setLoading(false);
       return;
     }
 
-    // TODO: Implement actual authentication logic
-    console.log('Login attempt:', { email, password });
-    
-    // For now, just close modal
-    closeModal();
+    try {
+      const { data, error: signInError } = await signIn(email, password);
+      
+      if (signInError) {
+        const errorMessage = signInError.message || 'Invalid email or password. Please try again.';
+        setError(errorMessage);
+        showError(errorMessage);
+        setLoading(false);
+        return;
+      }
+
+      // Success - show toast and close modal
+      showSuccess('Logged in successfully!');
+      closeModal();
+      setEmail('');
+      setPassword('');
+    } catch (err) {
+      const errorMessage = 'An unexpected error occurred. Please try again.';
+      setError(errorMessage);
+      showError(errorMessage);
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!email) {
+      setError('Please enter your email address');
+      return;
+    }
+
+    try {
+      const { error: resetError } = await resetPassword(email);
+      
+      if (resetError) {
+        const errorMessage = resetError.message || 'Failed to send reset email. Please try again.';
+        setError(errorMessage);
+        showError(errorMessage);
+        return;
+      }
+
+      setResetEmailSent(true);
+      showSuccess('Password reset email sent! Check your inbox.');
+    } catch (err) {
+      const errorMessage = 'An unexpected error occurred. Please try again.';
+      setError(errorMessage);
+      showError(errorMessage);
+    }
   };
 
   const handleOverlayClick = (e) => {
@@ -138,22 +192,73 @@ export default function LoginModal() {
             </div>
 
             {/* Forgot Password Link */}
-            <div className="flex justify-end">
-              <button
-                type="button"
-                className="text-xs text-gray-600 hover:text-brand underline cursor-pointer"
-              >
-                FORGOT PASSWORD?
-              </button>
-            </div>
+            {!showForgotPassword && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-xs text-gray-600 hover:text-brand underline cursor-pointer"
+                >
+                  FORGOT PASSWORD?
+                </button>
+              </div>
+            )}
+
+            {/* Forgot Password Form */}
+            {showForgotPassword && !resetEmailSent && (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Enter your email address and we&apos;ll send you a link to reset your password.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setResetEmailSent(false);
+                  }}
+                  className="text-xs text-gray-600 hover:text-brand underline cursor-pointer"
+                >
+                  Back to login
+                </button>
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="w-full py-4 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors cursor-pointer"
+                >
+                  SEND RESET LINK
+                </button>
+              </div>
+            )}
+
+            {/* Reset Email Sent Confirmation */}
+            {resetEmailSent && (
+              <div className="space-y-4">
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-sm">
+                  Password reset email sent! Please check your inbox.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setResetEmailSent(false);
+                  }}
+                  className="w-full py-4 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors cursor-pointer"
+                >
+                  BACK TO LOGIN
+                </button>
+              </div>
+            )}
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full py-4 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors cursor-pointer"
-            >
-              LOGIN
-            </button>
+            {!showForgotPassword && !resetEmailSent && (
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'LOGGING IN...' : 'LOGIN'}
+              </button>
+            )}
           </form>
 
           {/* Sign Up Link */}

@@ -264,13 +264,15 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import SearchComponent from "./SearchComponent";
 import { useAuthModal } from "../context/AuthModalContext";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 export default function NavbarWithCustomGif() {
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
@@ -278,9 +280,13 @@ export default function NavbarWithCustomGif() {
   const [activeSubMenu, setActiveSubMenu] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
   const router = useRouter();
-  const { openLogin } = useAuthModal();
+  const { openLogin, openSignup } = useAuthModal();
   const { openCart } = useCart();
+  const { user, profile, isAuthenticated, signOut } = useAuth();
+  const { showSuccess } = useToast();
 
   const rotatingTexts = [
     "NEW DROP - NOW LIVE",
@@ -308,6 +314,23 @@ export default function NavbarWithCustomGif() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
+
   // Prevent body scroll when menu is open
   useEffect(() => {
     if (isMenuOpen) {
@@ -328,7 +351,7 @@ export default function NavbarWithCustomGif() {
   const scrollToSection = (sectionId) => {
     closeMenu();
     // Check if we're on the home page
-    if (window.location.pathname === '/') {
+    if (typeof window !== 'undefined' && window.location.pathname === '/') {
       setTimeout(() => {
         const element = document.getElementById(sectionId);
         if (element) {
@@ -382,13 +405,13 @@ export default function NavbarWithCustomGif() {
         {/* Navbar */}
         <nav className={`${isScrolled ? "border-b border-gray-200" : ""}`}>
           <div className="px-4 sm:px-6">
-            <div className="flex items-center justify-between h-16 sm:h-20">
+            <div className="relative flex items-center justify-between h-16 sm:h-18">
               {/* Left Side - Hamburger & Search */}
-              <div className="flex items-center space-x-4 sm:space-x-6">
+              <div className="flex items-center space-x-4 sm:space-x-6 z-10">
                 {/* Hamburger Menu */}
                 <button
                   onClick={() => setIsMenuOpen(true)}
-                  className={`transition-colors cursor-pointer ${
+                  className={`transition-colors cursor-pointer flex items-center justify-center ${
                     isScrolled ? "text-black" : "text-brand"
                   } hover:opacity-70`}
                   aria-label="Open menu"
@@ -413,7 +436,7 @@ export default function NavbarWithCustomGif() {
                   onClick={() => {
                     setIsSearchOpen(true);
                   }}
-                  className={`transition-colors cursor-pointer ${
+                  className={`transition-colors cursor-pointer flex items-center justify-center ${
                     isScrolled ? "text-black" : "text-brand"
                   } hover:opacity-70`}
                   aria-label="Search"
@@ -435,8 +458,8 @@ export default function NavbarWithCustomGif() {
               </div>
 
               {/* Center - Logo */}
-              <Link href="/" className="absolute left-1/2 transform -translate-x-1/2">
-                <div className="relative h-24 w-auto">
+              <Link href="/" className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0">
+                <div className="relative h-20 sm:h-24 w-auto flex items-center">
                   <Image
                     src={isScrolled ? "/images/4.png" : "/images/mainlog.png"}
                     alt="Retro Louve"
@@ -449,34 +472,78 @@ export default function NavbarWithCustomGif() {
               </Link>
 
               {/* Right Side - User & Cart Icons */}
-              <div className="flex items-center space-x-4 sm:space-x-6">
-                {/* User/Login Icon */}
-                <button
-                  onClick={openLogin}
-                  className={`transition-colors cursor-pointer ${
-                    isScrolled ? "text-black" : "text-brand"
-                  } hover:opacity-70`}
-                  aria-label="Login"
-                >
-                  <svg
-                    className="w-5 h-5 sm:w-6 sm:h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              <div className="flex items-center justify-center space-x-4 sm:space-x-6 z-10">
+                {/* User/Login Icon with Dropdown */}
+                <div className="relative flex items-center justify-center" ref={userMenuRef}>
+                  <button
+                    onClick={() => {
+                      if (isAuthenticated) {
+                        setIsUserMenuOpen(!isUserMenuOpen);
+                      } else {
+                        openLogin();
+                      }
+                    }}
+                    className={`transition-colors cursor-pointer flex items-center justify-center ${
+                      isScrolled ? "text-black" : "text-brand"
+                    } hover:opacity-70`}
+                    aria-label={isAuthenticated ? "User menu" : "Login"}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </button>
+                    <svg
+                      className="w-5 h-5 sm:w-6 sm:h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  </button>
+
+                  {/* User Dropdown Menu */}
+                  {isAuthenticated && isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                      <div className="py-2">
+                        <div className="px-4 py-2 border-b border-gray-200">
+                          <p className="text-sm font-medium text-gray-900">
+                            {profile?.first_name && profile?.last_name
+                              ? `${profile.first_name} ${profile.last_name}`
+                              : user?.email}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">{user?.email}</p>
+                        </div>
+                        <Link
+                          href="/wishlist"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                          My Wishlist
+                        </Link>
+                        
+                        <button
+                          onClick={async () => {
+                            setIsUserMenuOpen(false);
+                            const { error } = await signOut();
+                            if (!error) {
+                              showSuccess('Logged out successfully');
+                            }
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Shopping Cart Icon */}
                 <button
                   onClick={openCart}
-                  className={`transition-colors cursor-pointer ${
+                  className={`transition-colors cursor-pointer flex items-center justify-center ${
                     isScrolled ? "text-black" : "text-brand"
                   } hover:opacity-70`}
                   aria-label="Cart"
@@ -654,7 +721,7 @@ export default function NavbarWithCustomGif() {
                     className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
                     onClick={closeMenu}
                   >
-                    Blog
+                    Blogs
                   </Link>
                 </li>
 
@@ -677,6 +744,17 @@ export default function NavbarWithCustomGif() {
                     onClick={closeMenu}
                   >
                     Wishlist
+                  </Link>
+                </li>
+
+                {/* My Orders */}
+                <li className="border-b border-gray-200">
+                  <Link
+                    href="/orders"
+                    className="block py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium"
+                    onClick={closeMenu}
+                  >
+                    My Orders
                   </Link>
                 </li>
 

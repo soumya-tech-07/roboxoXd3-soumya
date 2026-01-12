@@ -2,13 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { supabase } from "@/lib/supabase";
 
 export default function SizeGuideModal({
   isOpen,
   onClose,
   productName = "FADED GREY JOGGERS",
+  productCategory = null,
 }) {
   const [showCustomizeForm, setShowCustomizeForm] = useState(false);
+  const [sizeChart, setSizeChart] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     favouriteSection: "Woman",
@@ -18,6 +22,46 @@ export default function SizeGuideModal({
     weightUnit: "KG",
     age: "",
   });
+
+  // Load size chart based on product category
+  useEffect(() => {
+    if (isOpen && productCategory) {
+      loadSizeChart();
+    }
+  }, [isOpen, productCategory]);
+
+  const loadSizeChart = async () => {
+    if (!productCategory) return;
+
+    try {
+      setLoading(true);
+      // Map product category to size chart category
+      let chartCategory = productCategory;
+      
+      // Handle category mapping
+      if (productCategory === 'SWEATPANTS') {
+        chartCategory = 'SWEATPANTS';
+      } else if (productCategory === 'PANTS') {
+        chartCategory = 'PANTS';
+      }
+
+      const { data, error } = await supabase
+        .from('size_charts')
+        .select('*')
+        .eq('category', chartCategory)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading size chart:', error);
+      } else if (data) {
+        setSizeChart(data);
+      }
+    } catch (error) {
+      console.error('Error loading size chart:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -94,53 +138,18 @@ export default function SizeGuideModal({
                 In inches
               </p>
 
-              {/* Simple Table */}
-              <div className="w-full border border-gray-900">
-                {/* Header Row */}
-                <div className="grid grid-cols-6 border-b border-gray-900">
-                  <div className="border-r border-gray-900 p-3 text-center text-sm font-medium bg-white">
-                    SIZE
-                  </div>
-                  {["S", "M", "L", "XL", "XXL"].map((size) => (
-                    <div
-                      key={size}
-                      className="border-r border-gray-900 last:border-r-0 p-3 text-center text-sm font-medium bg-white"
-                    >
-                      {size}
-                    </div>
-                  ))}
+              {/* Dynamic Size Chart Table */}
+              {loading ? (
+                <div className="w-full border border-gray-900 p-8 text-center">
+                  <p className="text-sm text-gray-600">Loading size chart...</p>
                 </div>
-
-                {/* CHEST Row */}
-                <div className="grid grid-cols-6 border-b border-gray-900">
-                  <div className="border-r border-gray-900 p-3 text-center text-sm bg-white">
-                    CHEST
-                  </div>
-                  {[1, 2, 3, 4, 5].map((idx) => (
-                    <div
-                      key={idx}
-                      className="border-r border-gray-900 last:border-r-0 p-3 text-center text-sm bg-white"
-                    >
-                      {/* Empty cell */}
-                    </div>
-                  ))}
+              ) : sizeChart && sizeChart.measurements ? (
+                <SizeChartTable measurements={sizeChart.measurements} />
+              ) : (
+                <div className="w-full border border-gray-900 p-8 text-center">
+                  <p className="text-sm text-gray-600">Size chart not available for this category.</p>
                 </div>
-
-                {/* LENGTH Row */}
-                <div className="grid grid-cols-6">
-                  <div className="border-r border-gray-900 p-3 text-center text-sm bg-white">
-                    LENGTH
-                  </div>
-                  {[1, 2, 3, 4, 5].map((idx) => (
-                    <div
-                      key={idx}
-                      className="border-r border-gray-900 last:border-r-0 p-3 text-center text-sm bg-white"
-                    >
-                      {/* Empty cell */}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              )}
 
               {/* Tip text */}
               <p className="text-sm text-gray-900 text-center">
@@ -154,18 +163,20 @@ export default function SizeGuideModal({
                 </h3>
 
                 {/* Measurement Diagram */}
-                <div className="flex justify-center items-center">
-                  <div className="relative w-40">
-                    <Image
-                      src="/images/Shirts.jpg"
-                      alt="Size guide measurement diagram"
-                      width={600}
-                      height={800}
-                      className="w-auto h-auto object-contain"
-                      unoptimized
-                    />
+                {sizeChart?.image_url && (
+                  <div className="flex justify-center items-center">
+                    <div className="relative w-40 max-w-40">
+                      <Image
+                        src={sizeChart.image_url}
+                        alt={`${sizeChart.name} measurement diagram`}
+                        width={600}
+                        height={800}
+                        className="w-full h-auto object-contain"
+                        unoptimized
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Customize Button */}
@@ -399,6 +410,75 @@ export default function SizeGuideModal({
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+// Size Chart Table Component
+function SizeChartTable({ measurements }) {
+  if (!measurements || !Array.isArray(measurements) || measurements.length === 0) {
+    return (
+      <div className="w-full border border-gray-900 p-8 text-center">
+        <p className="text-sm text-gray-600">No size data available.</p>
+      </div>
+    );
+  }
+
+  // Get all unique measurement keys
+  const measurementKeys = new Set();
+  measurements.forEach((item) => {
+    Object.keys(item).forEach((key) => {
+      if (key !== 'size') {
+        measurementKeys.add(key.toUpperCase());
+      }
+    });
+  });
+
+  const measurementKeysArray = Array.from(measurementKeys);
+  const sizes = measurements.map((item) => item.size);
+
+  return (
+    <div className="w-full border border-gray-900 overflow-x-auto">
+      <table className="w-full border-collapse">
+        {/* Header Row */}
+        <thead>
+          <tr className="border-b border-gray-900">
+            <th className="border-r border-gray-900 p-3 text-center text-sm font-medium bg-white">
+              SIZE
+            </th>
+            {sizes.map((size) => (
+              <th
+                key={size}
+                className="border-r border-gray-900 last:border-r-0 p-3 text-center text-sm font-medium bg-white"
+              >
+                {size}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {/* Measurement Rows */}
+          {measurementKeysArray.map((key) => (
+            <tr key={key} className="border-b border-gray-900 last:border-b-0">
+              <td className="border-r border-gray-900 p-3 text-center text-sm bg-white">
+                {key}
+              </td>
+              {sizes.map((size) => {
+                const item = measurements.find((m) => m.size === size);
+                const value = item ? item[key.toLowerCase()] || '-' : '-';
+                return (
+                  <td
+                    key={size}
+                    className="border-r border-gray-900 last:border-r-0 p-3 text-center text-sm bg-white"
+                  >
+                    {value}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

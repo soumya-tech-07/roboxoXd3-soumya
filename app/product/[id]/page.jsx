@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import SizeGuideModal from '../../components/SizeguideModal';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
+import { useToast } from '../../context/ToastContext';
 import {
   PRODUCT_CATALOG,
   getProductBySlug,
@@ -80,25 +81,64 @@ export default function ProductPage() {
 
   const [selectedSize, setSelectedSize] = useState('');
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const { isInWishlist, toggleWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist, loading: wishlistLoading } = useWishlist();
+  const { addToCart, openCart, loading: cartLoading } = useCart();
+  const { showError } = useToast();
 
   const isWishlisted = catalogProduct ? isInWishlist(catalogProduct.id) : false;
 
   const handleAddToCart = () => {
     if (!catalogProduct || !derivedProduct) return;
 
+    // Prevent clicks while loading
+    if (cartLoading) {
+      showError('Please wait...');
+      return;
+    }
+
     if (!selectedSize && derivedProduct.sizes.length > 0) {
-      alert('Please select a size');
+      showError('Please select a size');
       return;
     }
 
     addToCart(catalogProduct.id, selectedSize || null, 1);
   };
 
-  const handleBuyNow = () => {
-    handleAddToCart();
-    // TODO: Navigate to checkout page
+  const handleBuyNow = async () => {
+    if (!catalogProduct || !derivedProduct) return;
+
+    // Prevent clicks while loading
+    if (cartLoading) {
+      showError('Please wait...');
+      return;
+    }
+
+    if (!selectedSize && derivedProduct.sizes.length > 0) {
+      showError('Please select a size');
+      return;
+    }
+
+    // Add to cart and open cart sidebar
+    const result = await addToCart(catalogProduct.id, selectedSize || null, 1);
+    
+    // Open cart sidebar after successful add
+    if (result?.success) {
+      setTimeout(() => {
+        openCart();
+      }, 500);
+    }
+  };
+
+  const handleWishlistToggle = () => {
+    if (!catalogProduct) return;
+
+    // Prevent clicks while loading
+    if (wishlistLoading) {
+      showError('Please wait...');
+      return;
+    }
+
+    toggleWishlist(catalogProduct.id);
   };
 
   if (!derivedProduct) {
@@ -113,6 +153,7 @@ export default function ProductPage() {
         isOpen={isSizeGuideOpen}
         onClose={() => setIsSizeGuideOpen(false)}
         productName={product.name}
+        productCategory={catalogProduct?.category || product.category}
       />
 
       <ProductBreadcrumb />
@@ -146,11 +187,10 @@ export default function ProductPage() {
 
               <ProductActionButtons
                 isWishlisted={isWishlisted}
-                onWishlistToggle={() =>
-                  catalogProduct && toggleWishlist(catalogProduct.id)
-                }
+                onWishlistToggle={handleWishlistToggle}
                 onAddToCart={handleAddToCart}
                 onBuyNow={handleBuyNow}
+                disabled={cartLoading || wishlistLoading}
               />
             </div>
 

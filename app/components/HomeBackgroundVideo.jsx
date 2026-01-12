@@ -273,27 +273,37 @@ export default function HomeBackgroundVideo() {
             ) : (
               <>
                 {/* Mobile Image (up to sm) */}
-                <div className="block sm:hidden absolute inset-0 w-full h-full">
-                  <Image
-                    src={item.mobileSrc || item.src}
-                    alt={item.alt}
-                    fill
-                    className="object-cover"
-                    priority={index === 0}
-                    sizes="100vw"
-                  />
-                </div>
+                {(() => {
+                  const mobileSrc = item.mobileSrc || item.src || item.fallbackImage;
+                  return mobileSrc && mobileSrc.trim() !== '' ? (
+                    <div className="block sm:hidden absolute inset-0 w-full h-full">
+                      <Image
+                        src={mobileSrc}
+                        alt={item.alt}
+                        fill
+                        className="object-cover"
+                        priority={index === 0}
+                        sizes="100vw"
+                      />
+                    </div>
+                  ) : null;
+                })()}
                 {/* Desktop Image (after sm) */}
-                <div className="hidden sm:block absolute inset-0 w-full h-full">
-                  <Image
-                    src={item.desktopSrc || item.src}
-                    alt={item.alt}
-                    fill
-                    className="object-cover"
-                    priority={index === 0}
-                    sizes="100vw"
-                  />
-                </div>
+                {(() => {
+                  const desktopSrc = item.desktopSrc || item.src || item.fallbackImage;
+                  return desktopSrc && desktopSrc.trim() !== '' ? (
+                    <div className="hidden sm:block absolute inset-0 w-full h-full">
+                      <Image
+                        src={desktopSrc}
+                        alt={item.alt}
+                        fill
+                        className="object-cover"
+                        priority={index === 0}
+                        sizes="100vw"
+                      />
+                    </div>
+                  ) : null;
+                })()}
                 {/* Coming Soon text for all slides except the first one */}
                 {index > 0 && (
                   <div className="absolute inset-0 flex items-center justify-center z-10">

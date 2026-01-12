@@ -3,10 +3,14 @@
 import { useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { PRODUCT_CATALOG } from './ProductCatalog';
 
 export default function CartSidebar() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const {
     cart,
     removeFromCart,
@@ -167,7 +171,7 @@ export default function CartSidebar() {
                         >
                           −
                         </button>
-                        <span className="px-4 py-2 text-sm min-w-[3rem] text-center">
+                        <span className="px-4 py-2 text-sm min-w-[3rem] text-black text-center">
                           {item.quantity}
                         </span>
                         <button
@@ -270,7 +274,14 @@ export default function CartSidebar() {
             )}
 
             <button
-              onClick={closeCart}
+              onClick={() => {
+                closeCart();
+                if (!isAuthenticated) {
+                  router.push('/');
+                  return;
+                }
+                router.push('/checkout');
+              }}
               className="w-full py-4 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors mb-3 cursor-pointer"
             >
               PROCEED TO CHECKOUT
