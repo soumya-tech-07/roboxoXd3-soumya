@@ -177,7 +177,7 @@ export default function LoginModal() {
           </div>
 
           {/* Social Login Buttons */}
-          <div className="space-y-3">
+          {/* <div className="space-y-3">
             <button
               type="button"
               className="w-full py-3 border border-gray-300 text-sm tracking-wide text-gray-900 hover:border-brand hover:text-brand transition-colors flex items-center justify-center gap-2 cursor-pointer"
@@ -199,7 +199,7 @@ export default function LoginModal() {
               </svg>
               CONTINUE WITH FACEBOOK
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

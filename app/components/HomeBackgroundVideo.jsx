@@ -33,21 +33,24 @@ export default function HomeBackgroundVideo() {
       type: 'video',
       youtubeId: isMobile ? mobileVideoId : desktopVideoId,
       alt: 'Fashion Video 1',
-      fallbackImage: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&h=1080&fit=crop&q=90',
+      fallbackImage: '/images/1.JPEG',
     },
     {
       type: 'image',
-      src: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&h=1080&fit=crop&q=90',
+      mobileSrc: '/images/1.JPG',
+      desktopSrc: '/images/1.JPEG',
       alt: 'Fashion Collection',
     },
     {
       type: 'image',
-      src: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=1920&h=1080&fit=crop&q=90',
+      mobileSrc: '/images/2.2.jpg',
+      desktopSrc: '/images/2.jpg',
       alt: 'Street Style Fashion',
     },
     {
       type: 'image',
-      src: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1920&h=1080&fit=crop&q=90',
+      mobileSrc: '/images/3.JPG',
+      desktopSrc: '/images/3.JPEG',
       alt: 'Modern Fashion',
     },
   ], [isMobile]);
@@ -81,7 +84,7 @@ export default function HomeBackgroundVideo() {
       try {
         const startTime = performance.now();
         const testImage = new Image();
-        testImage.src = 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=100&h=100&fit=crop&q=90&t=' + Date.now();
+        testImage.src = '/images/1.JPEG?t=' + Date.now();
         
         await new Promise((resolve, reject) => {
           testImage.onload = resolve;
@@ -269,14 +272,28 @@ export default function HomeBackgroundVideo() {
               </>
             ) : (
               <>
-                <Image
-                  src={item.type === 'video' && item.fallbackImage ? item.fallbackImage : item.src}
-                  alt={item.alt}
-                  fill
-                  className="object-cover"
-                  priority={index === 0}
-                  sizes="100vw"
-                />
+                {/* Mobile Image (up to sm) */}
+                <div className="block sm:hidden absolute inset-0 w-full h-full">
+                  <Image
+                    src={item.mobileSrc || item.src}
+                    alt={item.alt}
+                    fill
+                    className="object-cover"
+                    priority={index === 0}
+                    sizes="100vw"
+                  />
+                </div>
+                {/* Desktop Image (after sm) */}
+                <div className="hidden sm:block absolute inset-0 w-full h-full">
+                  <Image
+                    src={item.desktopSrc || item.src}
+                    alt={item.alt}
+                    fill
+                    className="object-cover"
+                    priority={index === 0}
+                    sizes="100vw"
+                  />
+                </div>
                 {/* Coming Soon text for all slides except the first one */}
                 {index > 0 && (
                   <div className="absolute inset-0 flex items-center justify-center z-10">

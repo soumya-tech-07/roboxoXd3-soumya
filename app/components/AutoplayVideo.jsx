@@ -77,7 +77,7 @@ export default function AutoplayVideo() {
               {/* Center Icon */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-brand rounded-full flex items-center justify-center">
-                  <span className="text-white text-lg sm:text-xl font-bold">B</span>
+                  <span className="text-white text-lg sm:text-xl font-bold">R</span>
                 </div>
               </div>
             </div>

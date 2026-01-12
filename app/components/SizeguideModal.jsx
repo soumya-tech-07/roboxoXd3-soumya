@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function SizeGuideModal({
   isOpen,
@@ -80,142 +81,98 @@ export default function SizeGuideModal({
         {!showCustomizeForm ? (
           <>
             {/* Title */}
-            <div className="pt-8 pb-4 px-4 sm:px-6 text-center border-b border-gray-200 bg-gradient-to-b from-brand/5 via-brand/3 to-transparent">
-              <p className="text-[10px] tracking-[0.4em] text-brand mb-2 font-medium">
+            <div className="pt-8 pb-6 px-4 sm:px-6 text-center">
+              <h1 className="text-lg sm:text-xl font-semibold text-gray-900 tracking-wide uppercase">
                 SIZE GUIDE
-              </p>
-              <h2 className="text-sm sm:text-base tracking-[0.15em] font-semibold text-gray-900 px-2">
-                {productName?.toUpperCase() ?? "SIZE DETAILS"}
-              </h2>
+              </h1>
             </div>
 
             {/* Content */}
-            <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-5 space-y-4">
-              {/* Measurements table title */}
-              <p className="text-[10px] md:text-xs text-center text-gray-600 font-medium">
-                (GARMENTS MEASUREMENTS IN{" "}
-                <span className="font-semibold text-brand">INCHES</span>)
+            <div className="px-4 sm:px-6 md:px-8 pb-6 space-y-6">
+              {/* Unit indicator */}
+              <p className="text-xs text-gray-600 text-right pr-2">
+                In inches
               </p>
 
-              {/* Table */}
-              <div className="w-full overflow-x-auto">
-                <div className="w-full border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden text-xs md:text-sm text-gray-900">
-                  {/* Header Row */}
-                  <div className="flex">
-                    <div className="bg-brand text-white font-bold px-4 md:px-6 py-4 md:py-5 min-w-[100px] md:min-w-[120px] flex items-center justify-center text-xs md:text-sm uppercase tracking-wide">
-                      SIZE
-                    </div>
-                    {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
-                      <div
-                        key={size}
-                        className="flex-1 border-l border-gray-200 px-3 md:px-4 py-4 md:py-5 text-center font-bold bg-gray-50 text-gray-900 min-w-[70px]"
-                      >
-                        {size}
-                      </div>
-                    ))}
+              {/* Simple Table */}
+              <div className="w-full border border-gray-900">
+                {/* Header Row */}
+                <div className="grid grid-cols-6 border-b border-gray-900">
+                  <div className="border-r border-gray-900 p-3 text-center text-sm font-medium bg-white">
+                    SIZE
                   </div>
+                  {["S", "M", "L", "XL", "XXL"].map((size) => (
+                    <div
+                      key={size}
+                      className="border-r border-gray-900 last:border-r-0 p-3 text-center text-sm font-medium bg-white"
+                    >
+                      {size}
+                    </div>
+                  ))}
+                </div>
 
-                  {/* Waist Row */}
-                  <div className="flex border-t-2 border-gray-200">
-                    <div className="bg-gray-800 text-white font-bold px-4 md:px-6 py-4 md:py-5 min-w-[100px] md:min-w-[120px] flex items-center justify-center text-xs md:text-sm uppercase tracking-wide">
-                      WAIST
-                    </div>
-                    {[
-                      "28 - 30",
-                      "30 - 32",
-                      "32 - 34",
-                      "34 - 36",
-                      "36 - 38",
-                      "38 - 40",
-                    ].map((val, idx) => (
-                      <div
-                        key={idx}
-                        className="flex-1 border-l border-gray-200 px-3 md:px-4 py-4 md:py-5 text-center bg-white hover:bg-gray-50 transition-colors min-w-[70px]"
-                      >
-                        <span className="font-medium text-xs md:text-sm">{val}</span>
-                      </div>
-                    ))}
+                {/* CHEST Row */}
+                <div className="grid grid-cols-6 border-b border-gray-900">
+                  <div className="border-r border-gray-900 p-3 text-center text-sm bg-white">
+                    CHEST
                   </div>
+                  {[1, 2, 3, 4, 5].map((idx) => (
+                    <div
+                      key={idx}
+                      className="border-r border-gray-900 last:border-r-0 p-3 text-center text-sm bg-white"
+                    >
+                      {/* Empty cell */}
+                    </div>
+                  ))}
+                </div>
 
-                  {/* Length Row */}
-                  <div className="flex border-t-2 border-gray-200">
-                    <div className="bg-gray-800 text-white font-bold px-4 md:px-6 py-4 md:py-5 min-w-[100px] md:min-w-[120px] flex items-center justify-center text-xs md:text-sm uppercase tracking-wide">
-                      LENGTH
-                    </div>
-                    {["40", "40.5", "41", "41.5", "42", "42.5"].map(
-                      (val, idx) => (
-                        <div
-                          key={idx}
-                          className="flex-1 border-l border-gray-200 px-3 md:px-4 py-4 md:py-5 text-center bg-white hover:bg-gray-50 transition-colors min-w-[70px]"
-                        >
-                          <span className="font-medium text-xs md:text-sm">{val}</span>
-                        </div>
-                      )
-                    )}
+                {/* LENGTH Row */}
+                <div className="grid grid-cols-6">
+                  <div className="border-r border-gray-900 p-3 text-center text-sm bg-white">
+                    LENGTH
                   </div>
+                  {[1, 2, 3, 4, 5].map((idx) => (
+                    <div
+                      key={idx}
+                      className="border-r border-gray-900 last:border-r-0 p-3 text-center text-sm bg-white"
+                    >
+                      {/* Empty cell */}
+                    </div>
+                  ))}
                 </div>
               </div>
 
               {/* Tip text */}
-              <div className="bg-gradient-to-r from-brand/10 via-brand/5 to-brand/10 border-l-4 border-brand rounded-lg py-2.5 px-4 shadow-sm">
-                <p className="text-[10px] md:text-xs text-gray-800">
-                  <span className="font-bold text-brand">TIP:</span> If you don&apos;t
-                  find your exact size, go for the next size.
-                </p>
-              </div>
+              <p className="text-sm text-gray-900 text-center">
+                If you&apos;re confused about your size, go one size up!
+              </p>
 
               {/* How to measure */}
-              <div className="space-y-3">
-                <h3 className="text-xs md:text-sm font-bold tracking-wide text-gray-900 uppercase text-center">
-                  HOW TO MEASURE:
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-gray-900 uppercase text-center">
+                  How to measure:
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {/* Lower Body - Waist */}
-                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-brand/10 rounded-lg">
-                        <svg className="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[10px] md:text-xs font-bold text-brand mb-0.5">
-                          LOWER BODY - WAIST
-                        </p>
-                        <p className="text-[10px] md:text-xs text-gray-700">
-                          Measure around your natural waistline, where your waistband usually sits
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Lower Body - Length */}
-                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-brand/10 rounded-lg">
-                        <svg className="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[10px] md:text-xs font-bold text-brand mb-0.5">
-                          LOWER BODY - LENGTH
-                        </p>
-                        <p className="text-[10px] md:text-xs text-gray-700">
-                          Measure from the top of the waistband down to the desired hem length
-                        </p>
-                      </div>
-                    </div>
+                {/* Measurement Diagram */}
+                <div className="flex justify-center items-center">
+                  <div className="relative w-40">
+                    <Image
+                      src="/images/Shirts.jpg"
+                      alt="Size guide measurement diagram"
+                      width={600}
+                      height={800}
+                      className="w-auto h-auto object-contain"
+                      unoptimized
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Customize Button */}
-              <div className="flex justify-end pt-4 border-t border-gray-200">
+              <div className="flex justify-center pt-4">
                 <button
                   onClick={() => setShowCustomizeForm(true)}
-                  className="bg-brand text-white px-6 py-2.5 rounded-lg hover:bg-brand/90 active:scale-95 transition-all text-xs font-semibold tracking-wide shadow-md hover:shadow-lg cursor-pointer"
+                  className="bg-brand text-white px-8 py-3 rounded-lg hover:bg-red-700 active:scale-95 transition-all text-sm font-semibold tracking-wide uppercase cursor-pointer"
                 >
                   CUSTOMIZE YOUR SIZE
                 </button>
@@ -445,3 +402,6 @@ export default function SizeGuideModal({
     </div>
   );
 }
+
+
+
