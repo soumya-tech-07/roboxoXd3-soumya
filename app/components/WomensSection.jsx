@@ -17,16 +17,14 @@ export default function WomensSection() {
       id="womens-section" 
       className="py-8 sm:py-12 md:py-16 scroll-mt-20 relative overflow-hidden"
       style={{
-        backgroundImage: `url('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&h=1080&fit=crop&q=80')`,
+        backgroundImage: `url('/images/womens.jpeg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}
     >
-      {/* Soft gradient overlay with warm tones */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-rose-100/40 via-transparent to-pink-50/30 z-0"></div>
-      {/* Reduced white overlay for more impact */}
-      <div className="absolute inset-0 bg-white/60 z-0"></div>
+      {/* Light overlay for text readability */}
+      <div className="absolute inset-0 bg-black/30 z-0"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         <h1 className="text-brand mb-4 sm:mb-6 text-lg">SHOP WOMENS</h1>
         {/* Product Grid */}
@@ -65,11 +63,11 @@ export default function WomensSection() {
               </div>
 
               {/* Product Info */}
-              <div className="space-y-1">
-                <h3 className="text-xs font-medium tracking-wide uppercase text-gray-900">
+              <div className="space-y-1 text-white">
+                <h3 className="text-xs font-medium tracking-wide uppercase ">
                   {product.name}
                 </h3>
-                <p className="text-xs text-gray-600">RS. {product.price.toLocaleString('en-IN')}</p>
+                <p className="text-xs ">RS. {product.price.toLocaleString('en-IN')}</p>
               </div>
             </Link>
           ))}

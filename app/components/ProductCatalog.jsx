@@ -1,79 +1,25 @@
 import Image from 'next/image';
 
-// Dummy product images from Unsplash Source
-const PRODUCT_IMAGES = {
-  // Jackets
-  jacket1: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&h=1000&fit=crop',
-  jacket2: 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&h=1000&fit=crop',
-  jacket3: 'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=800&h=1000&fit=crop',
-  // Sweatpants
-  sweatpants1: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=800&h=1000&fit=crop',
-  sweatpants2: 'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&h=1000&fit=crop',
-  // Tops
-  top1: 'https://images.unsplash.com/photo-1594633312681-425a7b9569e2?w=800&h=1000&fit=crop',
-  top2: 'https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=800&h=1000&fit=crop',
-  // Shirts
-  shirt1: 'https://images.unsplash.com/photo-1603252109303-2751441dd157?w=800&h=1000&fit=crop',
-  shirt2: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&h=1000&fit=crop',
-  shirt3: 'https://images.unsplash.com/photo-1603252109303-2751441dd157?w=800&h=1000&fit=crop',
-  shirt4: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&h=1000&fit=crop',
-  // Vests
-  vest1: 'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&h=1000&fit=crop',
-};
-
-// Gallery images for hover states and product galleries
-const GALLERY_IMAGES = {
-  jacket: [
-    'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&h=1000&fit=crop',
-  ],
-  sweatpants: [
-    'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&h=1000&fit=crop',
-  ],
-  tops: [
-    'https://images.unsplash.com/photo-1594633312681-425a7b9569e2?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&h=1000&fit=crop',
-  ],
-  shirts: [
-    'https://images.unsplash.com/photo-1603252109303-2751441dd157?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&h=1000&fit=crop',
-  ],
-  vests: [
-    'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1603252109303-2751441dd157?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&h=1000&fit=crop',
-    'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&h=1000&fit=crop',
-  ],
-};
+// Placeholder image for products without images
+const PLACEHOLDER_IMAGE = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1000' viewBox='0 0 800 1000'%3E%3Crect fill='%23f3f4f6' width='800' height='1000'/%3E%3Ctext fill='%239ca3af' font-family='system-ui,-apple-system,sans-serif' font-size='24' font-weight='500' x='50%25' y='45%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3Ctext fill='%239ca3af' font-family='system-ui,-apple-system,sans-serif' font-size='18' font-weight='400' x='50%25' y='52%25' text-anchor='middle' dominant-baseline='middle'%3EAvailable%3C/text%3E%3C/svg%3E`;
 
 const defaultHover = (img) => img;
 
-const FALLBACK_GALLERY_IMAGES = [
-  'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&h=1000&fit=crop',
-  'https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=800&h=1000&fit=crop',
-  'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800&h=1000&fit=crop',
-  'https://images.unsplash.com/photo-1603252109303-2751441dd157?w=800&h=1000&fit=crop',
-];
-
 const buildGallery = (primary, secondary) => {
   const gallery = [];
-  const candidates = [primary, secondary, ...FALLBACK_GALLERY_IMAGES];
+  const candidates = [primary, secondary];
 
   candidates.forEach((url) => {
-    if (!url) return;
+    if (!url || url === PLACEHOLDER_IMAGE) return;
     if (!gallery.includes(url)) {
       gallery.push(url);
     }
   });
+
+  // Fill remaining slots with placeholder if needed
+  while (gallery.length < 4) {
+    gallery.push(PLACEHOLDER_IMAGE);
+  }
 
   return gallery.slice(0, 4);
 };
@@ -88,12 +34,23 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L'],
     availability: 'IN STOCK',
     stock: 18,
-    description: 'Crafted in exquisite high-grade faux leather and enveloped in indulgent sherpa fur, offering a harmony of warmth and refinement.',
-    image: PRODUCT_IMAGES.jacket1,
-    hoverImage: PRODUCT_IMAGES.jacket2,
-    gallery: GALLERY_IMAGES.jacket,
+    description: 'The Midnight Sin Winter Jacket is crafted in exquisite high-grade faux leather and enveloped in indulgent sherpa fur, offering a harmony of warmth and refinement. Its sculpted silhouette, polished detailing, and midnight finish evokes quiet luxury. An intimate fusion of comfort and sophistication; it elevates winter dressing to an art form.',
+    image: '/images/1.jpeg',
+    hoverImage: '/images/1.jpg',
+    gallery: [
+      '/images/1.jpeg',
+      '/images/1.jpg',
+    ],
     slug: 'the-midnight-sin-jacket',
     tags: ['winter-arc', 'latest-drop', 'womens'],
+    materials: ['Faux leather', 'Sherpa fur'],
+    composition: 'Italian 302 faux leather (outer shell), Tibetan sherpa fabric (inner lining)',
+    care: 'Dry clean only. Do not machine wash or tumble dry. Wipe faux leather with a damp soft cloth. Store away from direct sunlight to preserve finish. Store in a cool and dry place.',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'S',
+      height: '171cm / 5\'7"',
+    },
   },
   {
     id: 2,
@@ -103,12 +60,23 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L'],
     availability: 'IN STOCK',
     stock: 22,
-    description: 'Merges elevated street style with meticulous craftsmanship. Premium cotton twill, a warm polyfil layer, and a refined taffeta lining ensure comfort and structure.',
-    image: PRODUCT_IMAGES.jacket2,
-    hoverImage: PRODUCT_IMAGES.jacket3,
-    gallery: GALLERY_IMAGES.jacket,
+    description: 'The Outlaw Crew Varsity Jacket merges elevated street style with meticulous craftsmanship. Premium cotton twill, a warm polyfil layer, and a refined taffeta lining ensure comfort and structure. With its curated patches and bold graphic accents, it embodies modern rebellion. A statement piece that embodies artistry, warmth, and cultured street luxury.',
+    image: '/images/2.21221.jpg',
+    hoverImage: '/images/21221.jpg',
+    gallery: [
+      '/images/2.21212.jpg',
+      '/images/2212.jpg',
+    ],
     slug: 'the-outlaw-crew-varsity-jacket-womens',
     tags: ['winter-arc', 'latest-drop', 'womens'],
+    materials: ['Cotton twill 500 gsm', 'Monolith silk taffeta', 'Sheep wool threaded polyfil'],
+    composition: 'Double threaded cotton twill (outer), Oxford sheep wool polyfil (insulation), Monolith silk taffeta (inner lining)',
+    care: 'Dry clean only. Do not machine wash or tumble dry. Store away from direct sunlight to preserve finish of prints. Store in a clean and dry place.',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'S',
+      height: '171cm / 5\'7"',
+    },
   },
   {
     id: 3,
@@ -118,12 +86,25 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L', 'XL'],
     availability: 'IN STOCK',
     stock: 28,
-    description: 'Reinterprets casual wear through a refined blend of sleek faux leather and tailored cotton twill. With a sculpted fit and a soft, elevated finish.',
-    image: PRODUCT_IMAGES.sweatpants1,
-    hoverImage: PRODUCT_IMAGES.sweatpants2,
-    gallery: GALLERY_IMAGES.sweatpants,
+    description: 'The Shadow of Louve Sweatpants reinterprets casual wear through a refined blend of sleek faux leather and tailored cotton twill. With a sculpted fit and a soft, elevated finish, they embody understated opulence. Versatile and effortlessly polished, they bring contemporary luxury to everyday movement and modern street sophistication.',
+    image: '/images/31212.jpeg',
+    hoverImage: '/images/21123.jpg',
+    gallery: [
+      '/images/31221.jpeg',
+      '/images/32112.jpg',
+      '/images/shadow-louve-sweatpants-2.png',
+      '/images/shadow-louve-sweatpants-3.png',
+    ],
     slug: 'shadow-of-louve-sweatpants-womens',
     tags: ['winter-arc', 'latest-drop', 'womens'],
+    materials: ['Cotton twill', 'Faux leather'],
+    composition: 'Cotton twill, Faux leather paneling',
+    care: 'Hand wash inside-out in cold water. Do not wring; air dry only. Avoid ironing directly on faux leather. Do not bleach.',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'S',
+      height: '171cm / 5\'7"',
+    },
   },
   {
     id: 4,
@@ -133,12 +114,25 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L', 'XL'],
     availability: 'IN STOCK',
     stock: 32,
-    description: 'Pairs a beautifully sculpted white silhouette with delicate red lace tracing the neckline. Crafted from a soft, form-flattering fabric and trimmed with whisper-light lace.',
-    image: PRODUCT_IMAGES.top1,
-    hoverImage: PRODUCT_IMAGES.top2,
-    gallery: GALLERY_IMAGES.tops,
+    description: 'The Laces & Roses Tank Top pairs a beautifully sculpted white silhouette with delicate red lace tracing the neckline. Crafted from a soft, form-flattering fabric and trimmed with whisper-light lace, it blends grace and allure effortlessly. Feminine, refined, and timeless; an intimate expression of modern romantic luxury.',
+    image: '/images/lace-roses-tank-top.png',
+    hoverImage: '/images/lace-roses-tank-top-hover.png',
+    gallery: [
+      '/images/lace-roses-tank-top.png',
+      '/images/lace-roses-tank-top-hover.png',
+      '/images/lace-roses-tank-top-2.png',
+      '/images/lace-roses-tank-top-3.png',
+    ],
     slug: 'lace-roses-tank-top',
     tags: ['winter-arc', 'latest-drop', 'womens'],
+    materials: ['Lycra lace', '300 gsm 4-way cotton lycra'],
+    composition: '300 GSM premium hosiery, Lycra lace detailing (neckline)',
+    care: 'Hand wash in cold water. Do not stretch lace while wet. Lay flat to dry. Iron on low heat; avoid lace area.',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'S',
+      height: '171cm / 5\'7"',
+    },
   },
   {
     id: 5,
@@ -148,12 +142,25 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L', 'XL'],
     availability: 'IN STOCK',
     stock: 26,
-    description: 'A one-shoulder ruched top crafted from premium, ultra-soft hosiery that glides effortlessly against the skin. Its sculpted silhouette, delicate ruching, and modern asymmetry create an understated yet luxurious statement.',
-    image: PRODUCT_IMAGES.top2,
-    hoverImage: PRODUCT_IMAGES.top1,
-    gallery: GALLERY_IMAGES.tops,
+    description: 'The Icy Whisper is a one-shoulder ruched top crafted from premium, ultra-soft hosiery that glides effortlessly against the skin. Its sculpted silhouette, delicate ruching, and modern asymmetry create an understated yet luxurious statement—elegant, refined, and designed to elevate every moment with quiet sophistication.',
+    image: '/images/hermosa-off-shoulder-top.png',
+    hoverImage: '/images/hermosa-off-shoulder-top-hover.png',
+    gallery: [
+      '/images/hermosa-off-shoulder-top.png',
+      '/images/hermosa-off-shoulder-top-hover.png',
+      '/images/hermosa-off-shoulder-top-2.png',
+      '/images/hermosa-off-shoulder-top-3.png',
+    ],
     slug: 'the-icy-whisperer-top',
     tags: ['winter-arc', 'latest-drop', 'womens'],
+    materials: ['300 gsm hosiery'],
+    composition: '300 GSM ultra-soft hosiery, Ruching and asymmetrical construction',
+    care: 'Hand wash only. Do not tumble dry. Keep away from rough surfaces to prevent pilling. Steam lightly if needed.',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'S',
+      height: '171cm / 5\'7"',
+    },
   },
   {
     id: 6,
@@ -163,12 +170,25 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L', 'XL'],
     availability: 'IN STOCK',
     stock: 24,
-    description: 'Reimagines classic checks with poised sophistication. Crafted from luxurious, finely woven cotton, its black-and-white palette creates a striking harmony of contrasts.',
-    image: PRODUCT_IMAGES.shirt1,
-    hoverImage: PRODUCT_IMAGES.shirt2,
-    gallery: GALLERY_IMAGES.shirts,
+    description: 'The Yin Yang Check Shirt reimagines classic checks with poised sophistication. Crafted from luxurious, finely woven cotton, its black-and-white palette creates a striking harmony of contrasts. The relaxed silhouette falls with effortless elegance, offering refined comfort and timeless allure.',
+    image: '/images/yin-yang-check-shirt.png',
+    hoverImage: '/images/yin-yang-check-shirt-hover.png',
+    gallery: [
+      '/images/yin-yang-check-shirt.png',
+      '/images/yin-yang-check-shirt-hover.png',
+      '/images/yin-yang-check-shirt-2.png',
+      '/images/yin-yang-check-shirt-3.png',
+    ],
     slug: 'yin-yang-check-shirt-womens',
     tags: ['winter-arc', 'catalog', 'womens'],
+    materials: ['100% Cotton'],
+    composition: '100% finely woven cotton',
+    care: 'Machine wash cold. Do not bleach. Iron on medium heat. Air dry recommended to prevent shrinkage.',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'S',
+      height: '171cm / 5\'7"',
+    },
   },
   {
     id: 7,
@@ -178,12 +198,25 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L', 'XL'],
     availability: 'IN STOCK',
     stock: 21,
-    description: 'Captures the calm sophistication of coastal hues. Crafted from exquisitely soft, premium cotton, its serene blue checks offer a fresh yet timeless appeal.',
-    image: PRODUCT_IMAGES.shirt2,
-    hoverImage: PRODUCT_IMAGES.shirt1,
-    gallery: GALLERY_IMAGES.shirts,
+    description: 'The Ocean Breeze Blue Check Shirt captures the calm sophistication of coastal hues. Crafted from exquisitely soft, premium cotton, its serene blue checks offer a fresh yet timeless appeal. The relaxed silhouette drapes with effortless elegance, creating a refined wardrobe staple that embodies ease, balance, and elevated everyday style.',
+    image: '/images/forest-breeze-check-shirt.png',
+    hoverImage: '/images/forest-breeze-check-shirt-hover.png',
+    gallery: [
+      '/images/forest-breeze-check-shirt.png',
+      '/images/forest-breeze-check-shirt-hover.png',
+      '/images/forest-breeze-check-shirt-2.png',
+      '/images/forest-breeze-check-shirt-3.png',
+    ],
     slug: 'ocean-breeze-blue-check-shirt-womens',
     tags: ['winter-arc', 'catalog', 'womens'],
+    materials: ['100% cotton'],
+    composition: '100% premium cotton',
+    care: 'Machine wash with similar colours. Use mild detergent. Iron on medium heat for crisp finish. Do not tumble dry for longevity.',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'S',
+      height: '171cm / 5\'7"',
+    },
   },
   
   // MEN'S PRODUCTS
@@ -195,12 +228,25 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L', 'XL'],
     availability: 'IN STOCK',
     stock: 30,
-    description: 'Crafted from exceptionally soft, resilient French terry, designed for a fluid, drop-shoulder drape. Its commanding eagle motif contrasts elegantly with the subtly distressed waist hem.',
-    image: PRODUCT_IMAGES.vest1,
-    hoverImage: PRODUCT_IMAGES.shirt1,
-    gallery: GALLERY_IMAGES.vests,
+    description: 'The Hawk Eye Grey Vest is crafted from exceptionally soft, resilient French terry, designed for a fluid, drop-shoulder drape. Its commanding eagle motif contrasts elegantly with the subtly distressed waist hem, creating a curated edge. Effortlessly modern and artfully textured, it embodies contemporary street luxury with a bold yet understated aesthetic.',
+    image: '/images/hawk-eye-vest.png',
+    hoverImage: '/images/hawk-eye-vest-hover.png',
+    gallery: [
+      '/images/hawk-eye-vest.png',
+      '/images/hawk-eye-vest-hover.png',
+      '/images/hawk-eye-vest-2.png',
+      '/images/hawk-eye-vest-3.png',
+    ],
     slug: 'hawk-eye-grey-vest',
     tags: ['winter-arc', 'latest-drop', 'mens'],
+    materials: ['French terry'],
+    composition: '100% French terry cotton, Printed eagle motif, Subtly distressed hem finish',
+    care: 'Gentle machine wash in cold water. Wash inside-out. Do not tumble dry. Iron on low heat (avoid print).',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'M',
+      height: '175cm / 5\'9"',
+    },
   },
   {
     id: 9,
@@ -210,12 +256,25 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L', 'XL'],
     availability: 'IN STOCK',
     stock: 27,
-    description: 'Captures the calm sophistication of coastal hues. Crafted from exquisitely soft, premium cotton, its serene blue checks offer a fresh yet timeless appeal.',
-    image: PRODUCT_IMAGES.shirt3,
-    hoverImage: PRODUCT_IMAGES.shirt4,
-    gallery: GALLERY_IMAGES.shirts,
+    description: 'The Ocean Breeze Blue Check Shirt captures the calm sophistication of coastal hues. Crafted from exquisitely soft, premium cotton, its serene blue checks offer a fresh yet timeless appeal. The relaxed silhouette drapes with effortless elegance, creating a refined wardrobe staple that embodies ease, balance, and elevated everyday style.',
+    image: '/images/forest-breeze-check-shirt-mens.png',
+    hoverImage: '/images/forest-breeze-check-shirt-mens-hover.png',
+    gallery: [
+      '/images/forest-breeze-check-shirt-mens.png',
+      '/images/forest-breeze-check-shirt-mens-hover.png',
+      '/images/forest-breeze-check-shirt-mens-2.png',
+      '/images/forest-breeze-check-shirt-mens-3.png',
+    ],
     slug: 'ocean-breeze-blue-check-shirt-mens',
     tags: ['winter-arc', 'catalog', 'mens'],
+    materials: ['100% cotton'],
+    composition: '100% premium cotton',
+    care: 'Machine wash with similar colours. Use mild detergent. Iron on medium heat for crisp finish. Do not tumble dry for longevity.',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'M',
+      height: '175cm / 5\'9"',
+    },
   },
   {
     id: 10,
@@ -225,12 +284,25 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L', 'XL'],
     availability: 'IN STOCK',
     stock: 25,
-    description: 'Reimagines classic checks with poised sophistication. Crafted from luxurious, finely woven cotton, its black-and-white palette creates a striking harmony of contrasts.',
-    image: PRODUCT_IMAGES.shirt4,
-    hoverImage: PRODUCT_IMAGES.shirt3,
-    gallery: GALLERY_IMAGES.shirts,
+    description: 'The Yin Yang Check Shirt reimagines classic checks with poised sophistication. Crafted from luxurious, finely woven cotton, its black-and-white palette creates a striking harmony of contrasts. The relaxed silhouette falls with effortless elegance, offering refined comfort and timeless allure.',
+    image: '/images/yin-yang-check-shirt-mens.png',
+    hoverImage: '/images/yin-yang-check-shirt-mens-hover.png',
+    gallery: [
+      '/images/yin-yang-check-shirt-mens.png',
+      '/images/yin-yang-check-shirt-mens-hover.png',
+      '/images/yin-yang-check-shirt-mens-2.png',
+      '/images/yin-yang-check-shirt-mens-3.png',
+    ],
     slug: 'yin-yang-check-shirt-mens',
     tags: ['winter-arc', 'catalog', 'mens'],
+    materials: ['Oxford gittisham 100% cotton'],
+    composition: '100% premium cotton',
+    care: 'Machine wash with similar colours. Use mild detergent. Iron on medium heat for crisp finish. Do not tumble dry for longevity.',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'M',
+      height: '175cm / 5\'9"',
+    },
   },
   {
     id: 11,
@@ -240,12 +312,25 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L', 'XL'],
     availability: 'IN STOCK',
     stock: 29,
-    description: 'Reinterprets casual wear through a refined blend of sleek faux leather and tailored cotton twill. With a sculpted fit and a soft, elevated finish.',
-    image: PRODUCT_IMAGES.sweatpants2,
-    hoverImage: PRODUCT_IMAGES.sweatpants1,
-    gallery: GALLERY_IMAGES.sweatpants,
+    description: 'The Shadow of Louve Sweatpants reinterprets casual wear through a refined blend of sleek faux leather and tailored cotton twill. With a sculpted fit and a soft, elevated finish, they embody understated opulence. Versatile and effortlessly polished, they bring contemporary luxury to everyday movement and modern street sophistication.',
+    image: '/images/3.jpeg',
+    hoverImage: '/images/3.jpg',
+    gallery: [
+      '/images/3.jpeg',
+      '/images/3.jpg',
+      '/images/shadow-louve-sweatpants-2.png',
+      '/images/shadow-louve-sweatpants-3.png',
+    ],
     slug: 'shadow-of-louve-sweatpants-mens',
     tags: ['winter-arc', 'latest-drop', 'mens'],
+    materials: ['Cotton twill', 'Faux leather'],
+    composition: 'Cotton twill, Faux leather paneling',
+    care: 'Hand wash inside-out in cold water. Do not wring; air dry only. Avoid ironing directly on faux leather. Do not bleach.',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'M',
+      height: '175cm / 5\'9"',
+    },
   },
   {
     id: 12,
@@ -255,12 +340,23 @@ const RAW_PRODUCT_CATALOG = [
     size: ['S', 'M', 'L', 'XL'],
     availability: 'IN STOCK',
     stock: 19,
-    description: 'Merges elevated street style with meticulous craftsmanship. Premium cotton twill, a warm polyfil layer, and a refined taffeta lining ensure comfort and structure.',
-    image: PRODUCT_IMAGES.jacket3,
-    hoverImage: PRODUCT_IMAGES.jacket1,
-    gallery: GALLERY_IMAGES.jacket,
+    description: 'The Outlaw Crew Varsity Jacket merges elevated street style with meticulous craftsmanship. Premium cotton twill, a warm polyfil layer, and a refined taffeta lining ensure comfort and structure. With its curated patches and bold graphic accents, it embodies modern rebellion. A statement piece that embodies artistry, warmth, and cultured street luxury.',
+    image: '/images/2.2.jpg',
+    hoverImage: '/images/2.jpg',
+    gallery: [
+      '/images/2.2.jpg',
+      '/images/2.jpg',
+    ],
     slug: 'the-outlaw-crew-varsity-jacket-mens',
     tags: ['winter-arc', 'latest-drop', 'mens'],
+    materials: ['Cotton twill', 'High quality taffeta', '100 gsm silkenised polyfil'],
+    composition: 'Premium cotton twill (outer), 100 GSM silkenised polyfil (insulation), High-quality taffeta (inner lining)',
+    care: 'Dry clean only. Do not machine wash or tumble dry. Store away from direct sunlight to preserve finish of prints. Store in a clean and dry place.',
+    origin: 'Designed in India. Ethically crafted in limited quantities.',
+    modelInfo: {
+      size: 'M',
+      height: '175cm / 5\'9"',
+    },
   },
 ];
 

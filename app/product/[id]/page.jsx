@@ -70,6 +70,11 @@ export default function ProductPage() {
         catalogProduct.description ||
         'Premium garment crafted for comfort and durability.',
       category: catalogProduct.category ?? 'APPAREL',
+      materials: catalogProduct.materials || [],
+      composition: catalogProduct.composition || '',
+      care: catalogProduct.care || '',
+      origin: catalogProduct.origin || '',
+      modelInfo: catalogProduct.modelInfo || { size: '', height: '' },
     };
   }, [catalogProduct]);
 
@@ -149,7 +154,7 @@ export default function ProductPage() {
               />
             </div>
 
-            <ProductAccordion />
+            <ProductAccordion product={catalogProduct} />
             <ProductShareContact />
           </div>
         </div>

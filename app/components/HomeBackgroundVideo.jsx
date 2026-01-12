@@ -7,15 +7,31 @@ export default function HomeBackgroundVideo() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [canUseVideos, setCanUseVideos] = useState(true);
   const [isCheckingSpeed, setIsCheckingSpeed] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const videoRefs = useRef([]);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+
+  // YouTube video IDs
+  const mobileVideoId = 'ddZyGK0ICrc'; // YouTube Shorts
+  const desktopVideoId = 'LTQzsR2emPk'; // YouTube video
+
+  // Check screen size
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 640); // sm breakpoint
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Carousel items - mix of images and videos
   const carouselItems = useMemo(() => [
     {
       type: 'video',
-      src: '/images/bg.mp4',
+      youtubeId: isMobile ? mobileVideoId : desktopVideoId,
       alt: 'Fashion Video 1',
       fallbackImage: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&h=1080&fit=crop&q=90',
     },
@@ -34,7 +50,7 @@ export default function HomeBackgroundVideo() {
       src: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1920&h=1080&fit=crop&q=90',
       alt: 'Modern Fashion',
     },
-  ], []);
+  ], [isMobile]);
 
   // Check internet speed and determine if videos should be used
   useEffect(() => {
@@ -93,21 +109,22 @@ export default function HomeBackgroundVideo() {
     checkConnectionSpeed();
   }, []);
 
-  // Handle video play/pause when slide changes
+  // Handle video visibility when slide changes (YouTube iframes autoplay when visible)
   useEffect(() => {
     if (isCheckingSpeed) return;
     
-    videoRefs.current.forEach((video, index) => {
-      if (video) {
+    // YouTube iframes autoplay when loaded, so we just need to ensure visibility
+    // The opacity transition handles showing/hiding
+    videoRefs.current.forEach((iframe, index) => {
+      if (iframe && iframe.contentWindow) {
         const item = carouselItems[index];
         if (index === currentSlide && item.type === 'video' && canUseVideos) {
-          video.currentTime = 0; // Reset video to start
-          video.play().catch((err) => {
-            console.log('Video play error:', err);
-          });
-        } else {
-          video.pause();
-          video.currentTime = 0; // Reset paused videos
+          // Iframe will autoplay when visible due to autoplay parameter
+          // Optionally reload to restart video
+          if (iframe.src) {
+            const currentSrc = iframe.src;
+            iframe.src = currentSrc; // Trigger reload to restart
+          }
         }
       }
     });
@@ -201,19 +218,44 @@ export default function HomeBackgroundVideo() {
           >
             {item.type === 'video' && canUseVideos ? (
               <>
-                <video
-                  ref={(el) => (videoRefs.current[index] = el)}
-                  className="w-full h-full object-cover"
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  autoPlay={index === currentSlide}
-                  onError={() => handleVideoError(index)}
-                >
-                  <source src={item.src} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
+                {/* Mobile YouTube Video (up to sm) */}
+                <div className="block sm:hidden absolute inset-0 w-full h-full overflow-hidden">
+                  <iframe
+                    ref={(el) => (videoRefs.current[index] = el)}
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                    src={`https://www.youtube.com/embed/${mobileVideoId}?autoplay=1&loop=1&playlist=${mobileVideoId}&mute=1&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&iv_load_policy=3&fs=0&cc_load_policy=0&start=0`}
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen={false}
+                    style={{ 
+                      pointerEvents: 'none',
+                      width: '100vw',
+                      height: '56.25vw', // 16:9 aspect ratio
+                      minHeight: '100vh',
+                      minWidth: '177.78vh', // Maintain aspect ratio
+                    }}
+                    title={item.alt}
+                    frameBorder="0"
+                  />
+                </div>
+                {/* Desktop YouTube Video (after sm) */}
+                <div className="hidden sm:block absolute inset-0 w-full h-full overflow-hidden">
+                  <iframe
+                    ref={(el) => (videoRefs.current[index] = el)}
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                    src={`https://www.youtube.com/embed/${desktopVideoId}?autoplay=1&loop=1&playlist=${desktopVideoId}&mute=1&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&iv_load_policy=3&fs=0&cc_load_policy=0&start=0`}
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen={false}
+                    style={{ 
+                      pointerEvents: 'none',
+                      width: '100vw',
+                      height: '56.25vw', // 16:9 aspect ratio
+                      minHeight: '100vh',
+                      minWidth: '177.78vh', // Maintain aspect ratio
+                    }}
+                    title={item.alt}
+                    frameBorder="0"
+                  />
+                </div>
                 {/* Fallback image if video fails */}
                 {item.fallbackImage && (
                   <Image

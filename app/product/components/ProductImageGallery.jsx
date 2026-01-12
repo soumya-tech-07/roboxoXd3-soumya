@@ -57,7 +57,7 @@ export default function ProductImageGallery({ images, productName, badge }) {
           src={mainImage}
           alt={productName}
           fill
-          className="object-cover"
+          className="object-contain"
           priority
         />
         {badge && (

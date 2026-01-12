@@ -17,8 +17,7 @@ export default function MensSection() {
       id="mens-section" 
       className="bg-white py-8 sm:py-12 md:py-16 scroll-mt-20 relative overflow-hidden"
       style={{
-        backgroundImage: `url('https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6?w=1920&h=1080&fit=crop&q=80')`,
-        backgroundSize: 'cover',
+        backgroundImage: `url('/images/mens.jpeg')`,        backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}
@@ -26,7 +25,7 @@ export default function MensSection() {
       {/* Gradient overlay for depth and readability */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/20 to-black/40 z-0"></div>
       {/* Reduced white overlay for more visible background */}
-      <div className="absolute inset-0 bg-white/55 z-0"></div>
+      <div className="absolute inset-0 bg-black/30 z-0"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         <h1 className="text-brand mb-4 sm:mb-6 text-lg">SHOP MENS</h1>
         {/* Product Grid */}
@@ -66,10 +65,10 @@ export default function MensSection() {
 
               {/* Product Info */}
               <div className="space-y-1">
-                <h3 className="text-xs font-medium tracking-wide uppercase text-gray-900">
+                <h3 className="text-xs font-medium tracking-wide uppercase">
                   {product.name}
                 </h3>
-                <p className="text-xs text-gray-600">RS. {product.price.toLocaleString('en-IN')}</p>
+                <p className="text-xs ">RS. {product.price.toLocaleString('en-IN')}</p>
               </div>
             </Link>
           ))}

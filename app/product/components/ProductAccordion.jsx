@@ -5,16 +5,22 @@ import { useState } from 'react';
 const accordionSections = [
   { id: 'measurements', title: 'PRODUCT MEASUREMENTS' },
   { id: 'composition', title: 'COMPOSITION, CARE & ORIGIN' },
-  { id: 'availability', title: 'CHECK IN-STORE AVAILABILITY' },
   { id: 'shipping', title: 'SHIPPING, EXCHANGES AND RETURNS' },
 ];
 
-export default function ProductAccordion() {
+export default function ProductAccordion({ product }) {
   const [openAccordion, setOpenAccordion] = useState('');
 
   const toggleAccordion = (id) => {
     setOpenAccordion(openAccordion === id ? '' : id);
   };
+
+  // Extract product data with fallbacks
+  const modelInfo = product?.modelInfo || { size: '', height: '' };
+  const materials = product?.materials || [];
+  const composition = product?.composition || '';
+  const care = product?.care || '';
+  const origin = product?.origin || '';
 
   return (
     <div className="border-t border-gray-200">
@@ -48,33 +54,49 @@ export default function ProductAccordion() {
             <div className="pb-4 px-4">
               {section.id === 'measurements' && (
                 <div className="text-sm text-gray-900 space-y-2">
-                  <p>Model is wearing size: M</p>
-                  <p>Model height: 175 cm / 5&apos;9&quot;</p>
+                  {modelInfo.size && (
+                    <p>Model is wearing size: {modelInfo.size}</p>
+                  )}
+                  {modelInfo.height && (
+                    <p>Model height: {modelInfo.height}</p>
+                  )}
+                  {!modelInfo.size && !modelInfo.height && (
+                    <p className="text-gray-500">Model information not available</p>
+                  )}
                 </div>
               )}
 
               {section.id === 'composition' && (
                 <div className="text-sm text-gray-900 space-y-2">
-                  <p>
-                    <strong>Composition:</strong> 100% Polyester
-                  </p>
-                  <p>
-                    <strong>Care:</strong> Machine wash cold
-                  </p>
-                  <p>
-                    <strong>Origin:</strong> Made in India
-                  </p>
-                </div>
-              )}
-
-              {section.id === 'availability' && (
-                <div className="text-sm text-gray-900">
-                  <p className="mb-3">
-                    Check if this item is available in your nearest store
-                  </p>
-                  <button className="text-xs underline hover:no-underline cursor-pointer">
-                    FIND STORES
-                  </button>
+                  {materials.length > 0 && (
+                    <div>
+                      <strong>Materials:</strong>
+                      <ul className="list-disc list-inside ml-2 mt-1">
+                        {materials.map((material, index) => (
+                          <li key={index}>{material}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {composition && (
+                    <p>
+                      <strong>Composition:</strong> {composition}
+                    </p>
+                  )}
+                  {care && (
+                    <div>
+                      <strong>Care:</strong>
+                      <p className="mt-1 whitespace-pre-line">{care}</p>
+                    </div>
+                  )}
+                  {origin && (
+                    <p>
+                      <strong>Origin:</strong> {origin}
+                    </p>
+                  )}
+                  {!materials.length && !composition && !care && !origin && (
+                    <p className="text-gray-500">Product details not available</p>
+                  )}
                 </div>
               )}
 

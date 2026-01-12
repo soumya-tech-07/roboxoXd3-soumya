@@ -20,7 +20,7 @@ export default function ProductSizeSelector({ sizes, selectedSize, onSizeSelect,
           <button
             key={size}
             onClick={() => onSizeSelect(size)}
-            className={`py-3 text-sm border transition-all cursor-pointer ${
+            className={`py-3 text-sm border text-gray-500 transition-all cursor-pointer ${
               selectedSize === size
                 ? 'border-black bg-black text-white'
                 : 'border-gray-300 hover:border-black'
