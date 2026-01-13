@@ -128,17 +128,12 @@ export default function ProductPage() {
       ? (dbProduct.sizes && Array.isArray(dbProduct.sizes) ? dbProduct.sizes : ['S', 'M', 'L', 'XL'])
       : (catalogProduct.size?.length ? catalogProduct.size : ['S', 'M', 'L', 'XL']);
 
-    const badge = isDbProduct
-      ? (dbProduct.tags?.includes('latest-drop') ? 'NEW' : dbProduct.tags?.includes('catalog') ? 'CORE' : null)
-      : (catalogProduct.tags?.includes('latest-drop') ? 'NEW' : catalogProduct.tags?.includes('core-collection') ? 'CORE' : null);
-
     return {
       name: catalogProduct.name,
       price: `₹ ${Number(catalogProduct.price).toLocaleString('en-IN')}`,
       sku:
         catalogProduct.sku ??
         `RL-${String(catalogProduct.id).padStart(4, '0')}`,
-      badge,
       images: gallery.length
         ? gallery
         : ['https://placehold.co/800x1200/e5d4e8/666666?text=Image'],
@@ -252,13 +247,11 @@ export default function ProductPage() {
           <ProductImageGallery
             images={product.images}
             productName={product.name}
-            badge={product.badge}
           />
 
           {/* Right Side - Product Info */}
           <div className="lg:sticky lg:top-24 lg:self-start">
             <ProductInfo
-              badge={product.badge}
               name={product.name}
               price={product.price}
               description={product.description}

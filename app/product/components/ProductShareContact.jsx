@@ -1,9 +1,48 @@
 'use client';
 
+import Link from 'next/link';
+import { useToast } from '../../context/ToastContext';
+
 export default function ProductShareContact() {
+  const { showSuccess, showError } = useToast();
+
+  const handleShare = async () => {
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const title = document.title || 'Check out this product';
+
+    try {
+      // Check if Web Share API is available (mobile devices)
+      if (navigator.share) {
+        await navigator.share({
+          title: title,
+          text: `Check out this product: ${title}`,
+          url: url,
+        });
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(url);
+        showSuccess('Link copied to clipboard!');
+      }
+    } catch (error) {
+      // User cancelled the share or error occurred
+      if (error.name !== 'AbortError') {
+        // Try fallback to clipboard if share failed
+        try {
+          await navigator.clipboard.writeText(url);
+          showSuccess('Link copied to clipboard!');
+        } catch (clipboardError) {
+          showError('Failed to share. Please copy the URL manually.');
+        }
+      }
+    }
+  };
+
   return (
     <div className="mt-6 flex items-center gap-6 text-xs text-gray-900">
-      <button className="flex items-center gap-2 hover:underline cursor-pointer">
+      <button 
+        onClick={handleShare}
+        className="flex items-center gap-2 hover:underline cursor-pointer"
+      >
         <svg
           className="w-4 h-4"
           fill="none"
@@ -19,7 +58,10 @@ export default function ProductShareContact() {
         </svg>
         SHARE
       </button>
-      <button className="flex items-center gap-2 hover:underline cursor-pointer">
+      <Link 
+        href="/contact"
+        className="flex items-center gap-2 hover:underline cursor-pointer"
+      >
         <svg
           className="w-4 h-4"
           fill="none"
@@ -34,7 +76,7 @@ export default function ProductShareContact() {
           />
         </svg>
         CONTACT US
-      </button>
+      </Link>
     </div>
   );
 }

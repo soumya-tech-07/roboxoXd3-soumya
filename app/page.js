@@ -18,10 +18,10 @@ export default function Home() {
     <div className="relative z-10">
       <LatestDrop/>
       {/* <SplitHeroSection/> */}
-      <MensSection/>
       <WomensSection/>
+      <MensSection/>
       <AutoplayVideo/>
-      <ProductGrid/>
+      {/* <ProductGrid/> */}
       <ScrollingBanner/>
     </div>
     </>
