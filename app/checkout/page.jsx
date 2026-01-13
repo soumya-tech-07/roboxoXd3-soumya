@@ -12,7 +12,7 @@ import { supabase } from '@/lib/supabase';
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
-  const { cart, getCartTotal, loading: cartLoading } = useCart();
+  const { cart, getCartTotal, loading: cartLoading, clearCart } = useCart();
   const { showSuccess, showError } = useToast();
 
   const [step, setStep] = useState(1); // 1: Address, 2: Payment, 3: Review
@@ -20,6 +20,7 @@ export default function CheckoutPage() {
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [useNewAddress, setUseNewAddress] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
   // Address form
   const [address, setAddress] = useState({
@@ -128,6 +129,28 @@ export default function CheckoutPage() {
     }
   }, [cart.length, cartLoading, router]);
 
+  // Load Razorpay script
+  useEffect(() => {
+    if (paymentMethod === 'ONLINE' && !razorpayLoaded) {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => setRazorpayLoaded(true);
+      script.onerror = () => {
+        showError('Failed to load payment gateway. Please refresh the page.');
+      };
+      document.body.appendChild(script);
+
+      return () => {
+        // Cleanup script on unmount
+        const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+        if (existingScript) {
+          document.body.removeChild(existingScript);
+        }
+      };
+    }
+  }, [paymentMethod, razorpayLoaded, showError]);
+
   const handleAddressChange = (e) => {
     setAddress({
       ...address,
@@ -178,62 +201,233 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleRazorpayPayment = async (orderId) => {
+    return new Promise((resolve, reject) => {
+      if (!window.Razorpay) {
+        reject(new Error('Razorpay SDK not loaded'));
+        return;
+      }
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: Math.round(total * 100), // Convert to paise
+        currency: 'INR',
+        name: 'Retro Louve',
+        description: `Order #${orderId}`,
+        order_id: orderId,
+        handler: async function (response) {
+          try {
+            // Verify payment on server
+            const verifyResponse = await fetch('/api/razorpay/verify-payment', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            const verifyData = await verifyResponse.json();
+
+            if (verifyData.verified) {
+              resolve(verifyData);
+            } else {
+              reject(new Error('Payment verification failed'));
+            }
+          } catch (error) {
+            reject(error);
+          }
+        },
+        prefill: {
+          name: address.fullName,
+          email: user.email || '',
+          contact: address.phone,
+        },
+        theme: {
+          color: '#000000',
+        },
+        modal: {
+          ondismiss: function () {
+            reject(new Error('Payment cancelled by user'));
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    });
+  };
+
+  const createOrderInDatabase = async (paymentId = null, paymentStatus = 'pending') => {
+    if (!user) return null;
+
+    // Prepare address data
+    const shippingAddress = {
+      full_name: address.fullName,
+      phone: address.phone,
+      address_line1: address.addressLine1,
+      address_line2: address.addressLine2,
+      city: address.city,
+      state: address.state,
+      postal_code: address.postalCode,
+      country: address.country,
+    };
+
+    // Create order using the function
+    const { data: orderId, error } = await supabase.rpc('create_order_from_cart', {
+      p_user_id: user.id,
+      p_shipping_address: shippingAddress,
+      p_billing_address: shippingAddress,
+      p_payment_method: paymentMethod,
+      p_notes: null,
+    });
+
+    if (error) throw error;
+
+    // If payment was successful, update order status
+    if (paymentId && paymentStatus === 'captured') {
+      try {
+        await supabase
+          .from('orders')
+          .update({ 
+            status: 'confirmed',
+            payment_status: 'paid',
+            payment_id: paymentId
+          })
+          .eq('id', orderId);
+      } catch (updateError) {
+        console.error('Error updating order status:', updateError);
+        // Don't throw - order is already created
+      }
+    }
+
+    // Save address if new
+    if (useNewAddress || !selectedAddressId) {
+      try {
+        await supabase.from('addresses').insert({
+          user_id: user.id,
+          type: 'shipping',
+          is_default: savedAddresses.length === 0,
+          full_name: shippingAddress.full_name,
+          phone: shippingAddress.phone,
+          address_line1: shippingAddress.address_line1,
+          address_line2: shippingAddress.address_line2 || null,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          postal_code: shippingAddress.postal_code,
+          country: shippingAddress.country,
+        });
+      } catch (addrError) {
+        console.error('Error saving address:', addrError);
+        // Don't fail the order if address save fails
+      }
+    }
+
+    return orderId;
+  };
+
   const handlePlaceOrder = async () => {
     if (!user) return;
 
     setLoading(true);
     try {
-      // Prepare address data
-      const shippingAddress = {
-        full_name: address.fullName,
-        phone: address.phone,
-        address_line1: address.addressLine1,
-        address_line2: address.addressLine2,
-        city: address.city,
-        state: address.state,
-        postal_code: address.postalCode,
-        country: address.country,
-      };
-
-      // Create order using the function
-      const { data: orderId, error } = await supabase.rpc('create_order_from_cart', {
-        p_user_id: user.id,
-        p_shipping_address: shippingAddress,
-        p_billing_address: shippingAddress,
-        p_payment_method: paymentMethod,
-        p_notes: null,
-      });
-
-      if (error) throw error;
-
-      // Save address if new
-      if (useNewAddress || !selectedAddressId) {
-        try {
-          await supabase.from('addresses').insert({
-            user_id: user.id,
-            type: 'shipping',
-            is_default: savedAddresses.length === 0,
-            full_name: shippingAddress.full_name,
-            phone: shippingAddress.phone,
-            address_line1: shippingAddress.address_line1,
-            address_line2: shippingAddress.address_line2 || null,
-            city: shippingAddress.city,
-            state: shippingAddress.state,
-            postal_code: shippingAddress.postal_code,
-            country: shippingAddress.country,
-          });
-        } catch (addrError) {
-          console.error('Error saving address:', addrError);
-          // Don't fail the order if address save fails
+      if (paymentMethod === 'ONLINE') {
+        // For online payment, create Razorpay order first
+        if (!razorpayLoaded || !window.Razorpay) {
+          showError('Payment gateway is loading. Please wait a moment and try again.');
+          setLoading(false);
+          return;
         }
-      }
 
-      showSuccess('Order placed successfully!');
-      
-      // Redirect to order confirmation
-      setTimeout(() => {
-        router.push(`/order-confirmation/${orderId}`);
-      }, 1000);
+        // Create Razorpay order
+        // Generate a receipt ID that's max 40 characters (Razorpay requirement)
+        const timestamp = Date.now().toString().slice(-10); // Last 10 digits of timestamp
+        const userIdShort = user.id.substring(0, 8); // First 8 chars of user ID
+        const receipt = `RLOUVE_${timestamp}_${userIdShort}`.substring(0, 40); // Max 40 chars
+        
+        const orderResponse = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: total,
+            currency: 'INR',
+            receipt: receipt,
+            notes: {
+              user_id: user.id,
+              email: user.email || '',
+            },
+          }),
+        });
+
+        if (!orderResponse.ok) {
+          const errorData = await orderResponse.json();
+          console.error('Razorpay order creation error:', errorData);
+          throw new Error(errorData.error || 'Failed to create payment order');
+        }
+
+        const razorpayOrder = await orderResponse.json();
+
+        // Process Razorpay payment first
+        try {
+          const paymentData = await handleRazorpayPayment(razorpayOrder.id);
+
+          // Only create order in database AFTER successful payment verification
+          const dbOrderId = await createOrderInDatabase(
+            paymentData.payment_id,
+            'captured'
+          );
+
+          // Update order with Razorpay order ID
+          try {
+            await supabase
+              .from('orders')
+              .update({
+                razorpay_order_id: razorpayOrder.id,
+              })
+              .eq('id', dbOrderId);
+          } catch (updateError) {
+            console.error('Error updating order with Razorpay order ID:', updateError);
+            // Don't throw - order is already created and payment is verified
+          }
+
+          // Clear cart after successful payment
+          clearCart();
+
+          showSuccess('Payment successful! Order placed.');
+          
+          // Redirect to order confirmation
+          setTimeout(() => {
+            router.push(`/order-confirmation/${dbOrderId}`);
+          }, 1000);
+        } catch (paymentError) {
+          console.error('Payment error:', paymentError);
+          
+          // Don't create order if payment fails - just show error
+          if (paymentError.message.includes('cancelled')) {
+            showError('Payment was cancelled. No order was created.');
+          } else {
+            showError(paymentError.message || 'Payment failed. Please try again.');
+          }
+        }
+      } else {
+        // For COD, create order directly
+        const orderId = await createOrderInDatabase();
+        
+        // Clear cart after order creation
+        clearCart();
+
+        showSuccess('Order placed successfully!');
+        
+        // Redirect to order confirmation
+        setTimeout(() => {
+          router.push(`/order-confirmation/${orderId}`);
+        }, 1000);
+      }
     } catch (error) {
       console.error('Error placing order:', error);
       showError(error.message || 'Failed to place order. Please try again.');
@@ -520,7 +714,7 @@ export default function CheckoutPage() {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">Online Payment</p>
-                          <p className="text-sm text-gray-600">Credit/Debit Card, UPI, Net Banking</p>
+                          <p className="text-sm text-gray-600">Razorpay - Credit/Debit Card, UPI, Net Banking</p>
                         </div>
                       </div>
                     </div>

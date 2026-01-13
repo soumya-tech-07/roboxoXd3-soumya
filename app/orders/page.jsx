@@ -108,16 +108,41 @@ export default function OrdersPage() {
     }
   };
 
-  const getPaymentStatusColor = (status) => {
+  const getPaymentMethodDisplay = (paymentMethod, paymentStatus) => {
+    if (paymentMethod === 'COD') {
+      return {
+        text: 'Pay on Delivery',
+        color: 'text-yellow-600 bg-yellow-50',
+      };
+    } else if (paymentMethod === 'ONLINE') {
+      return {
+        text: 'Paid',
+        color: 'text-green-600 bg-green-50',
+      };
+    }
+    // Fallback
+    return {
+      text: paymentStatus === 'paid' ? 'Paid' : 'Pending',
+      color: paymentStatus === 'paid' ? 'text-green-600 bg-green-50' : 'text-yellow-600 bg-yellow-50',
+    };
+  };
+
+  const getDeliveryStatus = (status) => {
     switch (status?.toLowerCase()) {
-      case 'paid':
-        return 'text-green-600 bg-green-50';
-      case 'pending':
-        return 'text-yellow-600 bg-yellow-50';
-      case 'failed':
-        return 'text-red-600 bg-red-50';
+      case 'confirmed':
+        return 'Confirmed';
+      case 'processing':
+        return 'Processing';
+      case 'shipped':
+        return 'Shipped';
+      case 'delivered':
+        return 'Delivered';
+      case 'completed':
+        return 'Delivered';
+      case 'cancelled':
+        return 'Cancelled';
       default:
-        return 'text-gray-600 bg-gray-50';
+        return 'Pending';
     }
   };
 
@@ -163,7 +188,7 @@ export default function OrdersPage() {
                 <div className="p-4 sm:p-6 border-b border-gray-200">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-4 mb-2">
+                      <div className="flex items-center gap-4 mb-2 flex-wrap">
                         <h3 className="text-lg font-semibold text-gray-900">
                           Order #{order.order_number}
                         </h3>
@@ -172,15 +197,18 @@ export default function OrdersPage() {
                             order.status
                           )}`}
                         >
-                          {order.status}
+                          {getDeliveryStatus(order.status)}
                         </span>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide ${getPaymentStatusColor(
-                            order.payment_status
-                          )}`}
-                        >
-                          {order.payment_status}
-                        </span>
+                        {(() => {
+                          const paymentDisplay = getPaymentMethodDisplay(order.payment_method, order.payment_status);
+                          return (
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide ${paymentDisplay.color}`}
+                            >
+                              {paymentDisplay.text}
+                            </span>
+                          );
+                        })()}
                       </div>
                       <p className="text-sm text-gray-600">
                         Placed on{' '}
@@ -290,18 +318,21 @@ export default function OrdersPage() {
                             <span className="font-medium text-gray-900">
                               {order.payment_method === 'COD'
                                 ? 'Cash on Delivery'
-                                : 'Online Payment'}
+                                : 'Online Payment (Razorpay)'}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span>Payment Status:</span>
-                            <span
-                              className={`px-2 py-1 rounded text-xs font-medium uppercase ${getPaymentStatusColor(
-                                order.payment_status
-                              )}`}
-                            >
-                              {order.payment_status}
-                            </span>
+                            {(() => {
+                              const paymentDisplay = getPaymentMethodDisplay(order.payment_method, order.payment_status);
+                              return (
+                                <span
+                                  className={`px-2 py-1 rounded text-xs font-medium uppercase ${paymentDisplay.color}`}
+                                >
+                                  {paymentDisplay.text}
+                                </span>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>
