@@ -1,16 +1,80 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
+import { useEffect, useMemo, useState } from "react";
 import Link from 'next/link';
 import { PRODUCT_CATALOG } from './ProductCatalog';
+import { supabase } from '@/lib/supabase';
+import ProductCard from './ProductCard';
 
 export default function WomensSection() {
-  const [hoveredProduct, setHoveredProduct] = useState(null);
-  // Filter products by womens tag
-  const womensProducts = PRODUCT_CATALOG.filter((product) => 
-    product.tags?.includes('womens')
-  ).slice(0, 8);
+  const [dbProducts, setDbProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch womens products from Supabase (use DB first, fallback to static)
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .contains('tags', ['womens'])
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(8);
+
+        if (error) {
+          console.error('Error fetching womens products:', error);
+          setDbProducts([]);
+        } else {
+          setDbProducts(data || []);
+        }
+      } catch (err) {
+        console.error('Error fetching womens products:', err);
+        setDbProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const womensProducts = useMemo(() => {
+    if (dbProducts?.length) {
+      return dbProducts.map((p) => {
+        const gallery = Array.isArray(p.gallery)
+          ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
+          : [];
+        const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
+        const images = gallery.length ? gallery : mainImages;
+        return {
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          price: Number(p.price || 0),
+          gallery: images,
+          image: images[0],
+          hoverImage: images[1] || images[0],
+        };
+      });
+    }
+    // fallback to static catalog
+    return PRODUCT_CATALOG.filter((product) => 
+      product.tags?.includes('womens')
+    )
+      .slice(0, 8)
+      .map((p) => {
+        const gallery = Array.isArray(p.gallery) ? p.gallery.filter(Boolean) : [];
+        return {
+          ...p,
+          gallery,
+          image: gallery[0] || p.image,
+          hoverImage: gallery[1] || p.hoverImage || gallery[0] || p.image,
+        };
+      });
+  }, [dbProducts]);
+
 
   return (
     <section 
@@ -30,57 +94,25 @@ export default function WomensSection() {
         {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {womensProducts.map((product) => (
-            <Link
+            <ProductCard
               key={product.id}
-              href={`/product/${product.slug}`}
-              className="group"
-              onMouseEnter={() => setHoveredProduct(product.id)}
-              onMouseLeave={() => setHoveredProduct(null)}
-            >
-              {/* Image Container */}
-              <div className="relative aspect-3/4 overflow-hidden bg-white mb-4">
-                {/* Default Image */}
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  unoptimized
-                  className={`object-cover transition-opacity duration-500 ${
-                    hoveredProduct === product.id ? 'opacity-0' : 'opacity-100'
-                  }`}
-                />
-                
-                {/* Hover Image */}
-                <Image
-                  src={product.hoverImage}
-                  alt={`${product.name} - Back`}
-                  fill
-                  unoptimized
-                  className={`object-cover transition-opacity duration-500 ${
-                    hoveredProduct === product.id ? 'opacity-100' : 'opacity-0'
-                  }`}
-                />
-              </div>
-
-              {/* Product Info */}
-              <div className="space-y-1 text-white">
-                <h3 className="text-xs font-medium tracking-wide uppercase ">
-                  {product.name}
-                </h3>
-                <p className="text-xs ">RS. {product.price.toLocaleString('en-IN')}</p>
-              </div>
-            </Link>
+              product={product}
+              aspectRatio="aspect-3/4"
+              textColor="text-white"
+              priceColor="text-white"
+              showHoverImage={true}
+            />
           ))}
         </div>
 
         {/* Discover More Button */}
-        <div className="flex justify-center mt-8 sm:mt-12">
+        {/* <div className="flex justify-center mt-8 sm:mt-12">
           <Link href="/new-in">
             <button className="px-4 sm:px-6 py-2 text-brand border-2 border-brand text-xs sm:text-sm tracking-wider font-medium hover:bg-brand cursor-pointer hover:text-white transition-colors duration-300">
               DISCOVER MORE
             </button>
           </Link>
-        </div>
+        </div> */}
       </div>
     </section>
   );

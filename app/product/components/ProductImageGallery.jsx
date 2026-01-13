@@ -59,6 +59,7 @@ export default function ProductImageGallery({ images, productName, badge }) {
           fill
           className="object-contain"
           priority
+          unoptimized={mainImage?.startsWith('http')}
         />
         {badge && (
           <div className="absolute top-4 left-4 bg-white/10 px-3 py-1 text-black text-xs font-semibold tracking-wider z-10">
@@ -134,6 +135,7 @@ export default function ProductImageGallery({ images, productName, badge }) {
                 fill
                 className="object-cover"
                 sizes="96px"
+                unoptimized={image?.startsWith('http')}
               />
             </button>
           ))}

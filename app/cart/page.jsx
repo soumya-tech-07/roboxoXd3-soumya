@@ -6,27 +6,25 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { PRODUCT_CATALOG } from '../components/ProductCatalog';
 
 export default function CartPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-  const { cart, removeFromCart, updateQuantity, clearCart, getCartTotal } = useCart();
+  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
 
-  // Get cart items with product details
+  // Cart items already have product data from CartContext
   const cartItems = useMemo(() => {
-    return cart.map((item) => {
-      const product = PRODUCT_CATALOG.find((p) => p.id === item.productId);
-      return {
-        ...item,
-        product,
-      };
-    }).filter((item) => item.product); // Filter out any items with missing products
+    return cart.filter((item) => item.product); // Filter out any items with missing products
   }, [cart]);
 
   const cartTotal = useMemo(() => {
-    return getCartTotal(PRODUCT_CATALOG);
-  }, [cart, getCartTotal]);
+    return cartItems.reduce((total, item) => {
+      if (item.product?.price) {
+        return total + item.product.price * item.quantity;
+      }
+      return total;
+    }, 0);
+  }, [cartItems]);
 
   const handleQuantityChange = (productId, size, newQuantity) => {
     updateQuantity(productId, size, newQuantity);
@@ -61,9 +59,10 @@ export default function CartPage() {
                     className="relative w-full sm:w-32 h-48 sm:h-40 bg-gray-100 overflow-hidden flex-shrink-0"
                   >
                     <Image
-                      src={item.product.image}
+                      src={item.product.image || 'https://placehold.co/800x1200/e5d4e8/666666?text=Image'}
                       alt={item.product.name}
                       fill
+                      unoptimized={item.product.image?.startsWith('https://')}
                       className="object-cover hover:scale-105 transition-transform duration-300"
                       sizes="(max-width: 640px) 100vw, 128px"
                     />

@@ -1,17 +1,67 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useWishlist } from '../context/WishlistContext';
-import { PRODUCT_CATALOG } from '../components/ProductCatalog';
+import { supabase } from '@/lib/supabase';
+import ProductCard from '../components/ProductCard';
 
 export default function WishlistPage() {
   const { wishlist, removeFromWishlist } = useWishlist();
+  const [wishlistProducts, setWishlistProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Get wishlisted products from catalog
-  const wishlistedProducts = useMemo(() => {
-    return PRODUCT_CATALOG.filter((product) => wishlist.includes(product.id));
+  // Fetch wishlist products from Supabase
+  useEffect(() => {
+    const fetchWishlistProducts = async () => {
+      if (wishlist.length === 0) {
+        setWishlistProducts([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .in('id', wishlist)
+          .eq('is_active', true);
+
+        if (error) {
+          console.error('Error fetching wishlist products:', error);
+          setWishlistProducts([]);
+        } else {
+          // Transform to match ProductCard format
+          const transformed = (data || []).map((p) => {
+            const gallery = Array.isArray(p.gallery)
+              ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
+              : [];
+            const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
+            const images = gallery.length ? gallery : mainImages;
+            return {
+              id: p.id,
+              name: p.name,
+              slug: p.slug,
+              price: Number(p.price || 0),
+              category: p.category,
+              gallery: images,
+              image: images[0] || 'https://placehold.co/800x1200/e5d4e8/666666?text=Image',
+              hoverImage: images[1] || images[0] || 'https://placehold.co/800x1200/e5d4e8/666666?text=Image',
+              tags: p.tags,
+            };
+          });
+          setWishlistProducts(transformed);
+        }
+      } catch (err) {
+        console.error('Error fetching wishlist products:', err);
+        setWishlistProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWishlistProducts();
   }, [wishlist]);
 
   return (
@@ -24,65 +74,28 @@ export default function WishlistPage() {
               MY WISHLIST
             </h1>
             <p className="text-xs sm:text-sm text-gray-600 tracking-wide">
-              {wishlistedProducts.length} {wishlistedProducts.length === 1 ? 'ITEM' : 'ITEMS'}
+              {wishlistProducts.length} {wishlistProducts.length === 1 ? 'ITEM' : 'ITEMS'}
             </p>
           </div>
 
           {/* Wishlist Content */}
-          {wishlistedProducts.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-16">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto mb-4"></div>
+              <p className="text-sm text-gray-600">Loading wishlist...</p>
+            </div>
+          ) : wishlistProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
-              {wishlistedProducts.map((product) => (
-                <div key={product.id} className="group relative">
-                  <Link href={`/product/${product.slug}`}>
-                    {/* Product Image */}
-                    <div className="relative aspect-[3/4] bg-gray-100 mb-4 overflow-hidden">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      />
-
-                      {/* Remove from Wishlist Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          removeFromWishlist(product.id);
-                        }}
-                        className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-white z-10"
-                        aria-label="Remove from wishlist"
-                      >
-                        <svg
-                          className="w-4 h-4 text-gray-700 hover:text-brand"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-
-                    {/* Product Info */}
-                    <div className="space-y-1">
-                      <h3 className="text-xs sm:text-sm font-medium tracking-wide text-gray-900 uppercase">
-                        {product.name}
-                      </h3>
-                      <p className="text-xs sm:text-sm text-gray-600">
-                        ₹ {product.price.toLocaleString('en-IN')}
-                      </p>
-                      <p className="text-[10px] text-gray-500 uppercase tracking-wide">
-                        {product.category}
-                      </p>
-                    </div>
-                  </Link>
-                </div>
+              {wishlistProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  aspectRatio="aspect-[3/4]"
+                  showHoverImage={false}
+                  onRemove={removeFromWishlist}
+                  textColor="text-black"
+                  priceColor="text-gray-600"
+                />
               ))}
             </div>
           ) : (

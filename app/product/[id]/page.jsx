@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import SizeGuideModal from '../../components/SizeguideModal';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
@@ -24,12 +25,68 @@ const PLACEHOLDER_ICON = 'https://placehold.co/100x100/e5d4e8/666666?text=Icon';
 
 export default function ProductPage() {
   const params = useParams();
+  const [dbProduct, setDbProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
   const productIdentifier = useMemo(() => {
     const value = Array.isArray(params?.id) ? params?.id[0] : params?.id;
     return value ?? '';
   }, [params]);
 
-  const catalogProduct =
+  // Fetch product from Supabase
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!productIdentifier) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        // Try to fetch by slug first, then by ID
+        let query = supabase
+          .from('products')
+          .select('*')
+          .eq('slug', productIdentifier)
+          .eq('is_active', true)
+          .single();
+
+        let { data, error } = await query;
+
+        // If not found by slug, try by ID
+        if (error && error.code === 'PGRST116') {
+          const id = parseInt(productIdentifier);
+          if (!isNaN(id)) {
+            query = supabase
+              .from('products')
+              .select('*')
+              .eq('id', id)
+              .eq('is_active', true)
+              .single();
+            
+            const result = await query;
+            data = result.data;
+            error = result.error;
+          }
+        }
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching product:', error);
+        }
+
+        setDbProduct(data);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productIdentifier]);
+
+  // Use database product (Supabase) - fallback to static catalog only if not found
+  const catalogProduct = dbProduct || 
     getProductBySlug(productIdentifier) ||
     PRODUCT_CATALOG.find(
       (item) => String(item.id) === String(productIdentifier),
@@ -38,27 +95,46 @@ export default function ProductPage() {
   const derivedProduct = useMemo(() => {
     if (!catalogProduct) return null;
 
-    const gallery = catalogProduct.gallery?.length
+    // Use database product if available (has Supabase URLs), otherwise use catalog
+    const isDbProduct = !!dbProduct;
+    
+    let gallery = [];
+    if (isDbProduct) {
+      // Use gallery from database (Supabase URLs)
+      gallery = dbProduct.gallery && Array.isArray(dbProduct.gallery) 
+        ? dbProduct.gallery.filter(url => url && !url.includes('.heic'))
+        : [];
+      
+      // Fallback to main images if gallery is empty
+      if (gallery.length === 0) {
+        const mainImages = [
+          dbProduct.image_url,
+          dbProduct.hover_image_url
+        ].filter(Boolean);
+        gallery = mainImages;
+      }
+    } else {
+      // Use catalog product gallery
+      gallery = catalogProduct.gallery?.length
       ? catalogProduct.gallery
       : Array.from(
           new Set(
             [catalogProduct.image, catalogProduct.hoverImage].filter(Boolean),
           ),
         );
+    }
 
-    const sizes = catalogProduct.size?.length
-      ? catalogProduct.size
-      : ['S', 'M', 'L', 'XL'];
+    const sizes = isDbProduct 
+      ? (dbProduct.sizes && Array.isArray(dbProduct.sizes) ? dbProduct.sizes : ['S', 'M', 'L', 'XL'])
+      : (catalogProduct.size?.length ? catalogProduct.size : ['S', 'M', 'L', 'XL']);
 
-    const badge = catalogProduct.tags?.includes('latest-drop')
-      ? 'NEW'
-      : catalogProduct.tags?.includes('core-collection')
-        ? 'CORE'
-        : null;
+    const badge = isDbProduct
+      ? (dbProduct.tags?.includes('latest-drop') ? 'NEW' : dbProduct.tags?.includes('catalog') ? 'CORE' : null)
+      : (catalogProduct.tags?.includes('latest-drop') ? 'NEW' : catalogProduct.tags?.includes('core-collection') ? 'CORE' : null);
 
     return {
       name: catalogProduct.name,
-      price: `₹ ${catalogProduct.price.toLocaleString('en-IN')}`,
+      price: `₹ ${Number(catalogProduct.price).toLocaleString('en-IN')}`,
       sku:
         catalogProduct.sku ??
         `RL-${String(catalogProduct.id).padStart(4, '0')}`,
@@ -71,13 +147,15 @@ export default function ProductPage() {
         catalogProduct.description ||
         'Premium garment crafted for comfort and durability.',
       category: catalogProduct.category ?? 'APPAREL',
-      materials: catalogProduct.materials || [],
+      materials: isDbProduct 
+        ? (dbProduct.materials && Array.isArray(dbProduct.materials) ? dbProduct.materials : [])
+        : (catalogProduct.materials || []),
       composition: catalogProduct.composition || '',
       care: catalogProduct.care || '',
       origin: catalogProduct.origin || '',
       modelInfo: catalogProduct.modelInfo || { size: '', height: '' },
     };
-  }, [catalogProduct]);
+  }, [catalogProduct, dbProduct]);
 
   const [selectedSize, setSelectedSize] = useState('');
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
@@ -140,6 +218,16 @@ export default function ProductPage() {
 
     toggleWishlist(catalogProduct.id);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white pt-24 sm:pt-32 lg:pt-40 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!derivedProduct) {
     return <ProductNotFound />;

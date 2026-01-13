@@ -8,7 +8,6 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '@/lib/supabase';
-import { PRODUCT_CATALOG } from '../components/ProductCatalog';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -37,20 +36,19 @@ export default function CheckoutPage() {
   // Payment method
   const [paymentMethod, setPaymentMethod] = useState('COD'); // COD or ONLINE
 
-  // Get cart items with product details
+  // Cart items already have product data from CartContext
   const cartItems = useMemo(() => {
-    return cart.map((item) => {
-      const product = PRODUCT_CATALOG.find((p) => p.id === item.productId);
-      return {
-        ...item,
-        product,
-      };
-    }).filter((item) => item.product);
+    return cart.filter((item) => item.product); // Filter out any items with missing products
   }, [cart]);
 
   const cartTotal = useMemo(() => {
-    return getCartTotal(PRODUCT_CATALOG);
-  }, [cart, getCartTotal]);
+    return cartItems.reduce((total, item) => {
+      if (item.product?.price) {
+        return total + item.product.price * item.quantity;
+      }
+      return total;
+    }, 0);
+  }, [cartItems]);
 
   const shippingCost = cartTotal >= 2999 ? 0 : 99;
   const tax = cartTotal * 0.18; // 18% GST
@@ -598,11 +596,12 @@ export default function CheckoutPage() {
                   <div className="space-y-4">
                     {cartItems.map((item, index) => (
                       <div key={index} className="flex gap-4">
-                        <div className="relative w-20 h-24 bg-gray-100 flex-shrink-0">
+                        <div className="relative w-20 h-24 bg-gray-100 flex-shrink-0 rounded overflow-hidden">
                           <Image
-                            src={item.product.image}
+                            src={item.product.image || 'https://placehold.co/800x1200/e5d4e8/666666?text=Image'}
                             alt={item.product.name}
                             fill
+                            unoptimized={item.product.image?.startsWith('https://')}
                             className="object-cover"
                             sizes="80px"
                           />
@@ -612,10 +611,10 @@ export default function CheckoutPage() {
                             {item.product.name}
                           </p>
                           <p className="text-xs text-gray-600 mt-1">
-                            {item.product.category} {item.size && `• Size: ${item.size}`}
+                            {item.product.category || ''} {item.size && `• Size: ${item.size}`}
                           </p>
                           <p className="text-sm text-gray-900 mt-2">
-                            ₹ {item.product.price.toLocaleString('en-IN')} × {item.quantity}
+                            ₹ {item.product.price?.toLocaleString('en-IN')} × {item.quantity}
                           </p>
                         </div>
                       </div>

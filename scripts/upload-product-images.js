@@ -25,14 +25,19 @@ function getServiceKey() {
       const content = fs.readFileSync(envPath, 'utf8');
       const lines = content.split('\n');
       for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed.startsWith('SUPABASE_SERVICE_ROLE_KEY=')) {
-          return trimmed.split('=')[1].trim().replace(/^["']|["']$/g, '');
+        // Handle optional spaces around '=' and strip quotes
+        const match = line.match(/^\\s*SUPABASE_SERVICE_ROLE_KEY\\s*=\\s*(.+)\\s*$/);
+        if (match && match[1]) {
+          const key = match[1].trim().replace(/^["']|["']$/g, '');
+          if (key) {
+            console.log('🔐 Loaded service key from .env.local');
+            return key;
+          }
         }
       }
     }
   } catch (e) {
-    // Ignore
+    console.warn('⚠️ Unable to read .env.local:', e.message);
   }
   
   return null;

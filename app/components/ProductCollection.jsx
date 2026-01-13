@@ -1,16 +1,82 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
+import { useEffect, useMemo, useState } from "react";
 import Link from 'next/link';
 import {
   coreCollectionProductIds,
   getProductsByIds,
 } from './ProductCatalog';
+import { supabase } from '@/lib/supabase';
+import ProductCard from './ProductCard';
 
 export default function ProductCollection() {
-  const [hoveredProduct, setHoveredProduct] = useState(null);
-  const products = getProductsByIds(coreCollectionProductIds);
+  const [dbProducts, setDbProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch products from Supabase (DB first, fallback to static)
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .in('id', coreCollectionProductIds)
+          .eq('is_active', true);
+
+        if (error) {
+          console.error('Error fetching core collection products:', error);
+          setDbProducts([]);
+        } else {
+          // Preserve order of coreCollectionProductIds
+          const ordered = coreCollectionProductIds
+            .map((id) => data.find((p) => p.id === id))
+            .filter(Boolean);
+          setDbProducts(ordered);
+        }
+      } catch (err) {
+        console.error('Error fetching core collection products:', err);
+        setDbProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const products = useMemo(() => {
+    if (dbProducts?.length) {
+      return dbProducts.map((p) => {
+        const gallery = Array.isArray(p.gallery)
+          ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
+          : [];
+        const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
+        const images = gallery.length ? gallery : mainImages;
+        return {
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          price: Number(p.price || 0),
+          gallery: images,
+          image: images[0],
+          hoverImage: images[1] || images[0],
+        };
+      });
+    }
+
+    // fallback to static catalog
+    return getProductsByIds(coreCollectionProductIds).map((p) => {
+      const gallery = Array.isArray(p.gallery) ? p.gallery.filter(Boolean) : [];
+      return {
+        ...p,
+        gallery,
+        image: gallery[0] || p.image,
+        hoverImage: gallery[1] || p.hoverImage || gallery[0] || p.image,
+      };
+    });
+  }, [dbProducts]);
+
 
   return (
     <section 
@@ -22,63 +88,29 @@ export default function ProductCollection() {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <div className="absolute inset-0 bg-gray-100/60 z-0"></div>
+      <div className="absolute inset-0 bg-black/40 z-0"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         <h1 className="text-brand mb-4 sm:mb-6 text-lg">MORE FROM RETRO LOUVE</h1>
         {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {products.map((product) => (
-            <Link
+            <ProductCard
               key={product.id}
-              href={`/product/${product.slug}`}
-              className="group"
-              onMouseEnter={() => setHoveredProduct(product.id)}
-              onMouseLeave={() => setHoveredProduct(null)}
-            >
-              {/* Image Container */}
-              <div className="relative aspect-3/4 overflow-hidden bg-white mb-4">
-                {/* Default Image */}
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  unoptimized
-                  className={`object-cover transition-opacity duration-500 ${
-                    hoveredProduct === product.id ? 'opacity-0' : 'opacity-100'
-                  }`}
-                />
-                
-                {/* Hover Image */}
-                <Image
-                  src={product.hoverImage}
-                  alt={`${product.name} - Back`}
-                  fill
-                  unoptimized
-                  className={`object-cover transition-opacity duration-500 ${
-                    hoveredProduct === product.id ? 'opacity-100' : 'opacity-0'
-                  }`}
-                />
-              </div>
-
-              {/* Product Info */}
-              <div className="space-y-1">
-                <h3 className="text-xs font-medium tracking-wide uppercase text-gray-900">
-                  {product.name}
-                </h3>
-                <p className="text-xs text-gray-600">RS. {product.price.toLocaleString('en-IN')}</p>
-              </div>
-            </Link>
+              product={product}
+              aspectRatio="aspect-3/4"
+              showHoverImage={true}
+            />
           ))}
         </div>
 
         {/* Discover More Button */}
-        <div className="flex justify-center mt-8 sm:mt-12">
+        {/* <div className="flex justify-center mt-8 sm:mt-12">
           <Link href="/new-in">
             <button className="px-4 sm:px-6 py-2 text-brand border-2 border-brand text-xs sm:text-sm tracking-wider font-medium hover:bg-brand cursor-pointer hover:text-white transition-colors duration-300">
               DISCOVER MORE
             </button>
           </Link>
-        </div>
+        </div> */}
       </div>
     </section>
   );

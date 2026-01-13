@@ -1,9 +1,8 @@
 'use client';
 
 import { useMemo, useRef } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
 import { PRODUCT_CATALOG, getProductsByCategory } from '../../components/ProductCatalog';
+import ProductCard from '../../components/ProductCard';
 
 export default function RelatedProducts({ currentProductId, category }) {
   const scrollContainerRef = useRef(null);
@@ -138,34 +137,16 @@ export default function RelatedProducts({ currentProductId, category }) {
             }}
           >
             {relatedProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/product/${product.slug || product.id}`}
-                className="group shrink-0 w-[180px] sm:w-[220px] lg:w-[240px]"
-              >
-                <div className="relative aspect-3/4 bg-gray-100 overflow-hidden mb-3">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    sizes="(max-width: 640px) 180px, (max-width: 1024px) 220px, 240px"
-                  />
-                  {product.tags?.includes('latest-drop') && (
-                    <div className="absolute top-3 left-3 bg-white/90 px-2 py-1 text-[10px] font-semibold tracking-wider text-black">
-                      NEW
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-gray-900 line-clamp-2 group-hover:underline">
-                    {product.name}
-                  </h3>
-                  <p className="text-sm text-gray-900">
-                    ₹ {product.price.toLocaleString('en-IN')}
-                  </p>
-                </div>
-              </Link>
+              <div key={product.id} className="shrink-0 w-[180px] sm:w-[220px] lg:w-[240px]">
+                <ProductCard
+                  product={product}
+                  aspectRatio="aspect-3/4"
+                  showHoverImage={false}
+                  showNewBadge={true}
+                  textColor="text-gray-900"
+                  priceColor="text-gray-900"
+                />
+              </div>
             ))}
           </div>
         </div>

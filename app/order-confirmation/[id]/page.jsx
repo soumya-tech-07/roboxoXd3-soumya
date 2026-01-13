@@ -71,10 +71,17 @@ export default function OrderConfirmationPage() {
 
       setOrder(orderData);
 
-      // Get order items
+      // Get order items with product images
       const { data: itemsData, error: itemsError } = await supabase
         .from('order_items')
-        .select('*')
+        .select(`
+          *,
+          products (
+            image_url,
+            hover_image_url,
+            gallery
+          )
+        `)
         .eq('order_id', orderId)
         .order('created_at', { ascending: true });
 
@@ -83,7 +90,26 @@ export default function OrderConfirmationPage() {
         throw itemsError;
       }
       
-      setOrderItems(itemsData || []);
+      // Transform items to include product images
+      const itemsWithImages = (itemsData || []).map((item) => {
+        const product = item.products;
+        let productImage = null;
+        
+        if (product) {
+          const gallery = Array.isArray(product.gallery) 
+            ? product.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
+            : [];
+          const mainImages = [product.image_url, product.hover_image_url].filter(Boolean);
+          productImage = gallery.length > 0 ? gallery[0] : (mainImages[0] || null);
+        }
+        
+        return {
+          ...item,
+          productImage,
+        };
+      });
+      
+      setOrderItems(itemsWithImages);
     } catch (error) {
       console.error('Error loading order:', error);
       showError(error.message || 'Failed to load order details');
@@ -180,8 +206,23 @@ export default function OrderConfirmationPage() {
           <div className="space-y-4">
             {orderItems.map((item, index) => (
               <div key={index} className="flex gap-4 pb-4 border-b border-gray-200 last:border-b-0">
-                <div className="w-20 h-24 bg-gray-100 flex-shrink-0">
-                  {/* Product image placeholder - you can enhance this */}
+                <div className="relative w-20 h-24 bg-gray-100 flex-shrink-0 rounded overflow-hidden">
+                  {item.productImage ? (
+                    <Image
+                      src={item.productImage}
+                      alt={item.product_name}
+                      fill
+                      unoptimized={item.productImage.startsWith('https://')}
+                      className="object-cover"
+                      sizes="80px"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900 uppercase">
