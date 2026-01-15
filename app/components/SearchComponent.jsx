@@ -4,51 +4,117 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { PRODUCT_CATALOG } from "./ProductCatalog";
+import { supabase } from '@/lib/supabase';
 
 export default function SearchComponent({ isOpen, onClose }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState([]);
+  const [dbProducts, setDbProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const inputRef = useRef(null);
 
-  // Popular search terms with images - extracted from product catalog
+  // Fetch all active products from Supabase
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true);
+
+        if (error) {
+          console.error('Error fetching products for search:', error);
+          setDbProducts([]);
+        } else {
+          setDbProducts(data || []);
+        }
+      } catch (err) {
+        console.error('Error fetching products for search:', err);
+        setDbProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Map Supabase products to match ProductCatalog format
+  const products = useMemo(() => {
+    if (dbProducts?.length) {
+      return dbProducts.map((p) => {
+        const gallery = Array.isArray(p.gallery)
+          ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
+          : [];
+        const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
+        const images = gallery.length ? gallery : mainImages;
+        return {
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          price: Number(p.price || 0),
+          category: p.category,
+          description: p.description || '',
+          tags: p.tags || [],
+          gallery: images,
+          image: images[0] || '',
+          hoverImage: images[1] || images[0] || '',
+        };
+      });
+    }
+    // Fallback to static catalog
+    return PRODUCT_CATALOG;
+  }, [dbProducts]);
+
+  // Popular search terms with images - extracted from products
   const popularTerms = useMemo(() => {
     const termsWithImages = [];
+    const addedTerms = new Set(); // Track added terms to prevent duplicates
     
     // Get categories with representative product images
-    const categories = [...new Set(PRODUCT_CATALOG.map(p => p.category))];
+    const categories = [...new Set(products.map(p => p.category))];
     categories.slice(0, 4).forEach(category => {
-      const firstProduct = PRODUCT_CATALOG.find(p => p.category === category);
-      if (firstProduct) {
-        termsWithImages.push({
-          term: category,
-          image: firstProduct.image,
-          type: 'category'
-        });
+      if (!addedTerms.has(category.toLowerCase())) {
+        const firstProduct = products.find(p => p.category === category && p.image);
+        if (firstProduct) {
+          termsWithImages.push({
+            id: `category-${category}`,
+            term: category,
+            image: firstProduct.image,
+            type: 'category'
+          });
+          addedTerms.add(category.toLowerCase());
+        }
       }
     });
     
     // Get popular product names with their images
-    const popularProducts = PRODUCT_CATALOG
-      .filter(p => p.tags?.includes('latest-drop') || p.tags?.includes('core-collection'))
-      .slice(0, 5);
+    const popularProducts = products
+      .filter(p => (p.tags?.includes('latest-drop') || p.tags?.includes('core-collection')) && p.image);
     
     popularProducts.forEach(product => {
-      termsWithImages.push({
-        term: product.name.toLowerCase(),
-        image: product.image,
-        type: 'product'
-      });
+      const termLower = product.name.toLowerCase();
+      if (!addedTerms.has(termLower)) {
+        termsWithImages.push({
+          id: `product-${product.id}`,
+          term: termLower,
+          image: product.image,
+          type: 'product'
+        });
+        addedTerms.add(termLower);
+      }
     });
     
     return termsWithImages.slice(0, 8);
-  }, []);
+  }, [products]);
 
   // Filter products based on search query
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return [];
     
     const query = searchQuery.toLowerCase().trim();
-    return PRODUCT_CATALOG.filter((product) => {
+    return products.filter((product) => {
       const nameMatch = product.name.toLowerCase().includes(query);
       const categoryMatch = product.category.toLowerCase().includes(query);
       const descriptionMatch = product.description?.toLowerCase().includes(query);
@@ -56,7 +122,7 @@ export default function SearchComponent({ isOpen, onClose }) {
       
       return nameMatch || categoryMatch || descriptionMatch || tagMatch;
     });
-  }, [searchQuery]);
+  }, [searchQuery, products]);
 
   // Top suggestions based on search - show similar products
   const topSuggestions = useMemo(() => {
@@ -213,7 +279,7 @@ export default function SearchComponent({ isOpen, onClose }) {
                   <div className="flex flex-wrap gap-3 justify-center">
                     {popularTerms.map((item, index) => (
                       <button
-                        key={item.term}
+                        key={item.id || `term-${index}`}
                         onClick={() => handleSearch(item.term)}
                         className="flex flex-col text-black items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-brand hover:text-white rounded-lg text-xs transition-all duration-300 cursor-pointer tracking-wide group animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-500"
                         style={{
@@ -249,7 +315,7 @@ export default function SearchComponent({ isOpen, onClose }) {
                     <div className="space-y-2 max-w-3xl mx-auto">
                       {recentSearches.map((term, index) => {
                         // Find product image for recent search term
-                        const matchingProduct = PRODUCT_CATALOG.find(
+                        const matchingProduct = products.find(
                           p => 
                             p.name.toLowerCase() === term.toLowerCase() ||
                             p.category.toLowerCase() === term.toLowerCase() ||
@@ -321,7 +387,7 @@ export default function SearchComponent({ isOpen, onClose }) {
                   <div className="space-y-2">
                     {topSuggestions.map((suggestion, index) => {
                       // Find product image for suggestion
-                      const matchingProduct = PRODUCT_CATALOG.find(
+                      const matchingProduct = products.find(
                         p => 
                           p.category.toLowerCase() === suggestion.toLowerCase() ||
                           p.name.toLowerCase().includes(suggestion.toLowerCase())
@@ -358,7 +424,11 @@ export default function SearchComponent({ isOpen, onClose }) {
 
                 {/* Right Side - Product Grid */}
                 <div className="flex-1 animate-in fade-in slide-in-from-right-4 duration-500 delay-300">
-                  {filteredProducts.length > 0 ? (
+                  {loading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <p className="text-gray-500 text-sm">Loading products...</p>
+                    </div>
+                  ) : filteredProducts.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
                       {filteredProducts.map((product, index) => (
                         <Link
@@ -372,13 +442,19 @@ export default function SearchComponent({ isOpen, onClose }) {
                           }}
                         >
                           <div className="aspect-square bg-gray-200 rounded-lg mb-2 overflow-hidden relative transition-all duration-300 group-hover:shadow-lg group-hover:shadow-gray-200">
-                            <Image
-                              src={product.image}
-                              alt={product.name}
-                              fill
-                              className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 20vw"
-                            />
+                            {product.image ? (
+                              <Image
+                                src={product.image}
+                                alt={product.name}
+                                fill
+                                className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 20vw"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                No Image
+                              </div>
+                            )}
                           </div>
                           <div className="transition-all duration-300 group-hover:translate-y-[-2px]">
                             <h4 className="font-medium text-sm text-gray-900 mb-1 group-hover:text-brand transition-colors duration-300 tracking-wide line-clamp-2">
