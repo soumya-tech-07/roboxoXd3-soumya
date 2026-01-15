@@ -24,13 +24,17 @@ export function CartProvider({ children }) {
     if (isAuthenticated && user) {
       loadCartFromSupabase();
     } else {
-      // Clear cart when user logs out
+      // IMMEDIATELY clear cart when user logs out or token expires
       setCart([]);
+      setIsCartOpen(false); // Also close cart sidebar
     }
   }, [isAuthenticated, user, authLoading]);
 
   const loadCartFromSupabase = async () => {
-    if (!user) return;
+    if (!user) {
+      setCart([]);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -38,7 +42,18 @@ export function CartProvider({ children }) {
         p_user_id: user.id,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle 401 errors - session expired
+        if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('unauthorized')) {
+          console.log('⚠️ Session expired while loading cart');
+          setCart([]);
+          setIsCartOpen(false);
+          showError('Session expired. Please login again');
+          openLogin();
+          return;
+        }
+        throw error;
+      }
 
       // Transform to match our cart format
       const transformedCart = data.map((item) => ({
@@ -57,6 +72,8 @@ export function CartProvider({ children }) {
       setCart(transformedCart);
     } catch (error) {
       console.error('Error loading cart:', error);
+      // Clear cart on any error
+      setCart([]);
     } finally {
       setLoading(false);
     }
@@ -69,10 +86,12 @@ export function CartProvider({ children }) {
       return { success: false, error: 'Loading' };
     }
 
-    // Check if user is authenticated
+    // Check if user is authenticated - STRICT CHECK
     if (!isAuthenticated || !user) {
       showError('Please login to add items to cart');
       openLogin();
+      // Clear any stale cart data
+      setCart([]);
       return { success: false, error: 'Not authenticated' };
     }
 
@@ -83,6 +102,16 @@ export function CartProvider({ children }) {
 
     try {
       setLoading(true);
+
+      // Double-check user still exists (in case token expired during operation)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setCart([]);
+        setIsCartOpen(false);
+        showError('Session expired. Please login again');
+        openLogin();
+        return { success: false, error: 'Session expired' };
+      }
 
       // Check if item already exists
       const existingItem = cart.find(
@@ -97,7 +126,16 @@ export function CartProvider({ children }) {
           .update({ quantity: newQuantity })
           .eq('id', existingItem.id);
 
-        if (error) throw error;
+        if (error) {
+          // Handle 401 errors
+          if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('unauthorized')) {
+            setCart([]);
+            showError('Session expired. Please login again');
+            openLogin();
+            return { success: false, error: 'Session expired' };
+          }
+          throw error;
+        }
         showSuccess('Cart updated');
       } else {
         // Insert new item
@@ -112,7 +150,16 @@ export function CartProvider({ children }) {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          // Handle 401 errors
+          if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('unauthorized')) {
+            setCart([]);
+            showError('Session expired. Please login again');
+            openLogin();
+            return { success: false, error: 'Session expired' };
+          }
+          throw error;
+        }
         showSuccess('Added to cart');
       }
 
@@ -123,6 +170,13 @@ export function CartProvider({ children }) {
       return { success: true };
     } catch (error) {
       console.error('Error adding to cart:', error);
+      // Handle 401 errors
+      if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('unauthorized')) {
+        setCart([]);
+        showError('Session expired. Please login again');
+        openLogin();
+        return { success: false, error: 'Session expired' };
+      }
       showError(error.message || 'Failed to add item to cart');
       return { success: false, error };
     } finally {

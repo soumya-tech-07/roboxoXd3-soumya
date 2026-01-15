@@ -23,13 +23,16 @@ export function WishlistProvider({ children }) {
     if (isAuthenticated && user) {
       loadWishlistFromSupabase();
     } else {
-      // Clear wishlist when user logs out
+      // IMMEDIATELY clear wishlist when user logs out or token expires
       setWishlist([]);
     }
   }, [isAuthenticated, user, authLoading]);
 
   const loadWishlistFromSupabase = async () => {
-    if (!user) return;
+    if (!user) {
+      setWishlist([]);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -37,13 +40,25 @@ export function WishlistProvider({ children }) {
         p_user_id: user.id,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle 401 errors - session expired
+        if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('unauthorized')) {
+          console.log('⚠️ Session expired while loading wishlist');
+          setWishlist([]);
+          showError('Session expired. Please login again');
+          openLogin();
+          return;
+        }
+        throw error;
+      }
 
       // Transform to array of product IDs
       const productIds = data.map((item) => item.product_id);
       setWishlist(productIds);
     } catch (error) {
       console.error('Error loading wishlist:', error);
+      // Clear wishlist on any error
+      setWishlist([]);
     } finally {
       setLoading(false);
     }
@@ -56,10 +71,12 @@ export function WishlistProvider({ children }) {
       return;
     }
 
-    // Check if user is authenticated
+    // Check if user is authenticated - STRICT CHECK
     if (!isAuthenticated || !user) {
       showError('Please login to add items to wishlist');
       openLogin();
+      // Clear any stale wishlist data
+      setWishlist([]);
       return;
     }
 
@@ -70,6 +87,15 @@ export function WishlistProvider({ children }) {
 
     try {
       setLoading(true);
+
+      // Double-check user still exists (in case token expired during operation)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setWishlist([]);
+        showError('Session expired. Please login again');
+        openLogin();
+        return;
+      }
 
       // Check if already in wishlist
       if (wishlist.includes(productId)) {
@@ -82,12 +108,28 @@ export function WishlistProvider({ children }) {
         product_id: productId,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle 401 errors
+        if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('unauthorized')) {
+          setWishlist([]);
+          showError('Session expired. Please login again');
+          openLogin();
+          return;
+        }
+        throw error;
+      }
 
       setWishlist((prev) => [...prev, productId]);
       showSuccess('Added to wishlist');
     } catch (error) {
       console.error('Error adding to wishlist:', error);
+      // Handle 401 errors
+      if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('unauthorized')) {
+        setWishlist([]);
+        showError('Session expired. Please login again');
+        openLogin();
+        return;
+      }
       if (error.code === '23505') {
         // Unique constraint violation - already in wishlist
         showInfo('Already in wishlist');

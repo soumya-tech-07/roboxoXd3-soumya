@@ -1,18 +1,42 @@
 'use client';
 
 import { useMemo, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
+import { useAuthModal } from '../context/AuthModalContext';
 import { supabase } from '@/lib/supabase';
 import ProductCard from '../components/ProductCard';
 
 export default function WishlistPage() {
+  const router = useRouter();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { openLogin } = useAuthModal();
   const { wishlist, removeFromWishlist } = useWishlist();
   const [wishlistProducts, setWishlistProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Redirect to home and open login modal if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/');
+      // Small delay to ensure navigation completes, then open login modal
+      setTimeout(() => {
+        openLogin();
+      }, 100);
+    }
+  }, [isAuthenticated, authLoading, router, openLogin]);
+
   // Fetch wishlist products from Supabase
   useEffect(() => {
+    // Don't fetch if not authenticated
+    if (!isAuthenticated || !user) {
+      setWishlistProducts([]);
+      setLoading(false);
+      return;
+    }
+
     const fetchWishlistProducts = async () => {
       if (wishlist.length === 0) {
         setWishlistProducts([]);
@@ -30,6 +54,11 @@ export default function WishlistPage() {
 
         if (error) {
           console.error('Error fetching wishlist products:', error);
+          // If 401 error, redirect to login
+          if (error.code === 'PGRST301' || error.message?.includes('JWT') || error.message?.includes('unauthorized')) {
+            router.push('/');
+            return;
+          }
           setWishlistProducts([]);
         } else {
           // Transform to match ProductCard format
@@ -62,7 +91,24 @@ export default function WishlistPage() {
     };
 
     fetchWishlistProducts();
-  }, [wishlist]);
+  }, [wishlist, isAuthenticated, user, router]);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white pt-24 sm:pt-32 lg:pt-40 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto mb-4"></div>
+          <p className="text-sm text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <>

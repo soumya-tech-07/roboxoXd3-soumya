@@ -21,4 +21,32 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     detectSessionInUrl: true,
   },
+  global: {
+    // Intercept all fetch requests to handle 401 errors globally
+    fetch: async (url, options = {}) => {
+      // Make the request
+      const response = await fetch(url, options);
+      
+      // Handle 401 Unauthorized errors - reload page to reset state
+      if (response.status === 401 && typeof window !== 'undefined') {
+        // Only handle 401 for API requests, not auth endpoints or storage
+        if (url.includes('/rest/v1/') && !url.includes('/auth/v1/')) {
+          console.log('⚠️ Got 401 Unauthorized, clearing session and reloading...');
+          
+          // Clear expired token from localStorage
+          localStorage.removeItem('sb-auth-token');
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sb-')) {
+              localStorage.removeItem(key);
+            }
+          });
+          
+          // Reload page to reset all state
+          window.location.reload();
+        }
+      }
+      
+      return response;
+    },
+  },
 });

@@ -6,12 +6,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useAuthModal } from '../context/AuthModalContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '@/lib/supabase';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { openLogin } = useAuthModal();
   const { cart, getCartTotal, loading: cartLoading, clearCart } = useCart();
   const { showSuccess, showError } = useToast();
 
@@ -54,6 +56,17 @@ export default function CheckoutPage() {
   const shippingCost = cartTotal >= 2999 ? 0 : 99;
   const tax = cartTotal * 0.18; // 18% GST
   const total = cartTotal + shippingCost + tax;
+
+  // Redirect to home and open login modal if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/');
+      // Small delay to ensure navigation completes, then open login modal
+      setTimeout(() => {
+        openLogin();
+      }, 100);
+    }
+  }, [isAuthenticated, authLoading, router, openLogin]);
 
   // Load saved addresses
   useEffect(() => {

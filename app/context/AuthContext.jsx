@@ -44,7 +44,26 @@ export function AuthProvider({ children }) {
       const now = Math.floor(Date.now() / 1000);
       const timeUntilExpiry = session.expires_at - now;
 
-      // If token is expired or close to expiring, refresh it.
+      // If token is expired, clear everything and reload page
+      if (timeUntilExpiry <= 0) {
+        console.log('⚠️ Token expired, clearing session and reloading...');
+        setUser(null);
+        setProfile(null);
+        // Clear expired token from storage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('sb-auth-token');
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sb-')) {
+              localStorage.removeItem(key);
+            }
+          });
+          // Reload page to reset all state
+          window.location.reload();
+        }
+        return;
+      }
+
+      // If token is close to expiring, refresh it.
       if (timeUntilExpiry < 60) {
         await refreshSession();
       }
@@ -66,6 +85,31 @@ export function AuthProvider({ children }) {
         return { session: null, error: null };
       }
 
+      // Check if token is expired
+      if (currentSession.expires_at) {
+        const now = Math.floor(Date.now() / 1000);
+        const timeUntilExpiry = currentSession.expires_at - now;
+        
+        // If token is already expired, clear everything and reload page
+        if (timeUntilExpiry <= 0) {
+          console.log('⚠️ Token is expired, clearing session and reloading...');
+          setUser(null);
+          setProfile(null);
+          // Clear expired token from storage
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('sb-auth-token');
+            Object.keys(localStorage).forEach(key => {
+              if (key.startsWith('sb-')) {
+                localStorage.removeItem(key);
+              }
+            });
+            // Reload page to reset all state
+            window.location.reload();
+          }
+          return { session: null, error: { message: 'Token expired' } };
+        }
+      }
+
       // Refresh the session
       const { data: { session }, error } = await supabase.auth.refreshSession();
       if (error) {
@@ -73,12 +117,24 @@ export function AuthProvider({ children }) {
         // If refresh fails, the session might be expired
         if (error.message?.includes('refresh_token_not_found') || 
             error.message?.includes('invalid_grant') ||
-            error.message?.includes('JWT')) {
-          // Session expired, clear it
+            error.message?.includes('JWT') ||
+            error.message?.includes('expired')) {
+          // Session expired, clear everything and reload page
+          console.log('⚠️ Session expired, clearing session and reloading...');
           setUser(null);
           setProfile(null);
           // Clear the session from storage
-          await supabase.auth.signOut();
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('sb-auth-token');
+            Object.keys(localStorage).forEach(key => {
+              if (key.startsWith('sb-')) {
+                localStorage.removeItem(key);
+              }
+            });
+            await supabase.auth.signOut();
+            // Reload page to reset all state
+            window.location.reload();
+          }
         }
         return { session: null, error };
       }
@@ -129,6 +185,43 @@ export function AuthProvider({ children }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.email || 'no user');
+      
+      // Handle token refresh errors
+      if (event === 'TOKEN_REFRESHED' && !session) {
+        console.log('⚠️ Token refresh failed, clearing session and reloading...');
+        setUser(null);
+        setProfile(null);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('sb-auth-token');
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sb-')) {
+              localStorage.removeItem(key);
+            }
+          });
+          // Reload page to reset all state
+          window.location.reload();
+        }
+        setLoading(false);
+        return;
+      }
+      
+      // Handle signed out event
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setProfile(null);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('sb-auth-token');
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sb-')) {
+              localStorage.removeItem(key);
+            }
+          });
+        }
+        setLoading(false);
+        return;
+      }
+      
       setUser(session?.user ?? null);
       if (session?.user) {
         await fetchProfile(session.user.id);
@@ -220,14 +313,46 @@ export function AuthProvider({ children }) {
 
   const signOut = async () => {
     try {
+      // Sign out from Supabase (this should clear the session)
       const { error } = await supabase.auth.signOut();
+      
+      // Explicitly clear localStorage token (even if expired or signOut failed)
+      if (typeof window !== 'undefined') {
+        try {
+          // Remove the Supabase auth token from localStorage
+          localStorage.removeItem('sb-auth-token');
+          // Also remove any other Supabase-related keys
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sb-')) {
+              localStorage.removeItem(key);
+            }
+          });
+          console.log('✅ Cleared all auth tokens from localStorage');
+        } catch (storageError) {
+          console.error('Error clearing localStorage:', storageError);
+        }
+      }
+      
       if (error) throw error;
+      
       setUser(null);
       setProfile(null);
       router.push('/');
       return { error: null };
     } catch (error) {
       console.error('Error signing out:', error);
+      // Even if signOut fails, clear state and localStorage
+      setUser(null);
+      setProfile(null);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('sb-auth-token');
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('sb-')) {
+            localStorage.removeItem(key);
+          }
+        });
+      }
+      router.push('/');
       return { error };
     }
   };

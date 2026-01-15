@@ -41,6 +41,19 @@ export default function NavbarWithCustomGif() {
     return () => clearInterval(interval);
   }, [rotatingTexts.length]);
 
+  // Listen for token expiration event and open login modal
+  useEffect(() => {
+    const handleTokenExpired = () => {
+      console.log('Token expired event received, opening login modal...');
+      openLogin();
+    };
+
+    window.addEventListener('auth:token-expired', handleTokenExpired);
+    return () => {
+      window.removeEventListener('auth:token-expired', handleTokenExpired);
+    };
+  }, [openLogin]);
+
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -67,6 +80,20 @@ export default function NavbarWithCustomGif() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isUserMenuOpen]);
+
+  // Close user menu when user logs out or token expires
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      setIsUserMenuOpen(false);
+    }
+  }, [isAuthenticated, user]);
+
+  // Close user menu when user logs out or token expires
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setIsUserMenuOpen(false);
+    }
+  }, [isAuthenticated]);
 
   // Prevent body scroll when menu is open
   useEffect(() => {
@@ -214,16 +241,17 @@ export default function NavbarWithCustomGif() {
                 <div className="relative flex items-center justify-center" ref={userMenuRef}>
                   <button
                     onClick={() => {
-                      if (isAuthenticated) {
+                      if (isAuthenticated && user) {
                         setIsUserMenuOpen(!isUserMenuOpen);
                       } else {
+                        setIsUserMenuOpen(false);
                         openLogin();
                       }
                     }}
                     className={`transition-colors cursor-pointer flex items-center justify-center ${
                       isScrolled ? "text-black" : "text-brand"
                     } hover:opacity-70`}
-                    aria-label={isAuthenticated ? "User menu" : "Login"}
+                    aria-label={isAuthenticated && user ? "User menu" : "Login"}
                   >
                     <svg
                       className="w-5 h-5 sm:w-6 sm:h-6"
@@ -240,8 +268,8 @@ export default function NavbarWithCustomGif() {
                     </svg>
                   </button>
 
-                  {/* User Dropdown Menu */}
-                  {isAuthenticated && isUserMenuOpen && (
+                  {/* User Dropdown Menu - Only show if authenticated AND user exists */}
+                  {isAuthenticated && user && isUserMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                       <div className="py-2">
                         <div className="px-4 py-2 border-b border-gray-200">
@@ -494,8 +522,8 @@ export default function NavbarWithCustomGif() {
                   </li>
                 )}
 
-                {/* My Orders */}
-                {pathname !== '/orders' && (
+                {/* My Orders - Only show if authenticated */}
+                {isAuthenticated && user && pathname !== '/orders' && (
                   <li className="border-b border-gray-200">
                     <Link
                       href="/orders"
