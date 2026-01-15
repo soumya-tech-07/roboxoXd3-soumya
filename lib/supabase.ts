@@ -8,6 +8,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
+/**
+ * Browser Supabase client.
+ *
+ * Important: keep this configuration minimal and standard.
+ * Session refresh/resume is handled in `app/context/AuthContext.jsx`
+ * via `supabase.auth.startAutoRefresh()` / `stopAutoRefresh()`.
+ */
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -15,4 +22,3 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
   },
 });
-

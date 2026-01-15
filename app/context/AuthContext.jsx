@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
@@ -11,8 +11,111 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const router = useRouter();
+  const userRef = useRef(user);
+
+  // Update ref when user changes
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  const fetchProfile = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error);
+      } else {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  const refreshSessionIfNeeded = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.expires_at) return;
+
+      const now = Math.floor(Date.now() / 1000);
+      const timeUntilExpiry = session.expires_at - now;
+
+      // If token is expired or close to expiring, refresh it.
+      if (timeUntilExpiry < 60) {
+        await refreshSession();
+      }
+    } catch (e) {
+      console.error('Error checking session expiry:', e);
+    }
+  };
+
+  // Function to refresh the session
+  const refreshSession = async () => {
+    try {
+      // First, get the current session to check if it exists
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      if (!currentSession) {
+        // No session, nothing to refresh
+        setUser(null);
+        setProfile(null);
+        return { session: null, error: null };
+      }
+
+      // Refresh the session
+      const { data: { session }, error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error('Error refreshing session:', error);
+        // If refresh fails, the session might be expired
+        if (error.message?.includes('refresh_token_not_found') || 
+            error.message?.includes('invalid_grant') ||
+            error.message?.includes('JWT')) {
+          // Session expired, clear it
+          setUser(null);
+          setProfile(null);
+          // Clear the session from storage
+          await supabase.auth.signOut();
+        }
+        return { session: null, error };
+      }
+      
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        await fetchProfile(session.user.id);
+      } else {
+        setProfile(null);
+      }
+      return { session, error: null };
+    } catch (error) {
+      console.error('Error refreshing session:', error);
+      return { session: null, error };
+    }
+  };
 
   useEffect(() => {
+    // Supabase auto-refresh can pause when the tab is hidden (browser throttling).
+    // Explicitly stop/start it based on visibility to ensure it resumes reliably.
+    const start = () => {
+      try {
+        supabase.auth.startAutoRefresh();
+      } catch (e) {
+        // Some environments may not support this; ignore.
+      }
+    };
+    const stop = () => {
+      try {
+        supabase.auth.stopAutoRefresh();
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    start();
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -35,26 +138,40 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const fetchProfile = async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error);
-      } else {
-        setProfile(data);
+    // Handle visibility change - refresh session when tab becomes visible
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'hidden') {
+        stop();
+        return;
       }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
+
+      // visible
+      start();
+      await refreshSessionIfNeeded();
+    };
+
+    // Handle window focus - refresh session when window regains focus
+    const handleFocus = async () => {
+      start();
+      await refreshSessionIfNeeded();
+    };
+
+    const handleBlur = () => {
+      stop();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      subscription.unsubscribe();
+      stop();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
 
   const signUp = async (email, password, metadata = {}) => {
     try {
@@ -171,6 +288,7 @@ export function AuthProvider({ children }) {
         resetPassword,
         updatePassword,
         updateProfile,
+        refreshSession,
         isAuthenticated: !!user,
       }}
     >
