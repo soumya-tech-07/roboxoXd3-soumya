@@ -274,13 +274,6 @@ export default function LoginModal() {
             </button>
           </div>
 
-          {/* Divider */}
-          <div className="my-8 flex items-center">
-            <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-4 text-xs text-gray-500 uppercase">OR</span>
-            <div className="flex-1 border-t border-gray-300"></div>
-          </div>
-
           {/* Social Login Buttons */}
           {/* <div className="space-y-3">
             <button

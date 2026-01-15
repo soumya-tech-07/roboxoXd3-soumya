@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { ensurePublicImageUrl } from '@/lib/image-helpers';
 import SizeGuideModal from '../../components/SizeguideModal';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
@@ -102,7 +103,9 @@ export default function ProductPage() {
     if (isDbProduct) {
       // Use gallery from database (Supabase URLs)
       gallery = dbProduct.gallery && Array.isArray(dbProduct.gallery) 
-        ? dbProduct.gallery.filter(url => url && !url.includes('.heic'))
+        ? dbProduct.gallery
+            .filter(url => url && !url.includes('.heic'))
+            .map(url => ensurePublicImageUrl(url))
         : [];
       
       // Fallback to main images if gallery is empty
@@ -110,16 +113,18 @@ export default function ProductPage() {
         const mainImages = [
           dbProduct.image_url,
           dbProduct.hover_image_url
-        ].filter(Boolean);
+        ].filter(Boolean).map(url => ensurePublicImageUrl(url));
         gallery = mainImages;
       }
     } else {
       // Use catalog product gallery
       gallery = catalogProduct.gallery?.length
-      ? catalogProduct.gallery
+      ? catalogProduct.gallery.map(url => ensurePublicImageUrl(url))
       : Array.from(
           new Set(
-            [catalogProduct.image, catalogProduct.hoverImage].filter(Boolean),
+            [catalogProduct.image, catalogProduct.hoverImage]
+              .filter(Boolean)
+              .map(url => ensurePublicImageUrl(url)),
           ),
         );
     }

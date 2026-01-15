@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function CartSidebar() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const {
     cart,
     removeFromCart,
@@ -19,6 +19,13 @@ export default function CartSidebar() {
     isCartOpen,
     closeCart,
   } = useCart();
+
+  // Close cart sidebar when user logs out or token expires
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      closeCart();
+    }
+  }, [isAuthenticated, user, closeCart]);
 
   // Cart items already have product data from CartContext
   const cartItems = useMemo(() => {

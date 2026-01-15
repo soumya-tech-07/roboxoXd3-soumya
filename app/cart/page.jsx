@@ -1,16 +1,29 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useAuthModal } from '../context/AuthModalContext';
 
 export default function CartPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { openLogin } = useAuthModal();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+
+  // Redirect to home and open login modal if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/');
+      // Small delay to ensure navigation completes, then open login modal
+      setTimeout(() => {
+        openLogin();
+      }, 100);
+    }
+  }, [isAuthenticated, authLoading, router, openLogin]);
 
   // Cart items already have product data from CartContext
   const cartItems = useMemo(() => {
@@ -186,6 +199,9 @@ export default function CartPage() {
                   onClick={() => {
                     if (!isAuthenticated) {
                       router.push('/');
+                      setTimeout(() => {
+                        openLogin();
+                      }, 100);
                       return;
                     }
                     router.push('/checkout');

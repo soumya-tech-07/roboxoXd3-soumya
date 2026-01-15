@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ensurePublicImageUrl } from '@/lib/image-helpers';
 
 /**
  * Reusable Product Card Component
@@ -33,16 +34,16 @@ export default function ProductCard({
   // Get primary and hover images from product
   const getPrimaryImage = () => {
     if (product?.gallery && Array.isArray(product.gallery) && product.gallery.length > 0) {
-      return product.gallery[0];
+      return ensurePublicImageUrl(product.gallery[0]);
     }
-    return product?.image || product?.image_url || 'https://placehold.co/800x1200/e5d4e8/666666?text=Image';
+    return ensurePublicImageUrl(product?.image || product?.image_url);
   };
 
   const getHoverImage = () => {
     if (product?.gallery && Array.isArray(product.gallery) && product.gallery.length > 1) {
-      return product.gallery[1];
+      return ensurePublicImageUrl(product.gallery[1]);
     }
-    return product?.hoverImage || product?.hover_image_url || getPrimaryImage();
+    return ensurePublicImageUrl(product?.hoverImage || product?.hover_image_url || getPrimaryImage());
   };
 
   const primaryImage = getPrimaryImage();

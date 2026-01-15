@@ -6,12 +6,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { useAuthModal } from '../../context/AuthModalContext';
 import { useToast } from '../../context/ToastContext';
 
 export default function OrderConfirmationPage() {
   const params = useParams();
   const router = useRouter();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { openLogin } = useAuthModal();
   const { showError } = useToast();
   const [order, setOrder] = useState(null);
   const [orderItems, setOrderItems] = useState([]);
@@ -30,6 +32,10 @@ export default function OrderConfirmationPage() {
     
     if (!isAuthenticated) {
       router.push('/');
+      // Small delay to ensure navigation completes, then open login modal
+      setTimeout(() => {
+        openLogin();
+      }, 100);
       setLoading(false);
       return;
     }

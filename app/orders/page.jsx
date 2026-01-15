@@ -6,21 +6,28 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useAuthModal } from '../context/AuthModalContext';
 import { useToast } from '../context/ToastContext';
 
 export default function OrdersPage() {
   const router = useRouter();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { openLogin } = useAuthModal();
   const { showError } = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState(null);
 
+  // Redirect to home and open login modal if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/');
+      // Small delay to ensure navigation completes, then open login modal
+      setTimeout(() => {
+        openLogin();
+      }, 100);
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, authLoading, router, openLogin]);
 
   useEffect(() => {
     if (isAuthenticated && user) {
