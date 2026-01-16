@@ -127,17 +127,17 @@ const RAW_PRODUCT_CATALOG = [
   },
   {
     id: 5,
-    name: 'THE ICY WHISPERER TOP',
+    name: 'Hermosa Off Shoulder Black Top',
     price: 4495,
     category: 'TOPS',
     size: ['S', 'M', 'L', 'XL'],
     availability: 'IN STOCK',
     stock: 26,
-    description: 'The Icy Whisper is a one-shoulder ruched top crafted from premium, ultra-soft hosiery that glides effortlessly against the skin. Its sculpted silhouette, delicate ruching, and modern asymmetry create an understated yet luxurious statement—elegant, refined, and designed to elevate every moment with quiet sophistication.',
+    description: 'The Hermosa Off Shoulder Black Top is a one-shoulder ruched top crafted from premium, ultra-soft hosiery that glides effortlessly against the skin. Its sculpted silhouette, delicate ruching, and modern asymmetry create an understated yet luxurious statement—elegant, refined, and designed to elevate every moment with quiet sophistication.',
     image: PLACEHOLDER_IMAGE,
     hoverImage: PLACEHOLDER_IMAGE,
     gallery: [PLACEHOLDER_IMAGE],
-    slug: 'the-icy-whisperer-top',
+    slug: 'hermosa-off-shoulder-black-top',
     tags: ['winter-arc', 'latest-drop', 'womens'],
     materials: ['300 gsm hosiery'],
     composition: '300 GSM ultra-soft hosiery, Ruching and asymmetrical construction',
@@ -347,7 +347,7 @@ export default function ProductCatalogList() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
           <div>
-            <p className="text-[10px] tracking-[0.18em] text-brand">WINTER ARC COLLECTION</p>
+            <p className="text-[10px] tracking-[0.18em] text-brand">THE WINTER ARC DROP</p>
             <h2 className="text-2xl font-semibold text-gray-900">
               Product Catalog
             </h2>

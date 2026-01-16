@@ -429,7 +429,7 @@ export default function SearchComponent({ isOpen, onClose }) {
                       <p className="text-gray-500 text-sm">Loading products...</p>
                     </div>
                   ) : filteredProducts.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
                       {filteredProducts.map((product, index) => (
                         <Link
                           key={product.id}
