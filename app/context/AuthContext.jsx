@@ -153,6 +153,10 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
+    // CRITICAL: Initialize auth synchronously to prevent race conditions
+    // This ensures session is restored before any components try to fetch data
+    let mounted = true;
+
     // Supabase auto-refresh can pause when the tab is hidden (browser throttling).
     // Explicitly stop/start it based on visibility to ensure it resumes reliably.
     const start = () => {
@@ -172,14 +176,70 @@ export function AuthProvider({ children }) {
 
     start();
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
+    // CRITICAL: Get initial session and wait for it to complete before allowing data fetching
+    // This prevents race conditions where components fetch data before session is restored
+    const initializeAuth = async () => {
+      try {
+        // First, ensure we wait for session restoration
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+
+        if (error) {
+          console.error('Error getting session:', error);
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        // Set user state immediately
+        setUser(session?.user ?? null);
+        
+        // If we have a session, fetch profile and ensure session is valid
+        if (session?.user) {
+          // Verify session is not expired
+          if (session.expires_at) {
+            const now = Math.floor(Date.now() / 1000);
+            const timeUntilExpiry = session.expires_at - now;
+            
+            // If token is expired, clear session
+            if (timeUntilExpiry <= 0) {
+              console.log('⚠️ Initial session expired, clearing...');
+              setUser(null);
+              setProfile(null);
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem('sb-auth-token');
+                Object.keys(localStorage).forEach(key => {
+                  if (key.startsWith('sb-')) {
+                    localStorage.removeItem(key);
+                  }
+                });
+              }
+              setLoading(false);
+              return;
+            }
+          }
+          
+          // Fetch profile after session is confirmed valid
+          await fetchProfile(session.user.id);
+        } else {
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
+          setUser(null);
+          setProfile(null);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
-    });
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const {
@@ -258,6 +318,7 @@ export function AuthProvider({ children }) {
     window.addEventListener('blur', handleBlur);
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
       stop();
       document.removeEventListener('visibilitychange', handleVisibilityChange);

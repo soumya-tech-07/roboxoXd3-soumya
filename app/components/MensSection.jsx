@@ -9,6 +9,12 @@ import ProductCard from './ProductCard';
 export default function MensSection() {
   const [dbProducts, setDbProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // CRITICAL: Hydration safety check - prevents stale server UI from flashing
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch mens products from Supabase (use DB first, fallback to static)
   useEffect(() => {
@@ -59,15 +65,16 @@ export default function MensSection() {
         };
       });
     }
-    // fallback to static catalog
+    // fallback to static catalog - remove category since we don't display it
     return PRODUCT_CATALOG.filter((product) => 
     product.tags?.includes('mens')
     )
       .slice(0, 8)
       .map((p) => {
         const gallery = Array.isArray(p.gallery) ? p.gallery.filter(Boolean) : [];
+        const { category, ...productWithoutCategory } = p;
         return {
-          ...p,
+          ...productWithoutCategory,
           gallery,
           image: gallery[0] || p.image,
           hoverImage: gallery[1] || p.hoverImage || gallery[0] || p.image,
@@ -75,6 +82,11 @@ export default function MensSection() {
       });
   }, [dbProducts]);
 
+
+  // CRITICAL: Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <section 

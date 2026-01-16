@@ -10,6 +10,11 @@ import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import "./globals.css";
 
+// CRITICAL: Force dynamic rendering to prevent production caching issues
+// This ensures the layout is never statically cached
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata = {
   icons: {
     icon: '/favicon.ico',

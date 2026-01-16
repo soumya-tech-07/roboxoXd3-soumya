@@ -11,6 +11,10 @@ import SplitHeroSection from "./components/SplitHeroSection";
 import MensSection from "./components/MensSection";
 import WomensSection from "./components/WomensSection";
 
+// CRITICAL: Force dynamic rendering to prevent production caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function Home() {
   return (
     <>

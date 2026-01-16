@@ -213,8 +213,10 @@ export type Database = {
           id: string
           notes: string | null
           order_number: string
+          payment_id: string | null
           payment_method: string | null
           payment_status: string | null
+          razorpay_order_id: string | null
           shipping_address: Json | null
           shipping_cost: number | null
           status: string | null
@@ -231,8 +233,10 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number: string
+          payment_id?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          razorpay_order_id?: string | null
           shipping_address?: Json | null
           shipping_cost?: number | null
           status?: string | null
@@ -249,8 +253,10 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number?: string
+          payment_id?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          razorpay_order_id?: string | null
           shipping_address?: Json | null
           shipping_cost?: number | null
           status?: string | null
@@ -266,12 +272,11 @@ export type Database = {
         Row: {
           availability: string | null
           care: string | null
-          category: string
+          category: string | null
           composition: string | null
           created_at: string | null
           description: string | null
           gallery: string[] | null
-          hover_image_url: string | null
           id: number
           image_url: string | null
           is_active: boolean | null
@@ -291,12 +296,11 @@ export type Database = {
         Insert: {
           availability?: string | null
           care?: string | null
-          category: string
+          category?: string | null
           composition?: string | null
           created_at?: string | null
           description?: string | null
           gallery?: string[] | null
-          hover_image_url?: string | null
           id?: number
           image_url?: string | null
           is_active?: boolean | null
@@ -316,12 +320,11 @@ export type Database = {
         Update: {
           availability?: string | null
           care?: string | null
-          category?: string
+          category?: string | null
           composition?: string | null
           created_at?: string | null
           description?: string | null
           gallery?: string[] | null
-          hover_image_url?: string | null
           id?: number
           image_url?: string | null
           is_active?: boolean | null
@@ -373,6 +376,36 @@ export type Database = {
         }
         Relationships: []
       }
+      size_charts: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: number
+          image_url: string | null
+          measurements: Json
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: number
+          image_url?: string | null
+          measurements: Json
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: number
+          image_url?: string | null
+          measurements?: Json
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       wishlist_items: {
         Row: {
           created_at: string | null
@@ -407,17 +440,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_order_from_cart: {
-        Args: {
-          p_billing_address: Json
-          p_notes?: string
-          p_payment_method?: string
-          p_shipping_address: Json
-          p_user_id: string
-        }
-        Returns: string
-      }
-      generate_order_number: { Args: Record<PropertyKey, never>; Returns: string }
+      create_order_from_cart:
+        | {
+            Args: {
+              p_billing_address: Json
+              p_notes?: string
+              p_payment_method?: string
+              p_shipping_address: Json
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_billing_address: Json
+              p_notes?: string
+              p_payment_method?: string
+              p_shipping_address: Json
+              p_user_id: string
+            }
+            Returns: string
+          }
+      generate_order_number: { Args: never; Returns: string }
       get_cart_with_products: {
         Args: { p_user_id: string }
         Returns: {
@@ -454,12 +497,11 @@ export type Database = {
         Returns: {
           availability: string | null
           care: string | null
-          category: string
+          category: string | null
           composition: string | null
           created_at: string | null
           description: string | null
           gallery: string[] | null
-          hover_image_url: string | null
           id: number
           image_url: string | null
           is_active: boolean | null
@@ -476,6 +518,12 @@ export type Database = {
           tags: string[] | null
           updated_at: string | null
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "products"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
     }
     Enums: {
@@ -570,3 +618,42 @@ export type TablesUpdate<
       : never
     : never
 
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const

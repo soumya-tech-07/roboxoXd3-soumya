@@ -12,6 +12,12 @@ import ProductCard from './ProductCard';
 export default function LatestDrop() {
   const [dbProducts, setDbProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // CRITICAL: Hydration safety check - prevents stale server UI from flashing
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch products from Supabase (use DB first, fallback to static)
   useEffect(() => {
@@ -65,11 +71,12 @@ export default function LatestDrop() {
         };
       });
     }
-    // fallback to static
+    // fallback to static catalog - remove category since we don't display it
     return getProductsByIds(latestDropProductIds).map((p) => {
       const gallery = Array.isArray(p.gallery) ? p.gallery.filter(Boolean) : [];
+      const { category, ...productWithoutCategory } = p;
       return {
-        ...p,
+        ...productWithoutCategory,
         gallery,
         image: gallery[0] || p.image,
         hoverImage: gallery[1] || p.hoverImage || gallery[0] || p.image,
@@ -77,6 +84,11 @@ export default function LatestDrop() {
     });
   }, [dbProducts]);
 
+
+  // CRITICAL: Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <section 

@@ -23,9 +23,26 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   },
   global: {
     // Intercept all fetch requests to handle 401 errors globally
+    // CRITICAL: Use cache: "no-store" to prevent production caching issues
     fetch: async (url, options = {}) => {
+      // Ensure all Supabase requests bypass Next.js and browser cache in production
+      // Merge headers properly to avoid overwriting existing headers
+      const existingHeaders = options.headers || {};
+      const headers = new Headers(existingHeaders);
+      
+      // Add cache-control headers to prevent CDN/hosting platform caching
+      headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      headers.set('Pragma', 'no-cache');
+      headers.set('Expires', '0');
+      
+      const fetchOptions = {
+        ...options,
+        cache: 'no-store' as RequestCache,
+        headers: headers,
+      };
+      
       // Make the request
-      const response = await fetch(url, options);
+      const response = await fetch(url, fetchOptions);
       
       // Handle 401 Unauthorized errors - reload page to reset state
       if (response.status === 401 && typeof window !== 'undefined') {
