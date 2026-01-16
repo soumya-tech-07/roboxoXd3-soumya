@@ -27,7 +27,7 @@ export default function NavbarWithCustomGif() {
 
   const rotatingTexts = [
     "NEW DROP - NOW LIVE",
-    "FREE SHIPPING ON ORDERS ABOVE ₹2999",
+    "FREE SHIPPING ON ORDERS ABOVE ₹299",
     "SHOP THE LATEST COLLECTION",
   ];
 
@@ -408,12 +408,39 @@ export default function NavbarWithCustomGif() {
                 {/* Submenu Items */}
                 <ul className="space-y-2">
                   <li>
-                    <button
-                      onClick={() => scrollToSection('mens-section')}
+                    <Link
+                      href="/"
+                      onClick={closeMenu}
                       className="group w-full block py-4 px-4 rounded-lg text-sm tracking-wide text-gray-900 hover:bg-brand hover:text-white transition-all duration-200 cursor-pointer border border-gray-200 hover:border-brand text-left"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">Men</span>
+                        <span className="font-medium">Shop All</span>
+                        <svg
+                          className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </div>
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => {
+                        closeMenu();
+                        scrollToSection('mens-section');
+                      }}
+                      className="group w-full block py-4 px-4 rounded-lg text-sm tracking-wide text-gray-900 hover:bg-brand hover:text-white transition-all duration-200 cursor-pointer border border-gray-200 hover:border-brand text-left"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Shop Men&apos;s</span>
                         <svg
                           className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"
                           fill="none"
@@ -432,11 +459,14 @@ export default function NavbarWithCustomGif() {
                   </li>
                   <li>
                     <button
-                      onClick={() => scrollToSection('womens-section')}
+                      onClick={() => {
+                        closeMenu();
+                        scrollToSection('womens-section');
+                      }}
                       className="group w-full block py-4 px-4 rounded-lg text-sm tracking-wide text-gray-900 hover:bg-brand hover:text-white transition-all duration-200 cursor-pointer border border-gray-200 hover:border-brand text-left"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">Women</span>
+                        <span className="font-medium">Shop Women&apos;s</span>
                         <svg
                           className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"
                           fill="none"
@@ -469,6 +499,29 @@ export default function NavbarWithCustomGif() {
                     </Link>
                   </li>
                 )}
+
+                {/* Shop */}
+                <li className="border-b border-gray-200">
+                  <button
+                    onClick={() => setActiveSubMenu('shop')}
+                    className="w-full flex items-center justify-between py-4 text-sm tracking-wide text-brand hover:opacity-70 transition-opacity font-medium cursor-pointer"
+                  >
+                    <span>Shop</span>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </li>
 
                 {/* About Retro Louve */}
                 {pathname !== '/about-love' && (

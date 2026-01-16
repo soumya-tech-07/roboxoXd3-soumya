@@ -121,7 +121,7 @@ export default function ProductCard({
 
         {/* Product Info */}
         <div className="space-y-1">
-          <h3 className={`text-xs font-medium tracking-wide uppercase ${textColor}`}>
+          <h3 className={`text-sm font-medium tracking-wide uppercase ${textColor}`}>
             {product.name}
           </h3>
           <p className={`text-xs ${priceColor}`}>

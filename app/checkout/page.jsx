@@ -53,7 +53,7 @@ export default function CheckoutPage() {
     }, 0);
   }, [cartItems]);
 
-  const shippingCost = cartTotal >= 2999 ? 0 : 99;
+  const shippingCost = cartTotal >= 299 ? 0 : 99;
   const tax = cartTotal * 0.18; // 18% GST
   const total = cartTotal + shippingCost + tax;
 
@@ -878,9 +878,9 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {cartTotal < 2999 && (
+              {cartTotal < 299 && (
                 <p className="text-xs text-gray-600 mb-4 text-center">
-                  Add ₹ {(2999 - cartTotal).toLocaleString('en-IN')} more for free shipping
+                  Add ₹ {(299 - cartTotal).toLocaleString('en-IN')} more for free shipping
                 </p>
               )}
 

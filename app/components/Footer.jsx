@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { Instagram, Youtube, Mail, Phone } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -27,11 +28,7 @@ export default function Footer() {
           <div>
             <h3 className="text-[10px] font-semibold mb-4 tracking-wider">HELP</h3>
             <ul className="space-y-2 text-xs text-gray-700">
-              <li>
-                <Link href="/members-login" className="hover:underline">
-                  MEMBERS LOGIN
-                </Link>
-              </li>
+              
               <li>
                 <Link href="/exchange-return" className="hover:underline">
                   PLACE AN EXCHANGE/RETURN REQUEST
@@ -89,15 +86,38 @@ export default function Footer() {
         <div className="mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-[10px] tracking-wider">
             <span>CONNECT</span>
-            <div className="flex gap-4 sm:gap-8">
-              <Link href="https://instagram.com" className="hover:underline">
-                INSTAGRAM
+            <div className="flex gap-4 sm:gap-8 items-center">
+              <Link 
+                href="https://instagram.com" 
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Instagram size={16} />
+                <span>INSTAGRAM</span>
               </Link>
-              <Link href="https://youtube.com" className="hover:underline">
-                YOUTUBE
+              <Link 
+                href="https://youtube.com" 
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Youtube size={16} />
+                <span>YOUTUBE</span>
               </Link>
-              <Link href="https://linkedin.com" className="hover:underline">
-                LINKEDIN
+              <Link 
+                href="mailto:orders.retrolouve@gmail.com" 
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+              >
+                <Mail size={16} />
+                <span>EMAIL</span>
+              </Link>
+              <Link 
+                href="tel:+911234567890" 
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+              >
+                <Phone size={16} />
+                <span>PHONE</span>
               </Link>
             </div>
           </div>
