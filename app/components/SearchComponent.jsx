@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
+
+const supabase = createClient();
 
 export default function SearchComponent({ isOpen, onClose }) {
   const [searchQuery, setSearchQuery] = useState("");

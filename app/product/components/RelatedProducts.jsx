@@ -1,8 +1,10 @@
 'use client';
 
 import { useMemo, useRef, useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 import ProductCard from '../../components/ProductCard';
+
+const supabase = createClient();
 
 export default function RelatedProducts({ currentProductId, category }) {
   const scrollContainerRef = useRef(null);

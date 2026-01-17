@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useAuthModal } from '../context/AuthModalContext';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 import ProductCard from '../components/ProductCard';
+
+const supabase = createClient();
 
 export default function WishlistPage() {
   const router = useRouter();

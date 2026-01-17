@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 import { ensurePublicImageUrl } from '@/lib/image-helpers';
 import SizeGuideModal from '../../components/SizeguideModal';
 import { useWishlist } from '../../context/WishlistContext';
@@ -17,6 +17,8 @@ import ProductSizeSelector from '../components/ProductSizeSelector';
 import ProductActionButtons from '../components/ProductActionButtons';
 import ProductAccordion from '../components/ProductAccordion';
 import ProductShareContact from '../components/ProductShareContact';
+
+const supabase = createClient();
 
 const PLACEHOLDER_ICON = 'https://placehold.co/100x100/e5d4e8/666666?text=Icon';
 

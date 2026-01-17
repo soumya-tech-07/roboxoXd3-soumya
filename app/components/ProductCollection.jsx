@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import {
   coreCollectionProductIds,
 } from './productIds';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 import ProductCard from './ProductCard';
+
+const supabase = createClient();
 
 export default function ProductCollection() {
   const [dbProducts, setDbProducts] = useState([]);

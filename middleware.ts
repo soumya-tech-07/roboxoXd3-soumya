@@ -7,11 +7,9 @@ import { createServerClient } from '@supabase/ssr';
  * This is REQUIRED when using `@supabase/ssr` with Next.js App Router to keep
  * auth cookies in sync on every request (including RSC `?_rsc` requests).
  */
-export async function middleware(request: NextRequest) {
+export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request,
   });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -24,16 +22,14 @@ export async function middleware(request: NextRequest) {
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
-      get(name: string) {
-        return request.cookies.get(name)?.value;
+      getAll() {
+        return request.cookies.getAll();
       },
-      set(name: string, value: string, options: any) {
-        // IMPORTANT: NextRequest cookies are effectively read-only.
-        // Only set cookies on the response.
-        response.cookies.set({ name, value, ...options });
-      },
-      remove(name: string, options: any) {
-        response.cookies.set({ name, value: '', ...options, maxAge: 0 });
+      setAll(cookiesToSet) {
+        // Update response cookies (request cookies are read-only)
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options);
+        });
       },
     },
   });
@@ -47,6 +43,10 @@ export async function middleware(request: NextRequest) {
   }
 
   return response;
+}
+
+export function middleware(request: NextRequest) {
+  return updateSession(request);
 }
 
 export const config = {

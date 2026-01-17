@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 import NavbarWithCustomGif from '../components/NavbarWithCustomGif';
 import FilterBar from '../components/FilterBar';
 import ProductGrid from '../components/ProductGrid';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 import { ensurePublicImageUrl } from '@/lib/image-helpers';
+
+const supabase = createClient();
 
 export default function ApparelPage() {
   const [allProducts, setAllProducts] = useState([]);

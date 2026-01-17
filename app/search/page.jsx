@@ -5,8 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase";
 import { ensurePublicImageUrl } from "@/lib/image-helpers";
+
+const supabase = createClient();
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
