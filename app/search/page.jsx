@@ -1,33 +1,99 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { PRODUCT_CATALOG } from "../components/ProductCatalog";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
+import { supabase } from "@/lib/supabase";
+import { ensurePublicImageUrl } from "@/lib/image-helpers";
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
 
   const categories = ["ALL", "T-SHIRTS", "JACKETS", "SHIRTS", "POLOS", "JEANS", "PANTS", "SHORTS", "CARGOS", "JERSEY", "HOODIES", "SWEATSHIRTS"];
 
+  // Load active products from Supabase (no static catalog fallback to avoid stale prices)
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("is_active", true);
+
+        if (!mounted) return;
+
+        if (error) {
+          console.error("Error loading products:", error);
+          setProducts([]);
+          setError(error?.message || "Failed to load products");
+          return;
+        }
+
+        const mapped = (data || []).map((p) => {
+          const gallery = Array.isArray(p.gallery)
+            ? p.gallery.filter((url) => url && !url.toLowerCase().includes(".heic"))
+            : [];
+          const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
+          const images = gallery.length ? gallery : mainImages;
+          const primary = ensurePublicImageUrl(images[0] || null);
+          const hover = ensurePublicImageUrl(images[1] || images[0] || null);
+
+          return {
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            description: p.description || "",
+            category: p.category || "APPAREL",
+            tags: p.tags || [],
+            price: Number(p.price || 0),
+            image: primary,
+            hoverImage: hover,
+          };
+        });
+
+        setProducts(mapped);
+      } catch (e) {
+        console.error("Error loading products:", e);
+        if (mounted) {
+          setProducts([]);
+          setError(e?.message || "Failed to load products");
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   // Filter products based on search query and category
   const filteredProducts = useMemo(() => {
-    let products = PRODUCT_CATALOG;
+    let filtered = products;
 
     // Filter by category
     if (selectedCategory !== "ALL") {
-      products = products.filter((product) => product.category === selectedCategory);
+      filtered = filtered.filter((product) => product.category === selectedCategory);
     }
 
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      products = products.filter(
+      filtered = filtered.filter(
         (product) =>
           product.name.toLowerCase().includes(query) ||
           product.description?.toLowerCase().includes(query) ||
@@ -37,18 +103,18 @@ export default function SearchPage() {
       );
     }
 
-    return products;
-  }, [searchQuery, selectedCategory]);
+    return filtered;
+  }, [searchQuery, selectedCategory, products]);
 
   // Suggested products (show when no search query and ALL category)
   const suggestedProducts = useMemo(() => {
     if (searchQuery.trim() || selectedCategory !== "ALL") return filteredProducts;
     // Show latest drop and core collection products as suggestions when no filter is active
-    return PRODUCT_CATALOG.filter(
+    return products.filter(
       (product) =>
         product.tags?.includes("latest-drop") || product.tags?.includes("core-collection")
     ).slice(0, 10);
-  }, [searchQuery, selectedCategory, filteredProducts]);
+  }, [searchQuery, selectedCategory, filteredProducts, products]);
 
   return (
     <div className="min-h-screen bg-white pt-32 pb-16">
@@ -92,7 +158,17 @@ export default function SearchPage() {
           </h2>
 
           {/* Product Grid */}
-          {(filteredProducts.length > 0 || (!searchQuery.trim() && selectedCategory === "ALL")) ? (
+          {loading ? (
+            <div className="text-center mt-16">
+              <p className="text-sm text-gray-500 tracking-wide">Loading products…</p>
+            </div>
+          ) : error ? (
+            <div className="text-center mt-16">
+              <p className="text-sm text-gray-500 tracking-wide">
+                Products couldn’t be loaded. Please reload.
+              </p>
+            </div>
+          ) : (filteredProducts.length > 0 || (!searchQuery.trim() && selectedCategory === "ALL")) ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
               {((searchQuery.trim() || selectedCategory !== "ALL") ? filteredProducts : suggestedProducts).map((product) => (
                 <div key={product.id} className="group">
@@ -100,7 +176,7 @@ export default function SearchPage() {
                     {/* Product Image */}
                     <div className="relative aspect-[3/4] bg-gray-100 mb-3 overflow-hidden">
                       <Image
-                        src={product.image}
+                        src={product.image || "https://placehold.co/800x1200/e5d4e8/666666?text=Image"}
                         alt={product.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"

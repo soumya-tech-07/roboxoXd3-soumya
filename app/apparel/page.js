@@ -1,19 +1,87 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import NavbarWithCustomGif from '../components/NavbarWithCustomGif';
 import FilterBar from '../components/FilterBar';
 import ProductGrid from '../components/ProductGrid';
-import { PRODUCT_CATALOG } from '../components/ProductCatalog';
+import { supabase } from '@/lib/supabase';
+import { ensurePublicImageUrl } from '@/lib/image-helpers';
 
 export default function ApparelPage() {
-  // Use centralized product catalog
-  const [allProducts] = useState(PRODUCT_CATALOG);
+  const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [sortBy, setSortBy] = useState('FEATURED');
   const [selectedCategory, setSelectedCategory] = useState('VIEW ALL');
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedAvailability, setSelectedAvailability] = useState(null);
+
+  // Load active products from Supabase (no static catalog fallback to avoid stale prices)
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true);
+
+        if (!mounted) return;
+
+        if (error) {
+          console.error('Error loading products:', error);
+          setAllProducts([]);
+          setError(error?.message || 'Failed to load products');
+          return;
+        }
+
+        const mapped = (data || []).map((p) => {
+          const gallery = Array.isArray(p.gallery)
+            ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
+            : [];
+          const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
+          const images = gallery.length ? gallery : mainImages;
+          const primary = ensurePublicImageUrl(images[0] || null);
+          const hover = ensurePublicImageUrl(images[1] || images[0] || null);
+
+          return {
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            price: Number(p.price || 0),
+            category: p.category || 'APPAREL',
+            size: Array.isArray(p.sizes) && p.sizes.length ? p.sizes : ['S', 'M', 'L', 'XL'],
+            availability: p.availability || 'IN STOCK',
+            stock: p.stock ?? 0,
+            description: p.description || '',
+            tags: p.tags || [],
+            image: primary,
+            hoverImage: hover,
+            gallery: images.map((u) => ensurePublicImageUrl(u)),
+          };
+        });
+
+        setAllProducts(mapped);
+      } catch (e) {
+        console.error('Error loading products:', e);
+        if (mounted) {
+          setAllProducts([]);
+          setError(e?.message || 'Failed to load products');
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Products with size and availability - assign default values for products missing them
   const productsWithFilters = useMemo(() => {
@@ -89,7 +157,17 @@ export default function ApparelPage() {
             onSizeChange={handleSizeChange}
             onAvailabilityChange={handleAvailabilityChange}
           />
-          <ProductGrid products={filteredAndSortedProducts} />
+          {loading ? (
+            <div className="px-4 sm:px-8 py-10 text-center text-sm text-gray-500">
+              Loading products…
+            </div>
+          ) : error ? (
+            <div className="px-4 sm:px-8 py-10 text-center text-sm text-gray-500">
+              Products couldn’t be loaded. Please reload.
+            </div>
+          ) : (
+            <ProductGrid products={filteredAndSortedProducts} />
+          )}
         </div>
       </div>
     </>

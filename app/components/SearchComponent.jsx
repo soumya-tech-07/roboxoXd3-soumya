@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { PRODUCT_CATALOG } from "./ProductCatalog";
 import { supabase } from '@/lib/supabase';
 
 export default function SearchComponent({ isOpen, onClose }) {
@@ -11,6 +10,7 @@ export default function SearchComponent({ isOpen, onClose }) {
   const [recentSearches, setRecentSearches] = useState([]);
   const [dbProducts, setDbProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const inputRef = useRef(null);
 
   // Fetch all active products from Supabase
@@ -18,6 +18,7 @@ export default function SearchComponent({ isOpen, onClose }) {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        setError(null);
         const { data, error } = await supabase
           .from('products')
           .select('*')
@@ -26,12 +27,14 @@ export default function SearchComponent({ isOpen, onClose }) {
         if (error) {
           console.error('Error fetching products for search:', error);
           setDbProducts([]);
+          setError(error?.message || 'Failed to load products');
         } else {
           setDbProducts(data || []);
         }
       } catch (err) {
         console.error('Error fetching products for search:', err);
         setDbProducts([]);
+        setError(err?.message || 'Failed to load products');
       } finally {
         setLoading(false);
       }
@@ -42,29 +45,26 @@ export default function SearchComponent({ isOpen, onClose }) {
 
   // Map Supabase products to match ProductCatalog format
   const products = useMemo(() => {
-    if (dbProducts?.length) {
-      return dbProducts.map((p) => {
-        const gallery = Array.isArray(p.gallery)
-          ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
-          : [];
-        const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
-        const images = gallery.length ? gallery : mainImages;
-        return {
-          id: p.id,
-          name: p.name,
-          slug: p.slug,
-          price: Number(p.price || 0),
-          category: p.category,
-          description: p.description || '',
-          tags: p.tags || [],
-          gallery: images,
-          image: images[0] || '',
-          hoverImage: images[1] || images[0] || '',
-        };
-      });
-    }
-    // Fallback to static catalog
-    return PRODUCT_CATALOG;
+    // IMPORTANT: Do NOT fall back to static catalog (can show stale prices).
+    return (dbProducts || []).map((p) => {
+      const gallery = Array.isArray(p.gallery)
+        ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
+        : [];
+      const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
+      const images = gallery.length ? gallery : mainImages;
+      return {
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        price: Number(p.price || 0),
+        category: p.category || 'APPAREL',
+        description: p.description || '',
+        tags: p.tags || [],
+        gallery: images,
+        image: images[0] || '',
+        hoverImage: images[1] || images[0] || '',
+      };
+    });
   }, [dbProducts]);
 
   // Popular search terms with images - extracted from products
@@ -73,7 +73,7 @@ export default function SearchComponent({ isOpen, onClose }) {
     const addedTerms = new Set(); // Track added terms to prevent duplicates
     
     // Get categories with representative product images
-    const categories = [...new Set(products.map(p => p.category))];
+    const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
     categories.slice(0, 4).forEach(category => {
       if (!addedTerms.has(category.toLowerCase())) {
         const firstProduct = products.find(p => p.category === category && p.image);
@@ -116,7 +116,7 @@ export default function SearchComponent({ isOpen, onClose }) {
     const query = searchQuery.toLowerCase().trim();
     return products.filter((product) => {
       const nameMatch = product.name.toLowerCase().includes(query);
-      const categoryMatch = product.category.toLowerCase().includes(query);
+      const categoryMatch = (product.category || '').toLowerCase().includes(query);
       const descriptionMatch = product.description?.toLowerCase().includes(query);
       const tagMatch = product.tags?.some(tag => tag.toLowerCase().includes(query));
       
@@ -268,6 +268,13 @@ export default function SearchComponent({ isOpen, onClose }) {
 
           {/* Content */}
           <div className="max-w-[1920px] mx-auto px-6 py-4">
+            {error && (
+              <div className="mb-4 text-center">
+                <p className="text-xs text-red-600">
+                  Search products couldn’t be loaded. Please reload.
+                </p>
+              </div>
+            )}
             {!searchQuery ? (
               // Initial State - Popular & Recent Searches - Centered
               <div className="max-w-4xl mx-auto animate-in fade-in duration-500 delay-300">
