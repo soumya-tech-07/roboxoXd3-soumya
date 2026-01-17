@@ -280,13 +280,13 @@ export default function NavbarWithCustomGif() {
                           </p>
                           <p className="text-xs text-gray-500 mt-1">{user?.email}</p>
                         </div>
-                        <Link
+                        {/* <Link
                           href="/wishlist"
                           onClick={() => setIsUserMenuOpen(false)}
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                         >
                           My Wishlist
-                        </Link>
+                        </Link> */}
                         
                         <button
                           onClick={async () => {
