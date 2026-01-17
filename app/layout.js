@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
                 <CartProvider>
                   <NavbarWithCustomGif/>
                   {children}
-                  {/* <Footer/> */}
+                  <Footer/>
                   <AuthModals />
                   <CartSidebar />
                   <DiscountBanner />
