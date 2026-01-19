@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from '@/lib/supabase';
 import ProductCard from './ProductCard';
+import { useAuth } from '../context/AuthContext';
 
 const supabase = createClient();
 
@@ -11,14 +12,20 @@ export default function WomensSection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const { loading: authLoading } = useAuth();
 
   // CRITICAL: Hydration safety check - prevents stale server UI from flashing
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Fetch womens products from Supabase (use DB first, fallback to static)
+  // Fetch womens products from Supabase - WAIT for auth to initialize first
   useEffect(() => {
+    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
+    if (authLoading) {
+      return;
+    }
+
     const fetchProducts = async () => {
       try {
         setLoading(true);
@@ -48,7 +55,7 @@ export default function WomensSection() {
     };
 
     fetchProducts();
-  }, []);
+  }, [authLoading]);
 
   const womensProducts = useMemo(() => {
     // IMPORTANT: Do NOT fall back to static catalog.

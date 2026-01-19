@@ -8,6 +8,7 @@ import SizeGuideModal from '../../components/SizeguideModal';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 import RelatedProducts from '../components/RelatedProducts';
 import ProductBreadcrumb from '../components/ProductBreadcrumb';
 import ProductNotFound from '../components/ProductNotFound';
@@ -27,14 +28,20 @@ export default function ProductPage() {
   const [dbProduct, setDbProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const { loading: authLoading } = useAuth();
   
   const productIdentifier = useMemo(() => {
     const value = Array.isArray(params?.id) ? params?.id[0] : params?.id;
     return value ?? '';
   }, [params]);
 
-  // Fetch product from Supabase
+  // Fetch product from Supabase - WAIT for auth to initialize first
   useEffect(() => {
+    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
+    if (authLoading) {
+      return;
+    }
+
     const fetchProduct = async () => {
       if (!productIdentifier) {
         setLoading(false);
@@ -91,7 +98,7 @@ export default function ProductPage() {
     };
 
     fetchProduct();
-  }, [productIdentifier]);
+  }, [authLoading, productIdentifier]);
 
   const derivedProduct = useMemo(() => {
     // IMPORTANT: No static ProductCatalog fallback (can show stale prices).

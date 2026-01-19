@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import { createClient } from "@/lib/supabase";
 import { ensurePublicImageUrl } from "@/lib/image-helpers";
 
@@ -18,11 +19,17 @@ export default function SearchPage() {
   const [error, setError] = useState(null);
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { loading: authLoading } = useAuth();
 
   const categories = ["ALL", "T-SHIRTS", "JACKETS", "SHIRTS", "POLOS", "JEANS", "PANTS", "SHORTS", "CARGOS", "JERSEY", "HOODIES", "SWEATSHIRTS"];
 
-  // Load active products from Supabase (no static catalog fallback to avoid stale prices)
+  // Load active products from Supabase - WAIT for auth to initialize first
   useEffect(() => {
+    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
+    if (authLoading) {
+      return;
+    }
+
     let mounted = true;
 
     const load = async () => {
@@ -81,7 +88,7 @@ export default function SearchPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [authLoading]);
 
   // Filter products based on search query and category
   const filteredProducts = useMemo(() => {

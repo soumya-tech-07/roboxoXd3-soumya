@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase';
 import ProductCard from '../../components/ProductCard';
+import { useAuth } from '../../context/AuthContext';
 
 const supabase = createClient();
 
@@ -13,9 +14,15 @@ export default function RelatedProducts({ currentProductId, category }) {
   const [dbProducts, setDbProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { loading: authLoading } = useAuth();
 
-  // Fetch products from Supabase by category
+  // Fetch products from Supabase by category - WAIT for auth to initialize first
   useEffect(() => {
+    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
+    if (authLoading) {
+      return;
+    }
+
     const fetchProducts = async () => {
       if (!category) {
         setLoading(false);
@@ -48,7 +55,7 @@ export default function RelatedProducts({ currentProductId, category }) {
     };
 
     fetchProducts();
-  }, [category]);
+  }, [authLoading, category]);
 
   // Get related products from the same category, excluding current product
   const relatedProducts = useMemo(() => {
