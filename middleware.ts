@@ -9,7 +9,9 @@ import { createServerClient } from '@supabase/ssr';
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
-    request,
+    request: {
+      headers: request.headers,
+    },
   });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

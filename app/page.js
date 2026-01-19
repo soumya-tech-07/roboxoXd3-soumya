@@ -18,13 +18,13 @@ export const revalidate = 0;
 export default function Home() {
   return (
     <>
-    {/* <HomeBackgroundVideo/> */}
+    <HomeBackgroundVideo/>
     <div className="relative z-10">
       <LatestDrop/>
       {/* <SplitHeroSection/> */}
       <WomensSection/>
       <MensSection/>
-      {/* <AutoplayVideo/> */}
+      <AutoplayVideo/>
       {/* <ProductGrid/> */}
       <ScrollingBanner/>
     </div>
