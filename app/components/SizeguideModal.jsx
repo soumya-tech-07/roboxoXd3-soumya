@@ -262,13 +262,13 @@ export default function SizeGuideModal({
 
               {/* Dynamic Size Chart Table */}
               {loading ? (
-                <div className="w-full border border-gray-900 p-8 text-center">
+                <div className="w-full border border-gray-900 rounded-lg p-8 text-center">
                   <p className="text-sm text-gray-600">Loading size chart...</p>
                 </div>
               ) : sizeChart && sizeChart.measurements ? (
                 <SizeChartTable measurements={sizeChart.measurements} />
               ) : (
-                <div className="w-full border border-gray-900 p-8 text-center">
+                <div className="w-full border border-gray-900 rounded-lg p-8 text-center">
                   <p className="text-sm text-gray-600">Size chart not available for this category.</p>
                 </div>
               )}
@@ -541,7 +541,7 @@ export default function SizeGuideModal({
 function SizeChartTable({ measurements }) {
   if (!measurements || !Array.isArray(measurements) || measurements.length === 0) {
     return (
-      <div className="w-full border border-gray-900 p-8 text-center">
+      <div className="w-full border border-gray-900 rounded-lg p-8 text-center">
         <p className="text-sm text-gray-600">No size data available.</p>
       </div>
     );
@@ -561,7 +561,7 @@ function SizeChartTable({ measurements }) {
   const sizes = measurements.map((item) => item.size);
 
   return (
-    <div className="w-full border border-gray-900 overflow-x-auto">
+    <div className="w-full border border-gray-900 rounded-lg overflow-hidden">
       <table className="w-full border-collapse">
         {/* Header Row */}
         <thead>
