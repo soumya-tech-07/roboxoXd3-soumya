@@ -421,10 +421,6 @@ export default function OrdersPage() {
                               : `₹ ${order.shipping_cost.toLocaleString('en-IN')}`}
                           </span>
                         </div>
-                        <div className="flex justify-between text-sm text-gray-700">
-                          <span>Tax (GST 18%)</span>
-                          <span>₹ {order.tax.toLocaleString('en-IN')}</span>
-                        </div>
                         {order.discount > 0 && (
                           <div className="flex justify-between text-sm text-red-600">
                             <span>Discount</span>

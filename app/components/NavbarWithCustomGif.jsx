@@ -27,7 +27,7 @@ export default function NavbarWithCustomGif() {
 
   const rotatingTexts = [
     "NEW DROP - NOW LIVE",
-    "FREE SHIPPING ON ORDERS ABOVE ₹299",
+    "FREE SHIPPING ON ORDERS ABOVE 1499",
     "SHOP THE LATEST COLLECTION",
   ];
 
@@ -225,7 +225,7 @@ export default function NavbarWithCustomGif() {
               <Link href="/" className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0">
                 <div className="relative h-20 sm:h-24 w-auto flex items-center">
                   <Image
-                    src={isScrolled ? "/images/4.png" : "/images/mainlog.png"}
+                    src={isScrolled ? "/images/4.png" : "/images/image.png"}
                     alt="Retro Louve"
                     width={500}
                     height={500}

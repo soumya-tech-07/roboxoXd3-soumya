@@ -20,13 +20,13 @@ export default function Footer() {
               />
             </div>
             <p className="text-[10px] text-gray-600">
-              © 2025 RETRO LOUVE RETAIL PRIVATE LIMITED, ALL RIGHTS RESERVED.
+              © 2026 RETRO LOUVE RETAIL PRIVATE LIMITED, ALL RIGHTS RESERVED.
             </p>
           </div>
 
           {/* Help Section */}
           <div>
-            <h3 className="text-[10px] font-semibold mb-4 tracking-wider">HELP</h3>
+            <h3 className="text-[10px] font-semibold mb-4 text-black tracking-wider">HELP</h3>
             <ul className="space-y-2 text-xs text-gray-700">
               
               <li>
@@ -59,7 +59,7 @@ export default function Footer() {
 
           {/* Company Section */}
           <div>
-            <h3 className="text-[10px] font-semibold mb-4 tracking-wider">COMPANY</h3>
+            <h3 className="text-[10px] font-semibold mb-4 text-black tracking-wider">COMPANY</h3>
             <ul className="space-y-2 text-xs text-gray-700">
               <li>
                 <Link href="/story" className="hover:underline">
@@ -72,7 +72,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/blogs" className="hover:underline">
+                <Link href="/blog" className="hover:underline">
                   BLOGS
                 </Link>
               </li>
@@ -88,7 +88,7 @@ export default function Footer() {
             <span>CONNECT</span>
             <div className="flex gap-4 sm:gap-8 items-center">
               <Link 
-                href="https://instagram.com" 
+                href="https://www.instagram.com/retrolouve?igsh=MTlsZDB2emlkMnllcA%3D%3D" 
                 className="flex items-center gap-2 hover:opacity-70 transition-opacity"
                 target="_blank"
                 rel="noopener noreferrer"

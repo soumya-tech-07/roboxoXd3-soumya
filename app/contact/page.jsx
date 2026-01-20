@@ -73,7 +73,7 @@ export default function ContactPage() {
         </svg>
       ),
       title: 'ADDRESS',
-      content: '123 Fashion Street, Mumbai, Maharashtra 400001, India',
+      content: 'New Delhi, India',
       link: null
     }
   ];

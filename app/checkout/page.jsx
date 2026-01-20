@@ -55,9 +55,8 @@ export default function CheckoutPage() {
     }, 0);
   }, [cartItems]);
 
-  const shippingCost = cartTotal >= 299 ? 0 : 99;
-  const tax = cartTotal * 0.18; // 18% GST
-  const total = cartTotal + shippingCost + tax;
+  const shippingCost = cartTotal >= 1499 ? 0 : 99;
+  const total = cartTotal + shippingCost;
 
   // Redirect to home and open login modal if not authenticated
   useEffect(() => {
@@ -868,10 +867,6 @@ export default function CheckoutPage() {
                     {shippingCost === 0 ? 'FREE' : `₹ ${shippingCost.toLocaleString('en-IN')}`}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm text-gray-700">
-                  <span>Tax (GST 18%)</span>
-                  <span>₹ {tax.toLocaleString('en-IN')}</span>
-                </div>
                 <div className="border-t border-gray-300 pt-3 mt-3">
                   <div className="flex justify-between text-base font-semibold text-gray-900">
                     <span>TOTAL</span>
@@ -880,9 +875,9 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {cartTotal < 299 && (
+              {cartTotal < 1499 && (
                 <p className="text-xs text-gray-600 mb-4 text-center">
-                  Add ₹ {(299 - cartTotal).toLocaleString('en-IN')} more for free shipping
+                  Add ₹ {(1499 - cartTotal).toLocaleString('en-IN')} more for free shipping
                 </p>
               )}
 

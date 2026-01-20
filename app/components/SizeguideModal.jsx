@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase";
+import { useAuth } from "../context/AuthContext";
+import { useAuthModal } from "../context/AuthModalContext";
 
 const supabase = createClient();
 
@@ -15,6 +17,9 @@ export default function SizeGuideModal({
   const [showCustomizeForm, setShowCustomizeForm] = useState(false);
   const [sizeChart, setSizeChart] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+  const { openLogin } = useAuthModal();
   const [formData, setFormData] = useState({
     name: "",
     favouriteSection: "Woman",
@@ -25,14 +30,8 @@ export default function SizeGuideModal({
     age: "",
   });
 
-  // Load size chart based on product category
-  useEffect(() => {
-    if (isOpen && productCategory) {
-      loadSizeChart();
-    }
-  }, [isOpen, productCategory]);
-
-  const loadSizeChart = async () => {
+  // Define loadSizeChart function before useEffect
+  const loadSizeChart = useCallback(async () => {
     if (!productCategory) return;
 
     try {
@@ -63,7 +62,62 @@ export default function SizeGuideModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [productCategory]);
+
+  // Define loadUserProfile function before useEffect
+  const loadUserProfile = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading user profile:', error);
+      } else if (data) {
+        // Populate form with existing profile data
+        setFormData({
+          name: data.name || "",
+          favouriteSection: data.favourite_section || "Woman",
+          height: data.height ? String(data.height) : "",
+          heightUnit: data.height_unit || "CM",
+          weight: data.weight ? String(data.weight) : "",
+          weightUnit: data.weight_unit || "KG",
+          age: data.age ? String(data.age) : "",
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  }, [user]);
+
+  // Load size chart based on product category
+  useEffect(() => {
+    if (isOpen && productCategory) {
+      loadSizeChart();
+    }
+  }, [isOpen, productCategory, loadSizeChart]);
+
+  // Load user profile data when modal opens and user is logged in
+  useEffect(() => {
+    if (isOpen && user && !authLoading) {
+      loadUserProfile();
+    } else if (isOpen && !user && !authLoading) {
+      // Reset form if user logs out
+      setFormData({
+        name: "",
+        favouriteSection: "Woman",
+        height: "",
+        heightUnit: "CM",
+        weight: "",
+        weightUnit: "KG",
+        age: "",
+      });
+    }
+  }, [isOpen, user, authLoading, loadUserProfile]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -82,14 +136,80 @@ export default function SizeGuideModal({
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleCustomizeClick = () => {
+    // Check if user is logged in
+    if (!user) {
+      // Open login modal and close size guide modal
+      onClose();
+      openLogin();
+      return;
+    }
+    // User is logged in, show the customize form
+    setShowCustomizeForm(true);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Save to localStorage or send to API
-    localStorage.setItem("userSizePreferences", JSON.stringify(formData));
-    console.log("Size preferences saved:", formData);
-    alert("Your size preferences have been saved!");
-    setShowCustomizeForm(false);
-    onClose();
+    
+    if (!user) {
+      alert("Please log in to save your preferences.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      
+      // Prepare data for Supabase
+      const profileData = {
+        user_id: user.id,
+        name: formData.name,
+        favourite_section: formData.favouriteSection,
+        height: formData.height ? parseFloat(formData.height) : null,
+        height_unit: formData.heightUnit,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        weight_unit: formData.weightUnit,
+        age: formData.age ? parseInt(formData.age) : null,
+      };
+
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      let error;
+      if (existingProfile) {
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from('user_profiles')
+          .update(profileData)
+          .eq('user_id', user.id);
+        error = updateError;
+      } else {
+        // Insert new profile
+        const { error: insertError } = await supabase
+          .from('user_profiles')
+          .insert(profileData);
+        error = insertError;
+      }
+
+      if (error) {
+        console.error('Error saving user profile:', error);
+        alert("Failed to save your preferences. Please try again.");
+        return;
+      }
+
+      // Success
+      alert("Your size preferences have been saved!");
+      setShowCustomizeForm(false);
+      onClose();
+    } catch (err) {
+      console.error('Error saving user profile:', err);
+      alert("Failed to save your preferences. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleClose = () => {
@@ -184,7 +304,7 @@ export default function SizeGuideModal({
               {/* Customize Button */}
               <div className="flex justify-center pt-4">
                 <button
-                  onClick={() => setShowCustomizeForm(true)}
+                  onClick={handleCustomizeClick}
                   className="bg-brand text-white px-8 py-3 rounded-lg hover:bg-red-700 active:scale-95 transition-all text-sm font-semibold tracking-wide uppercase cursor-pointer"
                 >
                   CUSTOMIZE YOUR SIZE
@@ -403,9 +523,10 @@ export default function SizeGuideModal({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-brand text-white px-6 py-3.5 rounded-lg hover:bg-brand/90 active:scale-95 transition-all text-sm font-semibold tracking-wide shadow-md hover:shadow-lg cursor-pointer"
+                  disabled={saving}
+                  className="flex-1 bg-brand text-white px-6 py-3.5 rounded-lg hover:bg-brand/90 active:scale-95 transition-all text-sm font-semibold tracking-wide shadow-md hover:shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  SAVE PREFERENCES
+                  {saving ? "SAVING..." : "SAVE PREFERENCES"}
                 </button>
               </div>
             </form>

@@ -26,7 +26,7 @@ export default function Home() {
       <MensSection/>
       <AutoplayVideo/>
       {/* <ProductGrid/> */}
-      <ScrollingBanner/>
+      {/* <ScrollingBanner/> */}
     </div>
     </>
   );

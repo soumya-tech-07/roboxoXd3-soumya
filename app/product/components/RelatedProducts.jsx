@@ -16,7 +16,7 @@ export default function RelatedProducts({ currentProductId, category }) {
   const [error, setError] = useState(null);
   const { loading: authLoading } = useAuth();
 
-  // Fetch products from Supabase by category - WAIT for auth to initialize first
+  // Fetch all products from Supabase - WAIT for auth to initialize first
   useEffect(() => {
     // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
     if (authLoading) {
@@ -24,43 +24,36 @@ export default function RelatedProducts({ currentProductId, category }) {
     }
 
     const fetchProducts = async () => {
-      if (!category) {
-        setLoading(false);
-        return;
-      }
-
       try {
         setLoading(true);
         setError(null);
         const { data, error } = await supabase
           .from('products')
           .select('*')
-          .eq('category', category)
-          .eq('is_active', true);
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Error fetching related products:', error);
+          console.error('Error fetching products:', error);
           setDbProducts([]);
-          setError(error?.message || 'Failed to load related products');
+          setError(error?.message || 'Failed to load products');
         } else {
           setDbProducts(data || []);
         }
       } catch (err) {
-        console.error('Error fetching related products:', err);
+        console.error('Error fetching products:', err);
         setDbProducts([]);
-        setError(err?.message || 'Failed to load related products');
+        setError(err?.message || 'Failed to load products');
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, [authLoading, category]);
+  }, [authLoading]);
 
-  // Get related products from the same category, excluding current product
-  const relatedProducts = useMemo(() => {
-    if (!category) return [];
-
+  // Get all products, excluding current product if provided
+  const allProducts = useMemo(() => {
     // IMPORTANT: No static fallback (can show stale prices).
     const products = (dbProducts || []).map((p) => {
       const gallery = Array.isArray(p.gallery)
@@ -81,16 +74,19 @@ export default function RelatedProducts({ currentProductId, category }) {
       };
     });
 
-    return products
-      .filter((product) => product.id !== currentProductId)
-      .slice(0, 8); // Limit to 8 related products
-  }, [category, currentProductId, dbProducts]);
+    // Exclude current product if provided
+    if (currentProductId) {
+      return products.filter((product) => product.id !== currentProductId);
+    }
+    
+    return products;
+  }, [currentProductId, dbProducts]);
 
   if (loading) {
     return null;
   }
 
-  if (error || relatedProducts.length === 0) {
+  if (error || allProducts.length === 0) {
     return null;
   }
 
@@ -146,7 +142,7 @@ export default function RelatedProducts({ currentProductId, category }) {
     <section className="mt-16 sm:mt-20 lg:mt-24 border-t border-gray-200 pt-12 sm:pt-16">
       <div className="max-w-7xl mx-auto px-6">
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6 sm:mb-8 tracking-wide">
-          RELATED PRODUCTS
+          ALL PRODUCTS
         </h2>
 
         {/* Scrollable Container with Arrows */}
@@ -207,7 +203,7 @@ export default function RelatedProducts({ currentProductId, category }) {
               msOverflowStyle: 'none',
             }}
           >
-            {relatedProducts.map((product) => (
+            {allProducts.map((product) => (
               <div key={product.id} className="shrink-0 w-[180px] sm:w-[220px] lg:w-[240px]">
                 <ProductCard
                   product={product}
