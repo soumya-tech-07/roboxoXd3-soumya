@@ -2,16 +2,13 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 import { ensurePublicImageUrl } from '@/lib/image-helpers';
 import SizeGuideModal from '../../components/SizeguideModal';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
-import {
-  PRODUCT_CATALOG,
-  getProductBySlug,
-} from '../../components/ProductCatalog';
+import { useAuth } from '../../context/AuthContext';
 import RelatedProducts from '../components/RelatedProducts';
 import ProductBreadcrumb from '../components/ProductBreadcrumb';
 import ProductNotFound from '../components/ProductNotFound';
@@ -22,28 +19,39 @@ import ProductActionButtons from '../components/ProductActionButtons';
 import ProductAccordion from '../components/ProductAccordion';
 import ProductShareContact from '../components/ProductShareContact';
 
+const supabase = createClient();
+
 const PLACEHOLDER_ICON = 'https://placehold.co/100x100/e5d4e8/666666?text=Icon';
 
 export default function ProductPage() {
   const params = useParams();
   const [dbProduct, setDbProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const { loading: authLoading } = useAuth();
   
   const productIdentifier = useMemo(() => {
     const value = Array.isArray(params?.id) ? params?.id[0] : params?.id;
     return value ?? '';
   }, [params]);
 
-  // Fetch product from Supabase
+  // Fetch product from Supabase - WAIT for auth to initialize first
   useEffect(() => {
+    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
+    if (authLoading) {
+      return;
+    }
+
     const fetchProduct = async () => {
       if (!productIdentifier) {
         setLoading(false);
+        setNotFound(true);
         return;
       }
 
       try {
         setLoading(true);
+        setNotFound(false);
         // Try to fetch by slug first, then by ID
         let query = supabase
           .from('products')
@@ -71,7 +79,13 @@ export default function ProductPage() {
           }
         }
 
-        if (error && error.code !== 'PGRST116') {
+        if (error && error.code === 'PGRST116') {
+          setDbProduct(null);
+          setNotFound(true);
+          return;
+        }
+
+        if (error) {
           console.error('Error fetching product:', error);
         }
 
@@ -84,78 +98,54 @@ export default function ProductPage() {
     };
 
     fetchProduct();
-  }, [productIdentifier]);
-
-  // Use database product (Supabase) - fallback to static catalog only if not found
-  const catalogProduct = dbProduct || 
-    getProductBySlug(productIdentifier) ||
-    PRODUCT_CATALOG.find(
-      (item) => String(item.id) === String(productIdentifier),
-    );
+  }, [authLoading, productIdentifier]);
 
   const derivedProduct = useMemo(() => {
-    if (!catalogProduct) return null;
-
-    // Use database product if available (has Supabase URLs), otherwise use catalog
-    const isDbProduct = !!dbProduct;
+    // IMPORTANT: No static ProductCatalog fallback (can show stale prices).
+    if (!dbProduct) return null;
     
     let gallery = [];
-    if (isDbProduct) {
-      // Use gallery from database (Supabase URLs)
-      gallery = dbProduct.gallery && Array.isArray(dbProduct.gallery) 
-        ? dbProduct.gallery
-            .filter(url => url && !url.includes('.heic'))
-            .map(url => ensurePublicImageUrl(url))
-        : [];
-      
-      // Fallback to main images if gallery is empty
-      if (gallery.length === 0) {
-        const mainImages = [
-          dbProduct.image_url,
-          dbProduct.hover_image_url
-        ].filter(Boolean).map(url => ensurePublicImageUrl(url));
-        gallery = mainImages;
-      }
-    } else {
-      // Use catalog product gallery
-      gallery = catalogProduct.gallery?.length
-      ? catalogProduct.gallery.map(url => ensurePublicImageUrl(url))
-      : Array.from(
-          new Set(
-            [catalogProduct.image, catalogProduct.hoverImage]
-              .filter(Boolean)
-              .map(url => ensurePublicImageUrl(url)),
-          ),
-        );
+    // Use gallery from database (Supabase URLs)
+    gallery = dbProduct.gallery && Array.isArray(dbProduct.gallery) 
+      ? dbProduct.gallery
+          .filter(url => url && !url.includes('.heic'))
+          .map(url => ensurePublicImageUrl(url))
+      : [];
+    
+    // Fallback to main images if gallery is empty
+    if (gallery.length === 0) {
+      const mainImages = [
+        dbProduct.image_url,
+        dbProduct.hover_image_url
+      ].filter(Boolean).map(url => ensurePublicImageUrl(url));
+      gallery = mainImages;
     }
 
-    const sizes = isDbProduct 
-      ? (dbProduct.sizes && Array.isArray(dbProduct.sizes) ? dbProduct.sizes : ['S', 'M', 'L', 'XL'])
-      : (catalogProduct.size?.length ? catalogProduct.size : ['S', 'M', 'L', 'XL']);
+    const sizes =
+      dbProduct.sizes && Array.isArray(dbProduct.sizes) ? dbProduct.sizes : ['S', 'M', 'L', 'XL'];
 
     return {
-      name: catalogProduct.name,
-      price: `₹ ${Number(catalogProduct.price).toLocaleString('en-IN')}`,
+      name: dbProduct.name,
+      price: `₹ ${Number(dbProduct.price).toLocaleString('en-IN')}`,
       sku:
-        catalogProduct.sku ??
-        `RL-${String(catalogProduct.id).padStart(4, '0')}`,
+        dbProduct.sku ??
+        `RL-${String(dbProduct.id).padStart(4, '0')}`,
       images: gallery.length
         ? gallery
         : ['https://placehold.co/800x1200/e5d4e8/666666?text=Image'],
       sizes,
       description:
-        catalogProduct.description ||
+        dbProduct.description ||
         'Premium garment crafted for comfort and durability.',
-      category: catalogProduct.category ?? 'APPAREL',
-      materials: isDbProduct 
-        ? (dbProduct.materials && Array.isArray(dbProduct.materials) ? dbProduct.materials : [])
-        : (catalogProduct.materials || []),
-      composition: catalogProduct.composition || '',
-      care: catalogProduct.care || '',
-      origin: catalogProduct.origin || '',
-      modelInfo: catalogProduct.modelInfo || { size: '', height: '' },
+      category: dbProduct.category ?? 'APPAREL',
+      materials:
+        dbProduct.materials && Array.isArray(dbProduct.materials) ? dbProduct.materials : [],
+      composition: dbProduct.composition || '',
+      care: dbProduct.care || '',
+      origin: dbProduct.origin || '',
+      modelInfo: { size: dbProduct.model_size || '', height: dbProduct.model_height || '' },
     };
-  }, [catalogProduct, dbProduct]);
+  }, [dbProduct]);
 
   const [selectedSize, setSelectedSize] = useState('');
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
@@ -163,10 +153,10 @@ export default function ProductPage() {
   const { addToCart, openCart, loading: cartLoading } = useCart();
   const { showError } = useToast();
 
-  const isWishlisted = catalogProduct ? isInWishlist(catalogProduct.id) : false;
+  const isWishlisted = dbProduct ? isInWishlist(dbProduct.id) : false;
 
   const handleAddToCart = () => {
-    if (!catalogProduct || !derivedProduct) return;
+    if (!dbProduct || !derivedProduct) return;
 
     // Prevent clicks while loading
     if (cartLoading) {
@@ -179,11 +169,11 @@ export default function ProductPage() {
       return;
     }
 
-    addToCart(catalogProduct.id, selectedSize || null, 1);
+    addToCart(dbProduct.id, selectedSize || null, 1);
   };
 
   const handleBuyNow = async () => {
-    if (!catalogProduct || !derivedProduct) return;
+    if (!dbProduct || !derivedProduct) return;
 
     // Prevent clicks while loading
     if (cartLoading) {
@@ -197,7 +187,7 @@ export default function ProductPage() {
     }
 
     // Add to cart and open cart sidebar
-    const result = await addToCart(catalogProduct.id, selectedSize || null, 1);
+    const result = await addToCart(dbProduct.id, selectedSize || null, 1);
     
     // Open cart sidebar after successful add
     if (result?.success) {
@@ -208,7 +198,7 @@ export default function ProductPage() {
   };
 
   const handleWishlistToggle = () => {
-    if (!catalogProduct) return;
+    if (!dbProduct) return;
 
     // Prevent clicks while loading
     if (wishlistLoading) {
@@ -216,7 +206,7 @@ export default function ProductPage() {
       return;
     }
 
-    toggleWishlist(catalogProduct.id);
+    toggleWishlist(dbProduct.id);
   };
 
   if (loading) {
@@ -241,7 +231,7 @@ export default function ProductPage() {
         isOpen={isSizeGuideOpen}
         onClose={() => setIsSizeGuideOpen(false)}
         productName={product.name}
-        productCategory={catalogProduct?.category || product.category}
+        productCategory={product.category}
       />
 
       <ProductBreadcrumb />
@@ -280,14 +270,13 @@ export default function ProductPage() {
               />
             </div>
 
-            <ProductAccordion product={catalogProduct} />
             <ProductShareContact />
           </div>
         </div>
 
         {/* Related Products Section */}
         <RelatedProducts
-          currentProductId={catalogProduct?.id}
+          currentProductId={dbProduct?.id}
           category={product.category}
         />
       </div>

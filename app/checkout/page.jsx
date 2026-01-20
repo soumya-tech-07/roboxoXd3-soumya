@@ -8,7 +8,9 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useToast } from '../context/ToastContext';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
+
+const supabase = createClient();
 
 export default function CheckoutPage() {
   const router = useRouter();

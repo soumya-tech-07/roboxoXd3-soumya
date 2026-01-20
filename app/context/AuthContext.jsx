@@ -1,8 +1,10 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+
+const supabase = createClient();
 
 const AuthContext = createContext();
 

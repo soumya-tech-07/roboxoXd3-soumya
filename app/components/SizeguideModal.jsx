@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase";
+
+const supabase = createClient();
 
 export default function SizeGuideModal({
   isOpen,

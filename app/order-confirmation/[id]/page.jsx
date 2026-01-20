@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useToast } from '../../context/ToastContext';
+
+const supabase = createClient();
 
 export default function OrderConfirmationPage() {
   const params = useParams();
@@ -84,7 +86,6 @@ export default function OrderConfirmationPage() {
           *,
           products (
             image_url,
-            hover_image_url,
             gallery
           )
         `)
@@ -102,11 +103,11 @@ export default function OrderConfirmationPage() {
         let productImage = null;
         
         if (product) {
+          // Use first image from gallery array, or fallback to image_url
           const gallery = Array.isArray(product.gallery) 
             ? product.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
             : [];
-          const mainImages = [product.image_url, product.hover_image_url].filter(Boolean);
-          productImage = gallery.length > 0 ? gallery[0] : (mainImages[0] || null);
+          productImage = gallery.length > 0 ? gallery[0] : (product.image_url || null);
         }
         
         return {

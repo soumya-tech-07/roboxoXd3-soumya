@@ -1,29 +1,38 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from 'next/link';
 import {
-  getProductsByIds,
   latestDropProductIds,
-} from './ProductCatalog';
-import { supabase } from '@/lib/supabase';
+} from './productIds';
+import { createClient } from '@/lib/supabase';
 import ProductCard from './ProductCard';
+import { useAuth } from '../context/AuthContext';
+
+const supabase = createClient();
 
 export default function LatestDrop() {
   const [dbProducts, setDbProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const { loading: authLoading } = useAuth();
 
   // CRITICAL: Hydration safety check - prevents stale server UI from flashing
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Fetch products from Supabase (use DB first, fallback to static)
+  // Fetch products from Supabase - WAIT for auth to initialize first
   useEffect(() => {
+    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
+    if (authLoading) {
+      return;
+    }
+
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        setError(null);
         const { data, error } = await supabase
           .from('products')
           .select('*')
@@ -33,6 +42,7 @@ export default function LatestDrop() {
         if (error) {
           console.error('Error fetching latest drop products:', error);
           setDbProducts([]);
+          setError(error?.message || 'Failed to load products');
         } else {
           // Preserve order of latestDropProductIds
           const ordered = latestDropProductIds
@@ -43,43 +53,32 @@ export default function LatestDrop() {
       } catch (err) {
         console.error('Error fetching latest drop products:', err);
         setDbProducts([]);
+        setError(err?.message || 'Failed to load products');
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [authLoading]);
 
   const products = useMemo(() => {
-    // If DB products available, map them; otherwise fallback to static catalog
-    if (dbProducts?.length) {
-      return dbProducts.map((p) => {
-        const gallery = Array.isArray(p.gallery)
-          ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
-          : [];
-        const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
-        const images = gallery.length ? gallery : mainImages;
-        return {
-          id: p.id,
-          name: p.name,
-          slug: p.slug,
-          price: Number(p.price || 0),
-          gallery: images,
-          image: images[0],
-          hoverImage: images[1] || images[0],
-        };
-      });
-    }
-    // fallback to static catalog - remove category since we don't display it
-    return getProductsByIds(latestDropProductIds).map((p) => {
-      const gallery = Array.isArray(p.gallery) ? p.gallery.filter(Boolean) : [];
-      const { category, ...productWithoutCategory } = p;
+    // IMPORTANT: Do NOT fall back to static catalog.
+    // Static fallback can show stale prices/UI when Supabase fetch fails.
+    return (dbProducts || []).map((p) => {
+      const gallery = Array.isArray(p.gallery)
+        ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
+        : [];
+      const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
+      const images = gallery.length ? gallery : mainImages;
       return {
-        ...productWithoutCategory,
-        gallery,
-        image: gallery[0] || p.image,
-        hoverImage: gallery[1] || p.hoverImage || gallery[0] || p.image,
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        price: Number(p.price || 0),
+        gallery: images,
+        image: images[0],
+        hoverImage: images[1] || images[0],
       };
     });
   }, [dbProducts]);
@@ -88,6 +87,41 @@ export default function LatestDrop() {
   // CRITICAL: Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
     return null;
+  }
+
+  if (loading && products.length === 0) {
+    return (
+      <section className="bg-gray-100 py-8 sm:py-12 md:py-16 relative overflow-hidden min-h-[600px] sm:min-h-[700px]">
+        <div className="absolute inset-0 bg-black/30 z-0"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+          <h1 className="text-brand mb-4 sm:mb-6 text-lg">THE WINTER ARC DROP</h1>
+          {/* Skeleton Loading Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-4/5 bg-gray-300 rounded mb-4"></div>
+                <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                <div className="h-3 bg-gray-300 rounded w-2/3"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error && products.length === 0) {
+    return (
+      <section className="bg-gray-100 py-8 sm:py-12 md:py-16 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/30 z-0"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+          <h1 className="text-brand mb-4 sm:mb-6 text-lg">THE WINTER ARC DROP</h1>
+          <p className="text-white/80 text-sm">
+            Products couldn’t be loaded. Please reload.
+          </p>
+        </div>
+      </section>
+    );
   }
 
   return (

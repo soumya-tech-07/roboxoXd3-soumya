@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useToast } from '../context/ToastContext';
+
+const supabase = createClient();
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -65,14 +67,20 @@ export default function OrdersPage() {
               if (item.product_id) {
                 const { data: product, error: productError } = await supabase
                   .from('products')
-                  .select('image_url, hover_image_url, gallery')
+                  .select('image_url, gallery')
                   .eq('id', item.product_id)
                   .single();
 
                 if (!productError && product) {
+                  // Use first image from gallery array, or fallback to image_url
+                  const gallery = Array.isArray(product.gallery) 
+                    ? product.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
+                    : [];
+                  const productImage = gallery.length > 0 ? gallery[0] : (product.image_url || null);
+                  
                   return {
                     ...item,
-                    productImage: product.image_url || product.hover_image_url || (product.gallery && product.gallery[0]) || null,
+                    productImage,
                   };
                 }
               }
@@ -478,7 +486,7 @@ export default function OrdersPage() {
                 NO ORDERS YET
               </h2>
               <p className="text-sm text-gray-600 mb-8 tracking-wide">
-                You haven't placed any orders yet. Start shopping to see your orders here.
+                You haven&apos;t placed any orders yet. Start shopping to see your orders here.
               </p>
               <Link
                 href="/"

@@ -1,9 +1,11 @@
 'use client';
 
 import { useMemo, useRef, useState, useEffect } from 'react';
-import { PRODUCT_CATALOG, getProductsByCategory } from '../../components/ProductCatalog';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
 import ProductCard from '../../components/ProductCard';
+import { useAuth } from '../../context/AuthContext';
+
+const supabase = createClient();
 
 export default function RelatedProducts({ currentProductId, category }) {
   const scrollContainerRef = useRef(null);
@@ -11,9 +13,16 @@ export default function RelatedProducts({ currentProductId, category }) {
   const touchEndX = useRef(0);
   const [dbProducts, setDbProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { loading: authLoading } = useAuth();
 
-  // Fetch products from Supabase by category
+  // Fetch products from Supabase by category - WAIT for auth to initialize first
   useEffect(() => {
+    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
+    if (authLoading) {
+      return;
+    }
+
     const fetchProducts = async () => {
       if (!category) {
         setLoading(false);
@@ -22,6 +31,7 @@ export default function RelatedProducts({ currentProductId, category }) {
 
       try {
         setLoading(true);
+        setError(null);
         const { data, error } = await supabase
           .from('products')
           .select('*')
@@ -31,66 +41,56 @@ export default function RelatedProducts({ currentProductId, category }) {
         if (error) {
           console.error('Error fetching related products:', error);
           setDbProducts([]);
+          setError(error?.message || 'Failed to load related products');
         } else {
           setDbProducts(data || []);
         }
       } catch (err) {
         console.error('Error fetching related products:', err);
         setDbProducts([]);
+        setError(err?.message || 'Failed to load related products');
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, [category]);
+  }, [authLoading, category]);
 
   // Get related products from the same category, excluding current product
   const relatedProducts = useMemo(() => {
     if (!category) return [];
 
-    let products = [];
-
-    // Use database products if available, otherwise fall back to static catalog
-    if (dbProducts?.length > 0) {
-      products = dbProducts.map((p) => {
-        const gallery = Array.isArray(p.gallery)
-          ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
-          : [];
-        const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
-        const images = gallery.length ? gallery : mainImages;
-        return {
-          id: p.id,
-          name: p.name,
-          slug: p.slug,
-          price: Number(p.price || 0),
-          category: p.category,
-          tags: p.tags,
-          gallery: images,
-          image: images[0],
-          hoverImage: images[1] || images[0],
-        };
-      });
-    } else {
-      // Fallback to static catalog
-      const categoryProducts = getProductsByCategory(category);
-      products = categoryProducts.map((p) => {
-        const gallery = Array.isArray(p.gallery) ? p.gallery.filter(Boolean) : [];
-        return {
-          ...p,
-          gallery,
-          image: gallery[0] || p.image,
-          hoverImage: gallery[1] || p.hoverImage || gallery[0] || p.image,
-        };
-      });
-    }
+    // IMPORTANT: No static fallback (can show stale prices).
+    const products = (dbProducts || []).map((p) => {
+      const gallery = Array.isArray(p.gallery)
+        ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
+        : [];
+      const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
+      const images = gallery.length ? gallery : mainImages;
+      return {
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        price: Number(p.price || 0),
+        category: p.category || 'APPAREL',
+        tags: p.tags,
+        gallery: images,
+        image: images[0],
+        hoverImage: images[1] || images[0],
+      };
+    });
 
     return products
       .filter((product) => product.id !== currentProductId)
       .slice(0, 8); // Limit to 8 related products
   }, [category, currentProductId, dbProducts]);
 
-  if (relatedProducts.length === 0) {
+  if (loading) {
+    return null;
+  }
+
+  if (error || relatedProducts.length === 0) {
     return null;
   }
 
