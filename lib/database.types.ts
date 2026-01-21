@@ -451,15 +451,15 @@ export type Database = {
             Returns: string
           }
         | {
-            Args: {
-              p_billing_address: Json
-              p_notes?: string
-              p_payment_method?: string
-              p_shipping_address: Json
-              p_user_id: string
-            }
-            Returns: string
-          }
+        Args: {
+          p_billing_address: Json
+          p_notes?: string
+          p_payment_method?: string
+          p_shipping_address: Json
+          p_user_id: string
+        }
+        Returns: string
+      }
       generate_order_number: { Args: never; Returns: string }
       get_cart_with_products: {
         Args: { p_user_id: string }

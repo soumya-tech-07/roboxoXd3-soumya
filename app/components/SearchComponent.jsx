@@ -56,24 +56,24 @@ export default function SearchComponent({ isOpen, onClose }) {
   const products = useMemo(() => {
     // IMPORTANT: Do NOT fall back to static catalog (can show stale prices).
     return (dbProducts || []).map((p) => {
-      const gallery = Array.isArray(p.gallery)
-        ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
-        : [];
-      const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
-      const images = gallery.length ? gallery : mainImages;
-      return {
-        id: p.id,
-        name: p.name,
-        slug: p.slug,
-        price: Number(p.price || 0),
+        const gallery = Array.isArray(p.gallery)
+          ? p.gallery.filter((url) => url && !url.toLowerCase().includes('.heic'))
+          : [];
+        const mainImages = [p.image_url, p.hover_image_url].filter(Boolean);
+        const images = gallery.length ? gallery : mainImages;
+        return {
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          price: Number(p.price || 0),
         category: p.category || 'APPAREL',
-        description: p.description || '',
-        tags: p.tags || [],
-        gallery: images,
-        image: images[0] || '',
-        hoverImage: images[1] || images[0] || '',
-      };
-    });
+          description: p.description || '',
+          tags: p.tags || [],
+          gallery: images,
+          image: images[0] || '',
+          hoverImage: images[1] || images[0] || '',
+        };
+      });
   }, [dbProducts]);
 
   // Popular search terms with images - extracted from products

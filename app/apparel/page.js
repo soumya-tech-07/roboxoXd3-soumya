@@ -175,7 +175,7 @@ export default function ApparelPage() {
               Products couldn’t be loaded. Please reload.
             </div>
           ) : (
-            <ProductGrid products={filteredAndSortedProducts} />
+          <ProductGrid products={filteredAndSortedProducts} />
           )}
         </div>
       </div>

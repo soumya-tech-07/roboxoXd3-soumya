@@ -27,7 +27,7 @@ export default function NavbarWithCustomGif() {
 
   const rotatingTexts = [
     "NEW DROP - NOW LIVE",
-    "FREE SHIPPING ON ORDERS ABOVE 1499",
+    "FREE SHIPPING ON ORDERS ABOVE ₹1499",
     "SHOP THE LATEST COLLECTION",
   ];
 

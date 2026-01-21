@@ -105,21 +105,21 @@ export default function ProductPage() {
     if (!dbProduct) return null;
     
     let gallery = [];
-    // Use gallery from database (Supabase URLs)
-    gallery = dbProduct.gallery && Array.isArray(dbProduct.gallery) 
-      ? dbProduct.gallery
-          .filter(url => url && !url.includes('.heic'))
-          .map(url => ensurePublicImageUrl(url))
-      : [];
-    
-    // Fallback to main images if gallery is empty
-    if (gallery.length === 0) {
-      const mainImages = [
-        dbProduct.image_url,
-        dbProduct.hover_image_url
-      ].filter(Boolean).map(url => ensurePublicImageUrl(url));
-      gallery = mainImages;
-    }
+      // Use gallery from database (Supabase URLs)
+      gallery = dbProduct.gallery && Array.isArray(dbProduct.gallery) 
+        ? dbProduct.gallery
+            .filter(url => url && !url.includes('.heic'))
+            .map(url => ensurePublicImageUrl(url))
+        : [];
+      
+      // Fallback to main images if gallery is empty
+      if (gallery.length === 0) {
+        const mainImages = [
+          dbProduct.image_url,
+          dbProduct.hover_image_url
+        ].filter(Boolean).map(url => ensurePublicImageUrl(url));
+        gallery = mainImages;
+      }
 
     const sizes =
       dbProduct.sizes && Array.isArray(dbProduct.sizes) ? dbProduct.sizes : ['S', 'M', 'L', 'XL'];

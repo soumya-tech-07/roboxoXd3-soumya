@@ -77,6 +77,31 @@ export default function SignupModal() {
     }
 
     try {
+      // STEP 1: Check if email already exists BEFORE attempting signup
+      try {
+        const checkResponse = await fetch('/api/auth/check-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: formData.email }),
+        });
+
+        if (checkResponse.ok) {
+          const { exists } = await checkResponse.json();
+          if (exists) {
+            setError('An account with this email already exists. Please try logging in instead.');
+            showError('An account with this email already exists. Please try logging in instead.');
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (checkError) {
+        console.error('Error checking email:', checkError);
+        // Continue with signup even if check fails
+      }
+
+      // STEP 2: Proceed with signup
       const { data, error: signUpError } = await signUp(
         formData.email,
         formData.password,
@@ -88,8 +113,12 @@ export default function SignupModal() {
 
       if (signUpError) {
         const errorMessage = signUpError.message || 'Failed to create account. Please try again.';
-        setError(errorMessage);
-        showError(errorMessage);
+        const isDuplicate = errorMessage.toLowerCase().includes('already exists');
+        const displayMessage = isDuplicate
+          ? 'An account with this email already exists. Please try logging in instead.'
+          : errorMessage;
+        setError(displayMessage);
+        showError(displayMessage);
         setLoading(false);
         return;
       }
@@ -343,37 +372,6 @@ export default function SignupModal() {
             </button>
           </div>
 
-          {/* Divider */}
-          <div className="my-8 flex items-center">
-            <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-4 text-xs text-gray-500 uppercase">OR</span>
-            <div className="flex-1 border-t border-gray-300"></div>
-          </div>
-
-          {/* Social Signup Buttons */}
-          <div className="space-y-3">
-            <button
-              type="button"
-              className="w-full py-3 border border-gray-300 text-sm tracking-wide text-gray-900 hover:border-brand hover:text-brand transition-colors flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-              </svg>
-              CONTINUE WITH GOOGLE
-            </button>
-            <button
-              type="button"
-              className="w-full py-3 border border-gray-300 text-sm tracking-wide text-gray-900 hover:border-brand hover:text-brand transition-colors flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 8.16c-.169 1.858-.896 3.405-2.051 4.537-.348.348-.754.653-1.207.916-.453.262-.954.48-1.503.653-.549.173-1.14.26-1.773.26-.633 0-1.224-.087-1.773-.26-.549-.173-1.05-.391-1.503-.653-.453-.263-.859-.568-1.207-.916.348-.348.653-.754.916-1.207.262-.453.48-.954.653-1.503.173-.549.26-1.14.26-1.773 0-.633-.087-1.224-.26-1.773-.173-.549-.391-1.05-.653-1.503-.263-.453-.568-.859-.916-1.207-.348-.348-.754-.653-1.207-.916C13.224.391 12.633.26 12 .26c-.633 0-1.224.131-1.773.26-.549.173-1.05.391-1.503.653-.453.263-.859.568-1.207.916-.348.348-.653.754-.916 1.207-.262.453-.48.954-.653 1.503-.173.549-.26 1.14-.26 1.773 0 .633.087 1.224.26 1.773.173.549.391 1.05.653 1.503.263.453.568.859.916 1.207.348.348.754.653 1.207.916.453.262.954.48 1.503.653.549.173 1.14.26 1.773.26.633 0 1.224-.087 1.773-.26.549-.173 1.05-.391 1.503-.653.453-.263.859-.568 1.207-.916.348-.348.653-.754.916-1.207.262-.453.48-.954.653-1.503.173-.549.26-1.14.26-1.773V8.16h-1.032z"/>
-              </svg>
-              CONTINUE WITH FACEBOOK
-            </button>
-          </div>
         </div>
       </div>
     </div>
