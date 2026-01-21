@@ -5,6 +5,52 @@ import { Instagram, Youtube, Mail, Phone } from 'lucide-react';
 export default function Footer() {
   return (
     <footer className="bg-gray-100">
+
+            {/* Bottom Bar */}
+            <div className="bg-brand text-white">
+        <div className="mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-[10px] tracking-wider">
+            <span>CONNECT</span>
+            <div className="flex gap-4 sm:gap-8 items-center">
+              <Link 
+                href="https://www.instagram.com/retrolouve?igsh=MTlsZDB2emlkMnllcA%3D%3D" 
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Instagram size={16} />
+                <span>INSTAGRAM</span>
+              </Link>
+              <Link 
+                href="https://youtube.com" 
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Youtube size={16} />
+                <span>YOUTUBE</span>
+              </Link>
+              <Link 
+                href="mailto:orders.retrolouve@gmail.com" 
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+              >
+                <Mail size={16} />
+                <span>EMAIL</span>
+              </Link>
+              <Link 
+                href="tel:+911234567890" 
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+              >
+                <Phone size={16} />
+                <span>PHONE</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
       {/* Main Footer Content */}
       <div className="mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
@@ -81,56 +127,14 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="bg-brand text-white">
-        <div className="mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-[10px] tracking-wider">
-            <span>CONNECT</span>
-            <div className="flex gap-4 sm:gap-8 items-center">
-              <Link 
-                href="https://www.instagram.com/retrolouve?igsh=MTlsZDB2emlkMnllcA%3D%3D" 
-                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Instagram size={16} />
-                <span>INSTAGRAM</span>
-              </Link>
-              <Link 
-                href="https://youtube.com" 
-                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Youtube size={16} />
-                <span>YOUTUBE</span>
-              </Link>
-              <Link 
-                href="mailto:orders.retrolouve@gmail.com" 
-                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
-              >
-                <Mail size={16} />
-                <span>EMAIL</span>
-              </Link>
-              <Link 
-                href="tel:+911234567890" 
-                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
-              >
-                <Phone size={16} />
-                <span>PHONE</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Popular Searches Section */}
-      <div className="bg-gray-100 border-t border-gray-200">
+      {/* <div className="bg-gray-100 border-t border-gray-200">
         <div className="mx-auto px-4 sm:px-8 md:px-16 py-6 sm:py-8">
           <h3 className="text-black text-[10px] font-semibold mb-3 sm:mb-4 tracking-wider">POPULAR SEARCHES</h3>
-          
+           */}
           {/* Shop by Category */}
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <h4 className="text-[10px] font-medium mb-2 text-gray-600">SHOP BY CATEGORY</h4>
             <p className="text-[10px] text-gray-500 leading-relaxed">
               <Link href="#" className="hover:underline">OVERSIZED T-SHIRTS</Link>, 
@@ -141,10 +145,10 @@ export default function Footer() {
               <Link href="#" className="hover:underline"> BLACK HOODIES</Link>, 
               <Link href="#" className="hover:underline"> PRINTED SWEATSHIRTS</Link>
             </p>
-          </div>
+          </div> */}
 
           {/* Shop by Style */}
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <h4 className="text-[10px] font-medium mb-2 text-gray-600">SHOP BY STYLE</h4>
             <p className="text-[10px] text-gray-500 leading-relaxed">
               <Link href="#" className="hover:underline">PRINTED SHIRTS</Link>, 
@@ -156,10 +160,10 @@ export default function Footer() {
               <Link href="#" className="hover:underline"> PRINTED T-SHIRTS</Link>, 
               <Link href="#" className="hover:underline"> QUOTES T-SHIRTS</Link>
             </p>
-          </div>
+          </div> */}
 
           {/* Shop by Color */}
-          <div>
+          {/* <div>
             <h4 className="text-[10px] font-medium mb-2 text-gray-600">SHOP BY COLOR</h4>
             <p className="text-[10px] text-gray-500 leading-relaxed">
               <Link href="#" className="hover:underline">BLACK T-SHIRTS</Link>, 
@@ -168,8 +172,8 @@ export default function Footer() {
               <Link href="#" className="hover:underline"> RED T-SHIRTS</Link>
             </p>
           </div>
-        </div>
-      </div>
+        </div> 
+      </div> */}
     </footer>
   );
 }

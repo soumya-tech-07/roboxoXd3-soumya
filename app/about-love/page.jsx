@@ -82,7 +82,7 @@ export default function AboutLovePage() {
           {/* Right Column - Image */}
           <div className="relative aspect-[3/4] lg:aspect-auto lg:min-h-[800px]">
             <Image
-              src="/images/men.png"
+              src="/images/Aboutlouve.JPG"
               alt="Fashion runway"
               fill
               className="object-cover"

@@ -10,10 +10,6 @@ export default function HomeBackgroundVideo() {
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
-  // YouTube video IDs
-  const mobileVideoId = 'eB0negrTZsE'; // YouTube Shorts
-  const desktopVideoId = 'Dk0IGkZIXJI'; // YouTube video
-
   // Check screen size
   useEffect(() => {
     const checkScreenSize = () => {
@@ -26,51 +22,53 @@ export default function HomeBackgroundVideo() {
   }, []);
 
   // Carousel items - mix of images and videos
-  const carouselItems = useMemo(() => [
-    {
-      type: 'video',
-      youtubeId: isMobile ? mobileVideoId : desktopVideoId,
-      alt: 'Fashion Video 1',
-      fallbackImage: '/images/1.JPEG',
-    },
-    {
-      type: 'image',
-      mobileSrc: '/images/1.JPG',
-      desktopSrc: '/images/1.JPEG',
-      alt: 'Fashion Collection',
-    },
-    {
-      type: 'image',
-      mobileSrc: '/images/2.2.jpg',
-      desktopSrc: '/images/2.jpg',
-      alt: 'Street Style Fashion',
-    },
-    {
-      type: 'image',
-      mobileSrc: '/images/3.JPG',
-      desktopSrc: '/images/3.JPEG',
-      alt: 'Modern Fashion',
-    },
-  ], [isMobile]);
+  const carouselItems = useMemo(
+    () => [
+      {
+        type: 'video',
+        mobileSrc: '/videos/mobile.mp4',
+        desktopSrc: '/videos/desktop.mp4',
+        alt: 'Fashion Video',
+      },
+      {
+        type: 'image',
+        mobileSrc: '/images/1.JPG',
+        desktopSrc: '/images/1.JPEG',
+        alt: 'Fashion Collection',
+      },
+      {
+        type: 'image',
+        mobileSrc: '/images/2.2.jpg',
+        desktopSrc: '/images/2.jpg',
+        alt: 'Street Style Fashion',
+      },
+      {
+        type: 'image',
+        mobileSrc: '/images/3.JPG',
+        desktopSrc: '/images/3.JPEG',
+        alt: 'Modern Fashion',
+      },
+    ],
+    []
+  );
 
 
-  // Handle video visibility when slide changes (YouTube iframes autoplay when visible)
+  // Handle video play/pause when slide changes
   useEffect(() => {
-    if (carouselItems.length === 0) return;
-    
+    // Pause all videos
+    videoRefs.current.forEach((video) => {
+      if (video && typeof video.pause === 'function') {
+        video.pause();
+      }
+    });
+
     const currentItem = carouselItems[currentSlide];
     if (!currentItem || currentItem.type !== 'video') return;
-    
-    // YouTube iframes autoplay when loaded, so we just need to ensure visibility
-    // The opacity transition handles showing/hiding
-    const iframe = videoRefs.current[currentSlide];
-    if (iframe && iframe.contentWindow) {
-      // Iframe will autoplay when visible due to autoplay parameter
-      // Optionally reload to restart video
-      if (iframe.src) {
-        const currentSrc = iframe.src;
-        iframe.src = currentSrc; // Trigger reload to restart
-      }
+
+    const video = videoRefs.current[currentSlide];
+    if (video && typeof video.play === 'function') {
+      video.currentTime = 0;
+      video.play().catch(() => {});
     }
   }, [currentSlide, carouselItems]);
 
@@ -157,21 +155,14 @@ export default function HomeBackgroundVideo() {
             >
               {item.type === 'video' ? (
                 <div className="absolute inset-0 w-full h-full overflow-hidden">
-                  <iframe
+                  <video
                     ref={(el) => (videoRefs.current[index] = el)}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                    src={`https://www.youtube.com/embed/${isMobile ? mobileVideoId : desktopVideoId}?autoplay=1&loop=1&playlist=${isMobile ? mobileVideoId : desktopVideoId}&mute=1&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&iv_load_policy=3&fs=0&cc_load_policy=0&start=0`}
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen={false}
-                    style={{ 
-                      pointerEvents: 'none',
-                      width: '100vw',
-                      height: '56.25vw', // 16:9 aspect ratio
-                      minHeight: '100vh',
-                      minWidth: '177.78vh', // Maintain aspect ratio
-                    }}
-                    title={item.alt}
-                    frameBorder="0"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full object-cover pointer-events-none"
+                    src={isMobile ? item.mobileSrc : item.desktopSrc}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
                   />
                 </div>
               ) : (

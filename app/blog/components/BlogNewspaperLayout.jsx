@@ -23,12 +23,12 @@ export default function BlogNewspaperLayout({ blog }) {
         <div className="relative z-10">
           {/* Mobile: Image → Text Pattern */}
           <div className="lg:hidden space-y-6">
-            <div className="relative w-full h-[300px] sm:h-[400px] bg-gray-200 overflow-hidden shadow-sm border border-gray-300">
+            <div className="relative w-full h-[420px] sm:h-[520px] bg-gray-200 overflow-hidden shadow-sm border border-gray-300">
               <Image
                 src={blog.image}
                 alt={blog.title}
                 fill
-                className="object-cover"
+                className="object-contain"
                 priority
               />
             </div>
@@ -46,12 +46,12 @@ export default function BlogNewspaperLayout({ blog }) {
           <div className="hidden lg:grid lg:grid-cols-12 gap-8 xl:gap-12">
             {/* Full-width Cover Image */}
             <div className="col-span-12 mb-8">
-              <div className="relative w-full h-[400px] xl:h-[500px] bg-gray-200 overflow-hidden shadow-md border border-gray-300">
+              <div className="relative w-full h-[520px] xl:h-[620px] bg-gray-200 overflow-hidden shadow-md border border-gray-300">
                 <Image
                   src={blog.image}
                   alt={blog.title}
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   priority
                 />
               </div>
@@ -94,12 +94,12 @@ export default function BlogNewspaperLayout({ blog }) {
           {/* Mobile: Image → Text Pattern */}
           <div className="lg:hidden space-y-6">
             {/* Image */}
-            <div className="relative w-full h-[300px] sm:h-[400px] bg-gray-200 overflow-hidden shadow-sm border border-gray-300">
+            <div className="relative w-full h-[420px] sm:h-[520px] bg-gray-200 overflow-hidden shadow-sm border border-gray-300">
               <Image
                 src={blog.image}
                 alt={blog.title}
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             </div>
 
@@ -143,14 +143,14 @@ export default function BlogNewspaperLayout({ blog }) {
           </div>
 
           {/* Desktop: Structured Layout */}
-          <div className="hidden lg:block">
-            {/* Main Image */}
-            <div className="relative w-full h-[400px] xl:h-[500px] bg-gray-200 overflow-hidden shadow-md border border-gray-300 mb-8">
+            <div className="hidden lg:block">
+              {/* Main Image */}
+              <div className="relative w-full h-[520px] xl:h-[620px] bg-gray-200 overflow-hidden shadow-md border border-gray-300 mb-8">
               <Image
                 src={blog.image}
                 alt={blog.title}
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             </div>
 
