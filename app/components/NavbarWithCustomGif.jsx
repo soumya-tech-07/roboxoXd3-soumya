@@ -589,7 +589,7 @@ export default function NavbarWithCustomGif() {
                 )}
 
                 {/* Contact Us */}
-                {pathname !== '/contact' && (
+                {/* {pathname !== '/contact' && (
                   <li className="border-b border-gray-200">
                     <Link
                       href="/contact"
@@ -599,7 +599,7 @@ export default function NavbarWithCustomGif() {
                       Contact Us
                     </Link>
                   </li>
-                )}
+                )} */}
               </ul>
             )}
           </nav>

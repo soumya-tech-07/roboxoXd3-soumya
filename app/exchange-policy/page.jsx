@@ -290,7 +290,7 @@ export default function ExchangePolicyPage() {
         </div>
 
         {/* Contact Section */}
-        <div className="mt-8 text-center">
+        {/* <div className="mt-8 text-center">
           <p className="text-sm text-gray-600 mb-2">
             Have questions about our policy?{' '}
             <Link href="/contact" className="underline text-brand hover:text-brand/80">
@@ -301,7 +301,7 @@ export default function ExchangePolicyPage() {
               orders.retrolouve@gmail.com
             </a>
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

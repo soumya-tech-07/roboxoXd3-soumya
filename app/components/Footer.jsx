@@ -21,7 +21,7 @@ export default function Footer() {
                 <Instagram size={16} />
                 <span>INSTAGRAM</span>
               </Link>
-              <Link 
+              {/* <Link 
                 href="https://youtube.com" 
                 className="flex items-center gap-2 hover:opacity-70 transition-opacity"
                 target="_blank"
@@ -43,7 +43,7 @@ export default function Footer() {
               >
                 <Phone size={16} />
                 <span>PHONE</span>
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>
@@ -90,7 +90,7 @@ export default function Footer() {
                   FAQ
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/terms" className="hover:underline">
                   TERMS
                 </Link>
@@ -99,7 +99,7 @@ export default function Footer() {
                 <Link href="/shipping" className="hover:underline">
                   SHIPPING
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
 
@@ -107,7 +107,7 @@ export default function Footer() {
           <div>
             <h3 className="text-[10px] font-semibold mb-4 text-black tracking-wider">COMPANY</h3>
             <ul className="space-y-2 text-xs text-gray-700">
-              <li>
+              {/* <li>
                 <Link href="/story" className="hover:underline">
                   STORY
                 </Link>
@@ -116,7 +116,7 @@ export default function Footer() {
                 <Link href="/contact" className="hover:underline">
                   CONTACT US
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link href="/blog" className="hover:underline">
                   BLOGS
