@@ -24,6 +24,7 @@
 16. [Profile Orders Tab Enhancement](#16-profile-orders-tab-enhancement)
 17. [Profile Dropdown Redesign](#17-profile-dropdown-redesign)
 18. [Logo Size Optimization](#18-logo-size-optimization)
+19. [Blog Collage to Single Image](#19-blog-collage-to-single-image)
 
 ---
 
@@ -1297,6 +1298,131 @@ All text styling updated to match the actual orders page:
 
 ---
 
+## 19. Blog Collage to Single Image
+
+### **File Modified:** `app/blog/components/BlogMagazineLayout.jsx`
+
+### Changes:
+- ✅ **Converted product-grid collage layout to single centered image**
+- ✅ **Removed 8-image grid on blog page 7**
+- ✅ **Now displays only the first image from the array**
+
+### Before:
+- **Blog page 7 displayed:** 8 identical images in a 3-column grid (2 columns on mobile)
+- **Layout:** `grid grid-cols-2 sm:grid-cols-3` with gaps
+- **Total vertical space:** ~800-1000px with all images
+
+### After:
+- **Blog page 7 displays:** Single centered hero image
+- **Layout:** Centered with 3:4 aspect ratio (matching other product pages)
+- **Styling:** Same elegant treatment as `product` type pages
+- **Total vertical space:** ~600px (much more concise)
+
+### Technical Details:
+
+**Changed Type Handling:**
+```jsx
+// Before: product-grid displayed ALL images in a grid
+if (blog.type === 'product-grid') {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 px-4 sm:px-0">
+      {blog.images.map((img, idx) => (
+        <div key={idx} className="relative w-full bg-[#f5f3f0]" style={{ aspectRatio: '3/4' }}>
+          <Image src={img} alt={`${blog.title} ${idx + 1}`} fill className="object-contain" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// After: product-grid displays ONLY FIRST image (same as 'product' type)
+if (blog.type === 'product-grid') {
+  return (
+    <div className="space-y-8 sm:space-y-10">
+      {/* Single Centered Hero Image */}
+      <div className="w-full flex justify-center -mx-4 sm:mx-0">
+        <div 
+          className="relative w-full max-w-2xl mx-auto bg-[#f5f3f0]" 
+          style={{ aspectRatio: '3/4', maxHeight: '600px' }}
+        >
+          <Image
+            src={blog.images[0]} // Only first image
+            alt={blog.title}
+            fill
+            className="object-contain"
+            sizes="(max-width: 768px) 100vw, 672px"
+            priority
+          />
+        </div>
+      </div>
+      
+      {/* Content sections remain the same */}
+      {/* ... */}
+    </div>
+  );
+}
+```
+
+### Image Display Characteristics:
+- **Container:** Max-width 672px (`max-w-2xl`)
+- **Aspect Ratio:** 3:4 (vertical fashion photography)
+- **Max Height:** 600px
+- **Object Fit:** `object-contain` (no cropping)
+- **Background:** Cream `#f5f3f0` for seamless blending
+- **Mobile:** Full width with negative margin (`-mx-4 sm:mx-0`)
+
+### Benefits:
+1. ✅ **Cleaner Design:** Single image focuses attention on the product
+2. ✅ **Consistent Experience:** Matches pages 2-6 (all use single hero images)
+3. ✅ **Better Mobile UX:** Less scrolling required
+4. ✅ **Faster Load Times:** Only loads 1 image instead of 8
+5. ✅ **Professional Look:** Elegant, magazine-style presentation
+6. ✅ **Reduced Redundancy:** No need to show same image 8 times
+
+### Visual Impact:
+
+**Before (Collage):**
+```
+┌─────────────────────────────────────────┐
+│         PRODUCT HEADING                 │
+│         Content...                      │
+│                                         │
+│  ┌──────┐  ┌──────┐  ┌──────┐         │
+│  │Image1│  │Image2│  │Image3│         │
+│  └──────┘  └──────┘  └──────┘         │
+│  ┌──────┐  ┌──────┐  ┌──────┐         │
+│  │Image4│  │Image5│  │Image6│         │
+│  └──────┘  └──────┘  └──────┘         │
+│  ┌──────┐  ┌──────┐                   │
+│  │Image7│  │Image8│                   │
+│  └──────┘  └──────┘                   │
+└─────────────────────────────────────────┘
+```
+
+**After (Single Image):**
+```
+┌─────────────────────────────────────────┐
+│         PRODUCT HEADING                 │
+│         Content...                      │
+│                                         │
+│         ┌──────────────┐               │
+│         │              │               │
+│         │  Hero Image  │               │
+│         │   (3:4)      │               │
+│         │              │               │
+│         └──────────────┘               │
+│                                         │
+│         More content...                │
+└─────────────────────────────────────────┘
+```
+
+### User Feedback:
+> **User:** "ok so the point is I dont want to show collage and just one image"
+> 
+> **Implementation:** Changed `product-grid` type to display only `blog.images[0]` with the same elegant centered layout as other product pages.
+
+---
+
 ## 📊 Summary Statistics
 
 ### Files Created: **4**
@@ -1319,6 +1445,7 @@ All text styling updated to match the actual orders page:
 - `app/components/SearchComponent.jsx`
 - `app/blog/components/BlogNavigation.jsx`
 - `app/blog/components/BlogNewspaperLayout.jsx`
+- `app/blog/components/BlogMagazineLayout.jsx` (modified twice: initial creation + collage to single image)
 - `app/blog/page.jsx`
 - `app/checkout/page.jsx` (modified twice: shipping threshold + COD fee)
 - `app/product/components/ProductAccordion.jsx`
@@ -1327,7 +1454,7 @@ All text styling updated to match the actual orders page:
 ### Database Changes: **1**
 - Added `body_measurements` JSONB column to `user_profiles` table
 
-### New Features: **14**
+### New Features: **15**
 1. Cart item counter badge
 2. Wishlist item counter badge
 3. Save for Later functionality
@@ -1342,8 +1469,9 @@ All text styling updated to match the actual orders page:
 12. Full-featured expandable orders in profile page
 13. Profile dropdown redesign (Google-inspired compact card)
 14. Logo size optimization (mobile prominence)
+15. Blog collage simplified to single image display
 
-### UI/UX Improvements: **13**
+### UI/UX Improvements: **14**
 1. Pulsing badge animations
 2. Adaptive color schemes
 3. FAQ action cards
@@ -1357,6 +1485,7 @@ All text styling updated to match the actual orders page:
 11. Brand color consistency (red buttons throughout)
 12. Professional compact profile dropdown (inspired by Google UI)
 13. Enhanced mobile logo visibility (20% larger)
+14. Cleaner blog page 7 with single focused image (removed redundant collage)
 
 ---
 

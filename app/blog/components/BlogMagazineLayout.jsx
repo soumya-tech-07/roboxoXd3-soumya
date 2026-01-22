@@ -91,7 +91,23 @@ export default function BlogMagazineLayout({ blog }) {
   if (blog.type === 'product-grid') {
     return (
       <div className="space-y-8 sm:space-y-10">
-        {/* Content First - Narrow Column */}
+        {/* Single Hero Image - Centered (Only show first image from productImages array) */}
+        {blog.productImages && blog.productImages.length > 0 && (
+          <div className="w-full flex justify-center -mx-4 sm:mx-0">
+            <div className="relative w-full max-w-2xl bg-[#f5f3f0]" style={{ aspectRatio: '3/4', maxHeight: '600px' }}>
+              <Image
+                src={blog.productImages[0]}
+                alt={blog.title}
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 672px"
+                priority
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Content - Narrow Column */}
         <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
           {/* Main Content */}
           <div className="space-y-4 text-base sm:text-lg leading-relaxed text-gray-900">
@@ -118,29 +134,6 @@ export default function BlogMagazineLayout({ blog }) {
             </div>
           )}
         </div>
-
-        {/* Image Grid - 3 Columns (Better for Portrait) */}
-        {blog.productImages && blog.productImages.length > 0 && (
-          <div className="pt-8 sm:pt-10 -mx-4 sm:mx-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 max-w-4xl mx-auto px-4 sm:px-0">
-              {blog.productImages.map((imageSrc, index) => (
-                <div
-                  key={index}
-                  className="relative bg-[#f5f3f0] overflow-hidden"
-                  style={{ aspectRatio: '3/4' }}
-                >
-                  <Image
-                    src={imageSrc}
-                    alt={`${blog.title} ${index + 1}`}
-                    fill
-                    className="object-contain hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 640px) 50vw, 33vw"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     );
   }
