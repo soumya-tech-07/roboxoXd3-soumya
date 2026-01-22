@@ -55,8 +55,9 @@ export default function CheckoutPage() {
     }, 0);
   }, [cartItems]);
 
-  const shippingCost = cartTotal >= 1499 ? 0 : 99;
-  const total = cartTotal + shippingCost;
+  const shippingCost = cartTotal >= 2499 ? 0 : 99;
+  const codFee = paymentMethod === 'COD' ? 99 : 0;
+  const total = cartTotal + shippingCost + codFee;
 
   // Redirect to home and open login modal if not authenticated
   useEffect(() => {
@@ -703,7 +704,7 @@ export default function CheckoutPage() {
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">Cash on Delivery (COD)</p>
-                          <p className="text-sm text-gray-600">Pay when you receive</p>
+                          <p className="text-sm text-gray-600">Pay when you receive • ₹99 COD fee applies</p>
                         </div>
                       </div>
                     </div>
@@ -867,6 +868,12 @@ export default function CheckoutPage() {
                     {shippingCost === 0 ? 'FREE' : `₹ ${shippingCost.toLocaleString('en-IN')}`}
                   </span>
                 </div>
+                {codFee > 0 && (
+                  <div className="flex justify-between text-sm text-gray-700">
+                    <span>COD Fee</span>
+                    <span>₹ {codFee.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
                 <div className="border-t border-gray-300 pt-3 mt-3">
                   <div className="flex justify-between text-base font-semibold text-gray-900">
                     <span>TOTAL</span>
@@ -875,9 +882,9 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {cartTotal < 1499 && (
+              {cartTotal < 2499 && (
                 <p className="text-xs text-gray-600 mb-4 text-center">
-                  Add ₹ {(1499 - cartTotal).toLocaleString('en-IN')} more for free shipping
+                  Add ₹ {(2499 - cartTotal).toLocaleString('en-IN')} more for free shipping
                 </p>
               )}
 

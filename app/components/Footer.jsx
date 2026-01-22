@@ -13,6 +13,13 @@ export default function Footer() {
             <span>CONNECT</span>
             <div className="flex gap-4 sm:gap-8 items-center">
               <Link 
+                href="mailto:retrolouve@gmail.com" 
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+              >
+                <Mail size={16} />
+                <span>EMAIL</span>
+              </Link>
+              <Link 
                 href="https://www.instagram.com/retrolouve?igsh=MTlsZDB2emlkMnllcA%3D%3D" 
                 className="flex items-center gap-2 hover:opacity-70 transition-opacity"
                 target="_blank"
@@ -74,32 +81,11 @@ export default function Footer() {
           <div>
             <h3 className="text-[10px] font-semibold mb-4 text-black tracking-wider">HELP</h3>
             <ul className="space-y-2 text-xs text-gray-700">
-              
-              <li>
-                <Link href="/exchange-return" className="hover:underline">
-                  PLACE AN EXCHANGE/RETURN REQUEST
-                </Link>
-              </li>
-              <li>
-                <Link href="/exchange-policy" className="hover:underline">
-                  EXCHANGE/RETURNS POLICY
-                </Link>
-              </li>
               <li>
                 <Link href="/faq" className="hover:underline">
                   FAQ
                 </Link>
               </li>
-              {/* <li>
-                <Link href="/terms" className="hover:underline">
-                  TERMS
-                </Link>
-              </li>
-              <li>
-                <Link href="/shipping" className="hover:underline">
-                  SHIPPING
-                </Link>
-              </li> */}
             </ul>
           </div>
 

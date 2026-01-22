@@ -451,6 +451,59 @@ export default function FAQPage() {
           </p>
         </div>
 
+        {/* Quick Action Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+          {/* Exchange/Return Request Card */}
+          <Link
+            href="/exchange-return"
+            className="group border-2 border-gray-900 p-6 hover:bg-gray-900 hover:text-white transition-all duration-300 cursor-pointer"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold tracking-wide mb-2 uppercase">
+                  Place an Exchange/Return Request
+                </h3>
+                <p className="text-xs opacity-80">
+                  Start your exchange or return process here
+                </p>
+              </div>
+              <svg className="w-5 h-5 flex-shrink-0 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+
+          {/* Exchange/Returns Policy Card */}
+          <Link
+            href="/exchange-policy"
+            className="group border-2 border-gray-900 p-6 hover:bg-gray-900 hover:text-white transition-all duration-300 cursor-pointer"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold tracking-wide mb-2 uppercase">
+                  Exchange/Returns Policy
+                </h3>
+                <p className="text-xs opacity-80">
+                  Read our complete exchange and return policy
+                </p>
+              </div>
+              <svg className="w-5 h-5 flex-shrink-0 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+        </div>
+
         {/* FAQ Accordion */}
         <div className="space-y-6">
           {faqData.map((section, sectionIndex) => (

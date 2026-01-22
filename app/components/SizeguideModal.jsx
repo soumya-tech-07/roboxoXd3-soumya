@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase";
 import { useAuth } from "../context/AuthContext";
@@ -28,7 +28,29 @@ export default function SizeGuideModal({
     weight: "",
     weightUnit: "KG",
     age: "",
+    bodyMeasurements: {}, // NEW: Dynamic measurements
   });
+
+  // Extract measurement keys from size chart to generate dynamic fields
+  const measurementFields = useMemo(() => {
+    if (!sizeChart?.measurements || !Array.isArray(sizeChart.measurements)) {
+      return [];
+    }
+    
+    const keys = new Set();
+    sizeChart.measurements.forEach((item) => {
+      Object.keys(item).forEach((key) => {
+        if (key !== 'size') {
+          keys.add(key);
+        }
+      });
+    });
+    
+    return Array.from(keys).map(key => ({
+      key: key.toLowerCase(),
+      label: key.toUpperCase()
+    }));
+  }, [sizeChart]);
 
   // Define loadSizeChart function before useEffect
   const loadSizeChart = useCallback(async () => {
@@ -87,6 +109,7 @@ export default function SizeGuideModal({
           weight: data.weight ? String(data.weight) : "",
           weightUnit: data.weight_unit || "KG",
           age: data.age ? String(data.age) : "",
+          bodyMeasurements: data.body_measurements || {}, // NEW: Load body measurements
         });
       }
     } catch (error) {
@@ -115,6 +138,7 @@ export default function SizeGuideModal({
         weight: "",
         weightUnit: "KG",
         age: "",
+        bodyMeasurements: {}, // Add this
       });
     }
   }, [isOpen, user, authLoading, loadUserProfile]);
@@ -130,10 +154,23 @@ export default function SizeGuideModal({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    
+    // Check if this is a body measurement field
+    if (name.startsWith('measurement_')) {
+      const measurementKey = name.replace('measurement_', '');
+      setFormData((prev) => ({
+        ...prev,
+        bodyMeasurements: {
+          ...prev.bodyMeasurements,
+          [measurementKey]: value
+        }
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleCustomizeClick = () => {
@@ -169,6 +206,7 @@ export default function SizeGuideModal({
         weight: formData.weight ? parseFloat(formData.weight) : null,
         weight_unit: formData.weightUnit,
         age: formData.age ? parseInt(formData.age) : null,
+        body_measurements: formData.bodyMeasurements, // NEW: Include body measurements
       };
 
       // Check if profile already exists
@@ -511,6 +549,50 @@ export default function SizeGuideModal({
                   </p>
                 )}
               </div>
+
+              {/* Body Measurements Section - DYNAMIC */}
+              {measurementFields.length > 0 && (
+                <div className="pt-6 border-t border-gray-200">
+                  <div className="mb-4">
+                    <h3 className="text-xs tracking-widest text-gray-700 font-semibold mb-1">
+                      BODY MEASUREMENTS
+                    </h3>
+                    <p className="text-[10px] text-gray-600 leading-relaxed">
+                      Enter your body measurements in inches (as shown in the size chart above)
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {measurementFields.map((field) => (
+                      <div key={field.key}>
+                        <label className="block text-xs tracking-widest text-gray-700 mb-2 font-semibold">
+                          {field.label}
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            name={`measurement_${field.key}`}
+                            value={formData.bodyMeasurements[field.key] || ''}
+                            onChange={handleInputChange}
+                            min="0"
+                            step="0.1"
+                            className="w-full border-b-2 border-gray-300 focus:border-brand outline-none py-2 text-base transition-colors text-center bg-transparent"
+                            placeholder="0.0"
+                          />
+                          <span className="absolute right-0 bottom-2 text-sm text-gray-500 font-medium">
+                            IN
+                          </span>
+                        </div>
+                        {formData.bodyMeasurements[field.key] && (
+                          <p className="text-center text-xs text-brand font-medium mt-1">
+                            {formData.bodyMeasurements[field.key]} inches
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Buttons */}
               <div className="flex gap-4 pt-6 border-t border-gray-200">

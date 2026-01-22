@@ -102,7 +102,7 @@ export default function ProductAccordion({ product }) {
 
               {section.id === 'shipping' && (
                 <div className="text-sm text-gray-900 space-y-2">
-                  <p>Free shipping on orders above ₹1499</p>
+                  <p>Free shipping on orders above ₹2499</p>
                   <p>Easy returns within 30 days</p>
                   <p>Standard delivery: 5-7 business days</p>
                 </div>

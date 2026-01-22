@@ -8,6 +8,16 @@ import { useAuth } from '../context/AuthContext';
 
 const supabase = createClient();
 
+// Helper function to convert text to Title Case
+const toTitleCase = (str) => {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 export default function SearchComponent({ isOpen, onClose }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState([]);
@@ -315,7 +325,7 @@ export default function SearchComponent({ isOpen, onClose }) {
                         </div>
                         {/* Term Text */}
                         <span className="text-center max-w-[100px] line-clamp-2 transition-all duration-300 group-hover:scale-105">
-                          {item.term}
+                          {toTitleCase(item.term)}
                         </span>
                       </button>
                     ))}
@@ -364,7 +374,7 @@ export default function SearchComponent({ isOpen, onClose }) {
                                 </div>
                               )}
                               <span className="text-sm text-gray-900 hover:text-brand transition-all duration-300 cursor-pointer tracking-wide group-hover:translate-x-1">
-                                {term}
+                                {toTitleCase(term)}
                               </span>
                             </button>
                             <button
@@ -431,7 +441,7 @@ export default function SearchComponent({ isOpen, onClose }) {
                               />
                             </div>
                           )}
-                          <span className="line-clamp-1 transition-all duration-300 group-hover:translate-x-1">{suggestion}</span>
+                          <span className="line-clamp-1 transition-all duration-300 group-hover:translate-x-1">{toTitleCase(suggestion)}</span>
                         </button>
                       );
                     })}
@@ -474,7 +484,7 @@ export default function SearchComponent({ isOpen, onClose }) {
                           </div>
                           <div className="transition-all duration-300 group-hover:translate-y-[-2px]">
                             <h4 className="font-medium text-sm text-gray-900 mb-1 group-hover:text-brand transition-colors duration-300 tracking-wide line-clamp-2">
-                              {product.name}
+                              {toTitleCase(product.name)}
                             </h4>
                             <p className="text-gray-600 text-[10px] mb-1.5 tracking-wide uppercase transition-colors duration-300 group-hover:text-gray-800">
                               {product.category}

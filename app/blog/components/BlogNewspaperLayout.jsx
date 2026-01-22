@@ -6,24 +6,11 @@ export default function BlogNewspaperLayout({ blog }) {
   if (blog.type === 'intro') {
     return (
       <article className="relative">
-        {/* Background Image Layer - Desktop Only */}
-        <div className="hidden max-w-7xl lg:block absolute inset-0 -z-10 opacity-10">
-          <div className="relative w-full h-full">
-            <Image
-              src={blog.image}
-              alt={blog.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
-
         {/* Content */}
-        <div className="relative z-10">
+        <div className="relative">
           {/* Mobile: Image → Text Pattern */}
           <div className="lg:hidden space-y-6">
-            <div className="relative w-full h-[420px] sm:h-[520px] bg-gray-200 overflow-hidden shadow-sm border border-gray-300">
+            <div className="relative w-full h-[420px] sm:h-[520px] bg-[#f5f3f0] overflow-hidden shadow-sm border border-gray-300">
               <Image
                 src={blog.image}
                 alt={blog.title}
@@ -46,7 +33,7 @@ export default function BlogNewspaperLayout({ blog }) {
           <div className="hidden lg:grid lg:grid-cols-12 gap-8 xl:gap-12">
             {/* Full-width Cover Image */}
             <div className="col-span-12 mb-8">
-              <div className="relative w-full h-[520px] xl:h-[620px] bg-gray-200 overflow-hidden shadow-md border border-gray-300">
+              <div className="relative w-full h-[520px] xl:h-[620px] bg-[#f5f3f0] overflow-hidden shadow-md border border-gray-300">
                 <Image
                   src={blog.image}
                   alt={blog.title}
@@ -77,24 +64,12 @@ export default function BlogNewspaperLayout({ blog }) {
   if (blog.type === 'product') {
     return (
       <article className="relative">
-        {/* Background Image Layer - Desktop Only */}
-        <div className="hidden lg:block absolute inset-0 -z-10 opacity-10">
-          <div className="relative w-full h-full">
-            <Image
-              src={blog.image}
-              alt={blog.title}
-              fill
-              className="object-cover"
-            />
-          </div>
-        </div>
-
         {/* Content */}
-        <div className="relative z-10 space-y-8 lg:space-y-12">
+        <div className="relative space-y-8 lg:space-y-12">
           {/* Mobile: Image → Text Pattern */}
           <div className="lg:hidden space-y-6">
             {/* Image */}
-            <div className="relative w-full h-[420px] sm:h-[520px] bg-gray-200 overflow-hidden shadow-sm border border-gray-300">
+            <div className="relative w-full h-[420px] sm:h-[520px] bg-[#f5f3f0] overflow-hidden shadow-sm border border-gray-300">
               <Image
                 src={blog.image}
                 alt={blog.title}
@@ -116,7 +91,7 @@ export default function BlogNewspaperLayout({ blog }) {
                 {blog.imageGrid.map((img, idx) => (
                   <div
                     key={idx}
-                    className="relative aspect-3/4 bg-gray-200 overflow-hidden shadow-sm border border-gray-300"
+                    className="relative aspect-3/4 overflow-hidden shadow-sm border border-gray-300"
                   >
                     <Image
                       src={img}
@@ -145,14 +120,14 @@ export default function BlogNewspaperLayout({ blog }) {
           {/* Desktop: Structured Layout */}
             <div className="hidden lg:block">
               {/* Main Image */}
-              <div className="relative w-full h-[520px] xl:h-[620px] bg-gray-200 overflow-hidden shadow-md border border-gray-300 mb-8">
-              <Image
-                src={blog.image}
-                alt={blog.title}
-                fill
-                className="object-contain"
-              />
-            </div>
+              <div className="relative w-full h-[520px] xl:h-[620px] bg-[#f5f3f0] overflow-hidden shadow-md border border-gray-300 mb-8">
+                <Image
+                  src={blog.image}
+                  alt={blog.title}
+                  fill
+                  className="object-contain"
+                />
+              </div>
 
             {/* Text Content */}
             <div className="max-w-7xl mx-auto space-y-8">
@@ -166,7 +141,7 @@ export default function BlogNewspaperLayout({ blog }) {
                   {blog.imageGrid.map((img, idx) => (
                     <div
                       key={idx}
-                      className="relative aspect-3/4 bg-gray-200 overflow-hidden shadow-sm border border-gray-300 hover:shadow-md transition-shadow cursor-pointer"
+                      className="relative aspect-3/4 overflow-hidden shadow-sm border border-gray-300 hover:shadow-md transition-shadow cursor-pointer"
                     >
                       <Image
                         src={img}
@@ -203,22 +178,8 @@ export default function BlogNewspaperLayout({ blog }) {
   if (blog.type === 'product-grid') {
     return (
       <article className="relative">
-        {/* Background Image Layer - Desktop Only */}
-        <div className="hidden lg:block absolute inset-0 -z-10 opacity-10">
-          <div className="relative w-full h-full">
-            {blog.productImages?.[0] && (
-              <Image
-                src={blog.productImages[0]}
-                alt={blog.title}
-                fill
-                className="object-cover"
-              />
-            )}
-          </div>
-        </div>
-
         {/* Content */}
-        <div className="relative z-10 space-y-8 lg:space-y-12">
+        <div className="relative space-y-8 lg:space-y-12">
           {/* Mobile: Text → Image Grid Pattern */}
           <div className="lg:hidden space-y-6">
             <p className="text-base sm:text-lg leading-relaxed text-gray-900 text-justify">
@@ -241,7 +202,7 @@ export default function BlogNewspaperLayout({ blog }) {
               {blog.productImages?.map((img, idx) => (
                 <div
                   key={idx}
-                  className="relative aspect-3/4 bg-gray-200 overflow-hidden shadow-sm border border-gray-300"
+                  className="relative aspect-3/4 overflow-hidden shadow-sm border border-gray-300"
                 >
                   <Image
                     src={img}
@@ -279,7 +240,7 @@ export default function BlogNewspaperLayout({ blog }) {
               {blog.productImages?.map((img, idx) => (
                 <div
                   key={idx}
-                  className="relative aspect-3/4 bg-gray-200 overflow-hidden shadow-sm border border-gray-300 hover:shadow-md transition-shadow cursor-pointer"
+                  className="relative aspect-3/4 overflow-hidden shadow-sm border border-gray-300 hover:shadow-md transition-shadow cursor-pointer"
                 >
                   <Image
                     src={img}

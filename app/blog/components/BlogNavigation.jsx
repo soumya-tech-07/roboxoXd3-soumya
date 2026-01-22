@@ -12,33 +12,7 @@ export default function BlogNavigation({
   return (
     <div className="mt-16 sm:mt-20 max-w-7xl mx-auto bg-[#f5f3f0] border-t border-gray-300 px-6 sm:px-10 md:px-16 lg:px-20 xl:px-24 py-6 sm:py-8">
       <div className="flex items-center justify-between gap-6">
-        {/* Left: CTA Button */}
-        <button
-          onClick={onNext}
-          disabled={!canGoNext}
-          className="flex items-center gap-3 sm:gap-4 group disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-        >
-          <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full border-2 border-black flex items-center justify-center group-hover:bg-black group-hover:scale-110 transition-all duration-300 shrink-0">
-            <svg
-              className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-black group-hover:text-white transition-colors"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </div>
-          <span className="text-sm sm:text-base font-semibold text-black max-w-xs sm:max-w-md lg:max-w-lg">
-            {cta}
-          </span>
-        </button>
-
-        {/* Right: Navigation Controls */}
+        {/* Left: Navigation Controls (Previous) */}
         <div className="flex items-center gap-3 sm:gap-4 shrink-0">
           {canGoPrev && (
             <button
@@ -64,6 +38,32 @@ export default function BlogNavigation({
             {currentPage + 1} / {totalPages}
           </div>
         </div>
+
+        {/* Right: CTA Button (Next) */}
+        <button
+          onClick={onNext}
+          disabled={!canGoNext}
+          className="flex items-center gap-3 sm:gap-4 group disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+        >
+          <span className="text-sm sm:text-base font-semibold text-black max-w-xs sm:max-w-md lg:max-w-lg text-right">
+            {cta}
+          </span>
+          <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full border-2 border-black flex items-center justify-center group-hover:bg-black group-hover:scale-110 transition-all duration-300 shrink-0">
+            <svg
+              className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-black group-hover:text-white transition-colors"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </div>
+        </button>
       </div>
 
       {/* Website URL */}

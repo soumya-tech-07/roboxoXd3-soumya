@@ -2,8 +2,11 @@
 
 import { blogPages } from './data/blogData';
 import { useBlogNavigation } from './hooks/useBlogNavigation';
-import BlogNewspaperLayout from './components/BlogNewspaperLayout';
+import BlogMagazineLayout from './components/BlogMagazineLayout';
 import BlogNavigation from './components/BlogNavigation';
+
+// ARCHIVED: Newspaper Layout (commented out - code preserved in BlogNewspaperLayout.jsx)
+// import BlogNewspaperLayout from './components/BlogNewspaperLayout';
 
 export default function BlogPage() {
   const {
@@ -28,17 +31,31 @@ export default function BlogPage() {
           }}
         >
           {/* Paper Content */}
-          <div className="px-8 sm:px-12 md:px-16 lg:px-20 py-12 sm:py-16 md:py-20">
-          {/* Title */}
+          <div className="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20 py-12 sm:py-16 md:py-20">
+            {/* Title */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl font-black tracking-tight mb-8 sm:mb-12 md:mb-16 text-black">
-            {currentBlog.title}
-          </h1>
+              {currentBlog.title}
+            </h1>
 
-            {/* Newspaper-style Layout */}
+            {/* Magazine Layout (Active) */}
+            <BlogMagazineLayout blog={currentBlog} />
+
+            {/* ARCHIVED: Newspaper Layout (Commented Out) */}
+            {/* 
             <BlogNewspaperLayout blog={currentBlog} />
-      </div>
+            
+            The original Newspaper layout has been replaced with Magazine layout,
+            which is optimized for vertical fashion imagery. The Newspaper layout
+            code is preserved in: app/blog/components/BlogNewspaperLayout.jsx
+            
+            To restore the Newspaper layout:
+            1. Uncomment the import at the top: import BlogNewspaperLayout from './components/BlogNewspaperLayout';
+            2. Replace <BlogMagazineLayout blog={currentBlog} /> with <BlogNewspaperLayout blog={currentBlog} />
+            3. Optionally, add back the layout toggle button for both options
+            */}
+          </div>
 
-      {/* Bottom Navigation Bar */}
+          {/* Bottom Navigation Bar */}
           <BlogNavigation
             currentPage={currentPage}
             totalPages={blogPages.length}
@@ -53,3 +70,55 @@ export default function BlogPage() {
     </div>
   );
 }
+
+/* 
+===========================================
+ARCHIVED: LAYOUT TOGGLE FUNCTIONALITY
+===========================================
+The layout toggle feature (Magazine/Newspaper switcher) has been removed
+as Magazine layout is now the default and only active layout.
+
+Original toggle code (commented out for reference):
+
+import { useState } from 'react';
+
+const [layoutMode, setLayoutMode] = useState('magazine');
+
+// Layout Toggle Button JSX:
+<div className="flex justify-center py-4 sm:py-6 px-4">
+  <div className="inline-flex items-center gap-3 sm:gap-4 bg-white border border-gray-200 rounded-sm px-4 sm:px-6 py-2.5 sm:py-3 shadow-sm">
+    <span className="text-xs sm:text-sm font-medium text-gray-600 uppercase tracking-wide">
+      Layout:
+    </span>
+    <button
+      onClick={() => setLayoutMode('magazine')}
+      className={`px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium uppercase tracking-wide transition-all duration-200 ${
+        layoutMode === 'magazine'
+          ? 'bg-black text-white'
+          : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+      }`}
+    >
+      Magazine
+    </button>
+    <button
+      onClick={() => setLayoutMode('newspaper')}
+      className={`px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium uppercase tracking-wide transition-all duration-200 ${
+        layoutMode === 'newspaper'
+          ? 'bg-black text-white'
+          : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+      }`}
+    >
+      Newspaper
+    </button>
+  </div>
+</div>
+
+// Conditional rendering:
+{layoutMode === 'magazine' ? (
+  <BlogMagazineLayout blog={currentBlog} />
+) : (
+  <BlogNewspaperLayout blog={currentBlog} />
+)}
+
+===========================================
+*/

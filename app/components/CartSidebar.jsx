@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 
 export default function CartSidebar() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function CartSidebar() {
     isCartOpen,
     closeCart,
   } = useCart();
+  const { addToWishlist, isInWishlist } = useWishlist();
 
   // Close cart sidebar when user logs out or token expires
   useEffect(() => {
@@ -54,6 +56,10 @@ export default function CartSidebar() {
 
   const handleQuantityChange = (productId, size, newQuantity) => {
     updateQuantity(productId, size, newQuantity);
+  };
+
+  const handleSaveForLater = async (productId) => {
+    await addToWishlist(productId);
   };
 
   const handleOverlayClick = (e) => {
@@ -160,51 +166,82 @@ export default function CartSidebar() {
                       </p>
                     </div>
 
-                    {/* Quantity Controls */}
-                    <div className="flex items-center justify-between mt-4">
-                      <div className="flex items-center border border-gray-300">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleQuantityChange(
-                              item.productId,
-                              item.size,
-                              item.quantity - 1
-                            )
-                          }
-                          className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
-                          aria-label="Decrease quantity"
-                        >
-                          −
-                        </button>
-                        <span className="px-4 py-2 text-sm min-w-[3rem] text-black text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleQuantityChange(
-                              item.productId,
-                              item.size,
-                              item.quantity + 1
-                            )
-                          }
-                          className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
-                          aria-label="Increase quantity"
-                        >
-                          +
-                        </button>
+                    {/* Quantity Controls and Actions */}
+                    <div className="flex flex-col gap-3 mt-4">
+                      {/* Quantity Controls */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center border border-gray-300">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.productId,
+                                item.size,
+                                item.quantity - 1
+                              )
+                            }
+                            className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
+                            aria-label="Decrease quantity"
+                          >
+                            −
+                          </button>
+                          <span className="px-4 py-2 text-sm min-w-[3rem] text-black text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.productId,
+                                item.size,
+                                item.quantity + 1
+                              )
+                            }
+                            className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
+                            aria-label="Increase quantity"
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
 
-                      {/* Remove Button */}
-                      <button
-                        type="button"
-                        onClick={() => removeFromCart(item.productId, item.size)}
-                        className="text-xs text-gray-500 hover:text-brand underline transition-colors cursor-pointer"
-                        aria-label="Remove item"
-                      >
-                        REMOVE
-                      </button>
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-3">
+                        {/* Save for Later Button */}
+                        {!isInWishlist(item.productId) && (
+                          <button
+                            type="button"
+                            onClick={() => handleSaveForLater(item.productId)}
+                            className="text-xs text-gray-600 hover:text-brand underline transition-colors cursor-pointer flex items-center gap-1"
+                            aria-label="Save for later"
+                          >
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                              />
+                            </svg>
+                            SAVE FOR LATER
+                          </button>
+                        )}
+                        
+                        {/* Remove Button */}
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.productId, item.size)}
+                          className="text-xs text-gray-500 hover:text-brand underline transition-colors cursor-pointer"
+                          aria-label="Remove item"
+                        >
+                          REMOVE
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -254,8 +291,8 @@ export default function CartSidebar() {
               </div>
               <div className="flex justify-between text-sm text-gray-700 mb-2">
                 <span>Shipping</span>
-                <span className={cartTotal >= 1499 ? 'text-brand' : ''}>
-                  {cartTotal >= 1499 ? 'FREE' : '₹ 99'}
+                <span className={cartTotal >= 2499 ? 'text-brand' : ''}>
+                  {cartTotal >= 2499 ? 'FREE' : '₹ 99'}
                 </span>
               </div>
               <div className="border-t border-gray-300 pt-3 mt-3">
@@ -263,7 +300,7 @@ export default function CartSidebar() {
                   <span>TOTAL</span>
                   <span>
                     ₹{' '}
-                    {(cartTotal + (cartTotal >= 1499 ? 0 : 99)).toLocaleString(
+                    {(cartTotal + (cartTotal >= 2499 ? 0 : 99)).toLocaleString(
                       'en-IN'
                     )}
                   </span>
@@ -271,10 +308,10 @@ export default function CartSidebar() {
               </div>
             </div>
 
-            {cartTotal < 1499 && (
+            {cartTotal < 2499 && (
               <p className="text-xs text-gray-600 mb-4 text-center">
                 Add ₹{' '}
-                {(1499 - cartTotal).toLocaleString('en-IN')} more for free
+                {(2499 - cartTotal).toLocaleString('en-IN')} more for free
                 shipping
               </p>
             )}

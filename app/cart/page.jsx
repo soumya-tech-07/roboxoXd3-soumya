@@ -7,12 +7,14 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useAuthModal } from '../context/AuthModalContext';
+import { useWishlist } from '../context/WishlistContext';
 
 export default function CartPage() {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { openLogin } = useAuthModal();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { addToWishlist, isInWishlist } = useWishlist();
 
   // Redirect to home and open login modal if not authenticated
   useEffect(() => {
@@ -41,6 +43,10 @@ export default function CartPage() {
 
   const handleQuantityChange = (productId, size, newQuantity) => {
     updateQuantity(productId, size, newQuantity);
+  };
+
+  const handleSaveForLater = async (productId) => {
+    await addToWishlist(productId);
   };
 
   return (
@@ -141,15 +147,43 @@ export default function CartPage() {
                         </button>
                       </div>
 
-                      {/* Remove Button */}
-                      <button
-                        type="button"
-                        onClick={() => removeFromCart(item.productId, item.size)}
-                        className="text-xs text-gray-500 hover:text-brand underline sm:no-underline sm:hover:underline transition-colors cursor-pointer"
-                        aria-label="Remove item"
-                      >
-                        REMOVE
-                      </button>
+                      {/* Action Buttons */}
+                      <div className="flex flex-col gap-2 sm:items-end">
+                        {/* Save for Later Button */}
+                        {!isInWishlist(item.productId) && (
+                          <button
+                            type="button"
+                            onClick={() => handleSaveForLater(item.productId)}
+                            className="text-xs text-gray-600 hover:text-brand underline sm:no-underline sm:hover:underline transition-colors cursor-pointer flex items-center gap-1"
+                            aria-label="Save for later"
+                          >
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                              />
+                            </svg>
+                            SAVE FOR LATER
+                          </button>
+                        )}
+                        
+                        {/* Remove Button */}
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.productId, item.size)}
+                          className="text-xs text-gray-500 hover:text-brand underline sm:no-underline sm:hover:underline transition-colors cursor-pointer"
+                          aria-label="Remove item"
+                        >
+                          REMOVE
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -170,8 +204,8 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between text-sm text-gray-700">
                     <span>Shipping</span>
-                    <span className={cartTotal >= 1499 ? 'text-brand' : ''}>
-                      {cartTotal >= 1499 ? 'FREE' : '₹ 99'}
+                    <span className={cartTotal >= 2499 ? 'text-brand' : ''}>
+                      {cartTotal >= 2499 ? 'FREE' : '₹ 99'}
                     </span>
                   </div>
                   <div className="border-t border-gray-300 pt-3 mt-3">
@@ -179,7 +213,7 @@ export default function CartPage() {
                       <span>TOTAL</span>
                       <span>
                         ₹{' '}
-                        {(cartTotal + (cartTotal >= 1499 ? 0 : 99)).toLocaleString(
+                        {(cartTotal + (cartTotal >= 2499 ? 0 : 99)).toLocaleString(
                           'en-IN'
                         )}
                       </span>
@@ -187,10 +221,10 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                {cartTotal < 1499 && (
+                {cartTotal < 2499 && (
                   <p className="text-xs text-gray-600 mb-4 text-center">
                     Add ₹{' '}
-                    {(1499 - cartTotal).toLocaleString('en-IN')} more for free
+                    {(2499 - cartTotal).toLocaleString('en-IN')} more for free
                     shipping
                   </p>
                 )}

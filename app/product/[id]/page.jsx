@@ -15,6 +15,7 @@ import ProductNotFound from '../components/ProductNotFound';
 import ProductImageGallery from '../components/ProductImageGallery';
 import ProductInfo from '../components/ProductInfo';
 import ProductSizeSelector from '../components/ProductSizeSelector';
+import SizeRecommendation from '../components/SizeRecommendation';
 import ProductActionButtons from '../components/ProductActionButtons';
 import ProductAccordion from '../components/ProductAccordion';
 import ProductShareContact from '../components/ProductShareContact';
@@ -258,6 +259,12 @@ export default function ProductPage() {
                 sizes={product.sizes}
                 selectedSize={selectedSize}
                 onSizeSelect={setSelectedSize}
+                onSizeGuideOpen={() => setIsSizeGuideOpen(true)}
+              />
+
+              <SizeRecommendation
+                productCategory={product.category}
+                availableSizes={product.sizes}
                 onSizeGuideOpen={() => setIsSizeGuideOpen(true)}
               />
 
