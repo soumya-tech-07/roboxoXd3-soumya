@@ -30,7 +30,7 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const { loading: authLoading } = useAuth();
-  
+
   const productIdentifier = useMemo(() => {
     const value = Array.isArray(params?.id) ? params?.id[0] : params?.id;
     return value ?? '';
@@ -73,7 +73,7 @@ export default function ProductPage() {
               .eq('id', id)
               .eq('is_active', true)
               .single();
-            
+
             const result = await query;
             data = result.data;
             error = result.error;
@@ -104,23 +104,23 @@ export default function ProductPage() {
   const derivedProduct = useMemo(() => {
     // IMPORTANT: No static ProductCatalog fallback (can show stale prices).
     if (!dbProduct) return null;
-    
+
     let gallery = [];
-      // Use gallery from database (Supabase URLs)
-      gallery = dbProduct.gallery && Array.isArray(dbProduct.gallery) 
-        ? dbProduct.gallery
-            .filter(url => url && !url.includes('.heic'))
-            .map(url => ensurePublicImageUrl(url))
-        : [];
-      
-      // Fallback to main images if gallery is empty
-      if (gallery.length === 0) {
-        const mainImages = [
-          dbProduct.image_url,
-          dbProduct.hover_image_url
-        ].filter(Boolean).map(url => ensurePublicImageUrl(url));
-        gallery = mainImages;
-      }
+    // Use gallery from database (Supabase URLs)
+    gallery = dbProduct.gallery && Array.isArray(dbProduct.gallery)
+      ? dbProduct.gallery
+        .filter(url => url && !url.includes('.heic'))
+        .map(url => ensurePublicImageUrl(url))
+      : [];
+
+    // Fallback to main images if gallery is empty
+    if (gallery.length === 0) {
+      const mainImages = [
+        dbProduct.image_url,
+        dbProduct.hover_image_url
+      ].filter(Boolean).map(url => ensurePublicImageUrl(url));
+      gallery = mainImages;
+    }
 
     const sizes =
       dbProduct.sizes && Array.isArray(dbProduct.sizes) ? dbProduct.sizes : ['S', 'M', 'L', 'XL'];
@@ -150,6 +150,7 @@ export default function ProductPage() {
 
   const [selectedSize, setSelectedSize] = useState('');
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [recommendationRefreshTrigger, setRecommendationRefreshTrigger] = useState(0); // NEW: Trigger for re-fetching
   const { isInWishlist, toggleWishlist, loading: wishlistLoading } = useWishlist();
   const { addToCart, openCart, loading: cartLoading } = useCart();
   const { showError } = useToast();
@@ -189,7 +190,7 @@ export default function ProductPage() {
 
     // Add to cart and open cart sidebar
     const result = await addToCart(dbProduct.id, selectedSize || null, 1);
-    
+
     // Open cart sidebar after successful add
     if (result?.success) {
       setTimeout(() => {
@@ -233,6 +234,7 @@ export default function ProductPage() {
         onClose={() => setIsSizeGuideOpen(false)}
         productName={product.name}
         productCategory={product.category}
+        onProfileUpdate={() => setRecommendationRefreshTrigger(prev => prev + 1)} // NEW: Trigger refresh
       />
 
       <ProductBreadcrumb />
@@ -263,6 +265,7 @@ export default function ProductPage() {
               />
 
               <SizeRecommendation
+                key={recommendationRefreshTrigger} // NEW: Force re-render on update
                 productCategory={product.category}
                 availableSizes={product.sizes}
                 onSizeGuideOpen={() => setIsSizeGuideOpen(true)}

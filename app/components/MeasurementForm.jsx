@@ -37,7 +37,7 @@ export default function MeasurementForm({
     if (!sizeCharts || sizeCharts.length === 0) {
       return [];
     }
-    
+
     const keys = new Set();
     sizeCharts.forEach((chart) => {
       if (chart.measurements && Array.isArray(chart.measurements)) {
@@ -50,7 +50,7 @@ export default function MeasurementForm({
         });
       }
     });
-    
+
     return Array.from(keys).map(key => ({
       key: key.toLowerCase(),
       label: key.toUpperCase()
@@ -61,7 +61,7 @@ export default function MeasurementForm({
   const loadSizeCharts = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       if (loadAllCharts) {
         // Load ALL size charts for comprehensive measurement form
         const { data, error } = await supabase
@@ -77,7 +77,7 @@ export default function MeasurementForm({
       } else if (productCategory) {
         // Load specific category
         let chartCategory = productCategory;
-        
+
         // Handle category mapping
         if (productCategory === 'SWEATPANTS') {
           chartCategory = 'SWEATPANTS';
@@ -129,6 +129,10 @@ export default function MeasurementForm({
           age: data.age ? String(data.age) : "",
           bodyMeasurements: data.body_measurements || {},
         });
+        // Set unit if it exists, otherwise standard default "CM" (or keep state default)
+        if (data.body_measurements_unit) {
+          setBodyMeasurementUnit(data.body_measurements_unit);
+        }
       }
     } catch (error) {
       console.error('Error loading user profile:', error);
@@ -150,8 +154,8 @@ export default function MeasurementForm({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // Check if this is a body measurement field
+
+    // Check if this is a binary measurement field
     if (name.startsWith('measurement_')) {
       const measurementKey = name.replace('measurement_', '');
       setFormData((prev) => ({
@@ -171,7 +175,7 @@ export default function MeasurementForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!user) {
       showError("Please log in to save your preferences.");
       return;
@@ -179,7 +183,7 @@ export default function MeasurementForm({
 
     try {
       setSaving(true);
-      
+
       // Prepare data for Supabase
       const profileData = {
         user_id: user.id,
@@ -191,6 +195,7 @@ export default function MeasurementForm({
         weight_unit: formData.weightUnit,
         age: formData.age ? parseInt(formData.age) : null,
         body_measurements: formData.bodyMeasurements,
+        body_measurements_unit: bodyMeasurementUnit, // Save the unit
       };
 
       // Check if profile already exists
@@ -262,7 +267,7 @@ export default function MeasurementForm({
                   <h3 className="text-sm font-medium text-gray-900 uppercase tracking-wide border-b border-gray-200 pb-2">
                     {chart.name || chart.category}
                   </h3>
-                  
+
                   {/* Chart Table */}
                   {chart.measurements && (
                     <SizeChartTable measurements={chart.measurements} />
@@ -351,11 +356,10 @@ export default function MeasurementForm({
                 onClick={() =>
                   setFormData((prev) => ({ ...prev, heightUnit: "CM" }))
                 }
-                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                  formData.heightUnit === "CM"
+                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${formData.heightUnit === "CM"
                     ? "bg-white text-black shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
-                }`}
+                  }`}
                 style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
               >
                 CM
@@ -365,11 +369,10 @@ export default function MeasurementForm({
                 onClick={() =>
                   setFormData((prev) => ({ ...prev, heightUnit: "IN" }))
                 }
-                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                  formData.heightUnit === "IN"
+                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${formData.heightUnit === "IN"
                     ? "bg-white text-black shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
-                }`}
+                  }`}
                 style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
               >
                 IN
@@ -412,11 +415,10 @@ export default function MeasurementForm({
                 onClick={() =>
                   setFormData((prev) => ({ ...prev, weightUnit: "KG" }))
                 }
-                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                  formData.weightUnit === "KG"
+                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${formData.weightUnit === "KG"
                     ? "bg-white text-black shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
-                }`}
+                  }`}
                 style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
               >
                 KG
@@ -426,11 +428,10 @@ export default function MeasurementForm({
                 onClick={() =>
                   setFormData((prev) => ({ ...prev, weightUnit: "LBS" }))
                 }
-                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                  formData.weightUnit === "LBS"
+                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${formData.weightUnit === "LBS"
                     ? "bg-white text-black shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
-                }`}
+                  }`}
                 style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
               >
                 LBS
@@ -505,11 +506,10 @@ export default function MeasurementForm({
                   <button
                     type="button"
                     onClick={() => setBodyMeasurementUnit("CM")}
-                    className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                      bodyMeasurementUnit === "CM"
+                    className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${bodyMeasurementUnit === "CM"
                         ? "bg-white text-black shadow-sm"
                         : "text-gray-500 hover:text-gray-700"
-                    }`}
+                      }`}
                     style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
                   >
                     CM
@@ -517,11 +517,10 @@ export default function MeasurementForm({
                   <button
                     type="button"
                     onClick={() => setBodyMeasurementUnit("IN")}
-                    className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                      bodyMeasurementUnit === "IN"
+                    className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${bodyMeasurementUnit === "IN"
                         ? "bg-white text-black shadow-sm"
                         : "text-gray-500 hover:text-gray-700"
-                    }`}
+                      }`}
                     style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
                   >
                     IN
@@ -532,7 +531,7 @@ export default function MeasurementForm({
                 Enter your body measurements in {bodyMeasurementUnit === "CM" ? "centimeters" : "inches"} (as shown in the size chart above)
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {measurementFields.map((field) => (
                 <div key={field.key}>

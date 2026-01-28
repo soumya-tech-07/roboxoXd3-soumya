@@ -1605,6 +1605,86 @@ All changes follow the established design principles:
 
 ---
 
+
+## 20. "Shop All" Navigation Update
+
+### **File Modified:** `app/components/NavbarWithCustomGif.jsx`
+
+### Changes:
+- ✅ **Sidebar Behavior:** "Shop All" button now smooth-scrolls to the "Winter Arc Drop" section specifically.
+- ✅ **Code Update:** Replaced standard Link with button triggering `scrollToSection('winter-arc-section')`.
+- ✅ **Target Added:** Added `id="winter-arc-section"` to `app/components/LatestDrop.jsx`.
+
+---
+
+## 21. Cart Logic Fix (Save for Later)
+
+### **File Modified:** `app/components/CartSidebar.jsx`
+
+### Issue Resolved:
+- 🐛 **Bug:** Items "Saved for Later" were added to wishlist but remaining in the cart.
+- ✅ **Fix:** Implemented immediate removal from cart upon successful wishlist addition.
+
+### Code Snippet:
+```javascript
+const handleSaveForLater = async (productId, size) => {
+    await addToWishlist(productId);
+    removeFromCart(productId, size); // Now removes immediately
+};
+```
+
+---
+
+## 22. Blog UI Refinement (Mobile)
+
+### **File Modified:** `app/blog/components/BlogMagazineLayout.jsx`
+
+### Issue Resolved:
+- 🐛 **Bug:** Blog cover images were left-aligned on mobile due to negative margins.
+- ✅ **Fix:** Removed `-mx-4` negative margins and applied `justify-center items-center` to wrapper logic.
+- ✅ **Result:** Images are perfectly centered on all device sizes.
+
+---
+
+## 23. Responsive Logo System
+
+### **File Modified:** `app/components/NavbarWithCustomGif.jsx`
+
+### Changes:
+- ✅ **Mobile View:**
+  - **Top Logo (`image.png`):** 100% scale (Standard visibility).
+  - **Scrolled Logo (`4.png`):** 75% scale (Reduced to prevent header overcrowding).
+- ✅ **Desktop View:**
+  - **Both Logos:** 100% scale (Reverted from larger scales to maintain elegance).
+
+### Logic:
+```jsx
+// Mobile Specific Scaling for Scrolled Logo
+className={`... ${!isScrolled ? 'scale-100' : 'scale-75 sm:scale-100'}`}
+```
+
+---
+
+## 24. Year 2026 Consistency Check
+
+### **Files Verified:** `app/components/Footer.jsx`, `app/blog/data/blogData.js`, `package.json`
+
+### Actions:
+- ✅ **Audit:** Scanned entire codebase for outdated "2025" references.
+- ✅ **Verification:** Confirmed Footer copyright and blog dates are correctly set to **2026**.
+
+---
+
+## 25. Size Recommendation Debugging
+
+### **File Modified:** `app/product/components/SizeRecommendation.jsx`
+
+### Actions:
+- ✅ **Debug:** Fixed logic preventing the recommendation banner from appearing.
+- ✅ **Improvement:** Component now reliably provides feedback (Recommendation, "Update Measurements", or "No Match") instead of failing silently.
+
+---
+
 ## 🐛 Known Issues / Edge Cases
 
 1. **Size Recommendation:** Won't show if user has no measurements or size chart is missing
@@ -1625,5 +1705,5 @@ For questions or issues, contact:
 
 **End of Changelog**
 
-*Generated on: January 22, 2026*  
-*Version: 1.0.0*
+*Updated on: January 28, 2026*
+*Version: 1.1.0*

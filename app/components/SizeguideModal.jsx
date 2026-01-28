@@ -13,6 +13,7 @@ export default function SizeGuideModal({
   onClose,
   productName = "FADED GREY JOGGERS",
   productCategory = null,
+  onProfileUpdate,
 }) {
   const [showCustomizeForm, setShowCustomizeForm] = useState(false);
   const [sizeChart, setSizeChart] = useState(null);
@@ -29,6 +30,7 @@ export default function SizeGuideModal({
     weightUnit: "KG",
     age: "",
     bodyMeasurements: {}, // NEW: Dynamic measurements
+    bodyMeasurementsUnit: "CM", // NEW: Body measurements unit
   });
 
   // Extract measurement keys from size chart to generate dynamic fields
@@ -36,7 +38,7 @@ export default function SizeGuideModal({
     if (!sizeChart?.measurements || !Array.isArray(sizeChart.measurements)) {
       return [];
     }
-    
+
     const keys = new Set();
     sizeChart.measurements.forEach((item) => {
       Object.keys(item).forEach((key) => {
@@ -45,7 +47,7 @@ export default function SizeGuideModal({
         }
       });
     });
-    
+
     return Array.from(keys).map(key => ({
       key: key.toLowerCase(),
       label: key.toUpperCase()
@@ -60,7 +62,7 @@ export default function SizeGuideModal({
       setLoading(true);
       // Map product category to size chart category
       let chartCategory = productCategory;
-      
+
       // Handle category mapping
       if (productCategory === 'SWEATPANTS') {
         chartCategory = 'SWEATPANTS';
@@ -110,6 +112,7 @@ export default function SizeGuideModal({
           weightUnit: data.weight_unit || "KG",
           age: data.age ? String(data.age) : "",
           bodyMeasurements: data.body_measurements || {}, // NEW: Load body measurements
+          bodyMeasurementsUnit: data.body_measurements_unit || "CM", // NEW: Load unit
         });
       }
     } catch (error) {
@@ -139,6 +142,7 @@ export default function SizeGuideModal({
         weightUnit: "KG",
         age: "",
         bodyMeasurements: {}, // Add this
+        bodyMeasurementsUnit: "CM", // Add this
       });
     }
   }, [isOpen, user, authLoading, loadUserProfile]);
@@ -154,7 +158,7 @@ export default function SizeGuideModal({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Check if this is a body measurement field
     if (name.startsWith('measurement_')) {
       const measurementKey = name.replace('measurement_', '');
@@ -187,7 +191,7 @@ export default function SizeGuideModal({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!user) {
       alert("Please log in to save your preferences.");
       return;
@@ -195,7 +199,7 @@ export default function SizeGuideModal({
 
     try {
       setSaving(true);
-      
+
       // Prepare data for Supabase
       const profileData = {
         user_id: user.id,
@@ -207,6 +211,7 @@ export default function SizeGuideModal({
         weight_unit: formData.weightUnit,
         age: formData.age ? parseInt(formData.age) : null,
         body_measurements: formData.bodyMeasurements, // NEW: Include body measurements
+        body_measurements_unit: formData.bodyMeasurementsUnit, // NEW: Save unit
       };
 
       // Check if profile already exists
@@ -240,6 +245,9 @@ export default function SizeGuideModal({
 
       // Success
       alert("Your size preferences have been saved!");
+      if (onProfileUpdate) {
+        onProfileUpdate();
+      }
       setShowCustomizeForm(false);
       onClose();
     } catch (err) {
@@ -415,11 +423,10 @@ export default function SizeGuideModal({
                       onClick={() =>
                         setFormData((prev) => ({ ...prev, heightUnit: "CM" }))
                       }
-                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                        formData.heightUnit === "CM"
-                          ? "bg-white text-brand shadow-sm"
-                          : "text-gray-500 hover:text-gray-700"
-                      }`}
+                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${formData.heightUnit === "CM"
+                        ? "bg-white text-brand shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
                     >
                       CM
                     </button>
@@ -428,11 +435,10 @@ export default function SizeGuideModal({
                       onClick={() =>
                         setFormData((prev) => ({ ...prev, heightUnit: "IN" }))
                       }
-                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                        formData.heightUnit === "IN"
-                          ? "bg-white text-brand shadow-sm"
-                          : "text-gray-500 hover:text-gray-700"
-                      }`}
+                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${formData.heightUnit === "IN"
+                        ? "bg-white text-brand shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
                     >
                       IN
                     </button>
@@ -473,11 +479,10 @@ export default function SizeGuideModal({
                       onClick={() =>
                         setFormData((prev) => ({ ...prev, weightUnit: "KG" }))
                       }
-                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                        formData.weightUnit === "KG"
-                          ? "bg-white text-brand shadow-sm"
-                          : "text-gray-500 hover:text-gray-700"
-                      }`}
+                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${formData.weightUnit === "KG"
+                        ? "bg-white text-brand shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
                     >
                       KG
                     </button>
@@ -486,11 +491,10 @@ export default function SizeGuideModal({
                       onClick={() =>
                         setFormData((prev) => ({ ...prev, weightUnit: "LBS" }))
                       }
-                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-                        formData.weightUnit === "LBS"
-                          ? "bg-white text-brand shadow-sm"
-                          : "text-gray-500 hover:text-gray-700"
-                      }`}
+                      className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${formData.weightUnit === "LBS"
+                        ? "bg-white text-brand shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
                     >
                       LBS
                     </button>
@@ -553,43 +557,73 @@ export default function SizeGuideModal({
               {/* Body Measurements Section - DYNAMIC */}
               {measurementFields.length > 0 && (
                 <div className="pt-6 border-t border-gray-200">
-                  <div className="mb-4">
-                    <h3 className="text-xs tracking-widest text-gray-700 font-semibold mb-1">
-                      BODY MEASUREMENTS
-                    </h3>
-                    <p className="text-[10px] text-gray-600 leading-relaxed">
-                      Enter your body measurements in inches (as shown in the size chart above)
-                    </p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {measurementFields.map((field) => (
-                      <div key={field.key}>
-                        <label className="block text-xs tracking-widest text-gray-700 mb-2 font-semibold">
-                          {field.label}
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="number"
-                            name={`measurement_${field.key}`}
-                            value={formData.bodyMeasurements[field.key] || ''}
-                            onChange={handleInputChange}
-                            min="0"
-                            step="0.1"
-                            className="w-full border-b-2 border-gray-300 focus:border-brand outline-none py-2 text-base transition-colors text-center bg-transparent"
-                            placeholder="0.0"
-                          />
-                          <span className="absolute right-0 bottom-2 text-sm text-gray-500 font-medium">
-                            IN
-                          </span>
-                        </div>
-                        {formData.bodyMeasurements[field.key] && (
-                          <p className="text-center text-xs text-brand font-medium mt-1">
-                            {formData.bodyMeasurements[field.key]} inches
-                          </p>
-                        )}
+                  <div className="pt-6 border-t border-gray-200">
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <h3 className="text-xs tracking-widest text-gray-700 font-semibold mb-1">
+                          BODY MEASUREMENTS
+                        </h3>
+                        <p className="text-[10px] text-gray-600 leading-relaxed">
+                          Enter your body measurements in {formData.bodyMeasurementsUnit === 'CM' ? 'Centimeters' : 'Inches'} (as shown in the size chart above)
+                        </p>
                       </div>
-                    ))}
+                      <div className="flex gap-2 bg-gray-100 rounded-lg p-1 h-fit">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({ ...prev, bodyMeasurementsUnit: "CM" }))
+                          }
+                          className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${formData.bodyMeasurementsUnit === "CM"
+                            ? "bg-white text-brand shadow-sm"
+                            : "text-gray-500 hover:text-gray-700"
+                            }`}
+                        >
+                          CM
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({ ...prev, bodyMeasurementsUnit: "IN" }))
+                          }
+                          className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${formData.bodyMeasurementsUnit === "IN"
+                            ? "bg-white text-brand shadow-sm"
+                            : "text-gray-500 hover:text-gray-700"
+                            }`}
+                        >
+                          IN
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {measurementFields.map((field) => (
+                        <div key={field.key}>
+                          <label className="block text-xs tracking-widest text-gray-700 mb-2 font-semibold">
+                            {field.label}
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              name={`measurement_${field.key}`}
+                              value={formData.bodyMeasurements[field.key] || ''}
+                              onChange={handleInputChange}
+                              min="0"
+                              step="0.1"
+                              className="w-full border-b-2 border-gray-300 focus:border-brand outline-none py-2 text-base transition-colors text-center bg-transparent"
+                              placeholder="0.0"
+                            />
+                            <span className="absolute right-0 bottom-2 text-sm text-gray-500 font-medium">
+                              {formData.bodyMeasurementsUnit}
+                            </span>
+                          </div>
+                          {formData.bodyMeasurements[field.key] && (
+                            <p className="text-center text-xs text-brand font-medium mt-1">
+                              {formData.bodyMeasurements[field.key]} {formData.bodyMeasurementsUnit.toLowerCase()}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -618,6 +652,7 @@ export default function SizeGuideModal({
     </div>
   );
 }
+
 
 // Size Chart Table Component
 function SizeChartTable({ measurements }) {

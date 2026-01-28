@@ -144,9 +144,8 @@ export default function NavbarWithCustomGif() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? "bg-white shadow-sm" : "bg-transparent"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "bg-white shadow-sm" : "bg-transparent"
+          }`}
       >
         {/* Top Banner with Rotating Text */}
         <div className="bg-brand text-white py-1.5 sm:py-2 overflow-hidden">
@@ -154,11 +153,10 @@ export default function NavbarWithCustomGif() {
             {rotatingTexts.map((text, index) => (
               <div
                 key={index}
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out ${
-                  index === currentTextIndex
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-full"
-                }`}
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out ${index === currentTextIndex
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-full"
+                  }`}
               >
                 <p className="text-[10px] sm:text-xs tracking-widest font-light px-2 text-center">
                   {text}
@@ -177,9 +175,8 @@ export default function NavbarWithCustomGif() {
                 {/* Hamburger Menu */}
                 <button
                   onClick={() => setIsMenuOpen(true)}
-                  className={`transition-colors cursor-pointer flex items-center justify-center ${
-                    isScrolled ? "text-black" : "text-brand"
-                  } hover:opacity-70`}
+                  className={`transition-colors cursor-pointer flex items-center justify-center ${isScrolled ? "text-black" : "text-brand"
+                    } hover:opacity-70`}
                   aria-label="Open menu"
                 >
                   <svg
@@ -202,9 +199,8 @@ export default function NavbarWithCustomGif() {
                   onClick={() => {
                     setIsSearchOpen(true);
                   }}
-                  className={`transition-colors cursor-pointer flex items-center justify-center ${
-                    isScrolled ? "text-black" : "text-brand"
-                  } hover:opacity-70`}
+                  className={`transition-colors cursor-pointer flex items-center justify-center ${isScrolled ? "text-black" : "text-brand"
+                    } hover:opacity-70`}
                   aria-label="Search"
                 >
                   <svg
@@ -231,7 +227,7 @@ export default function NavbarWithCustomGif() {
                     alt="Retro Louve"
                     width={500}
                     height={500}
-                    className="h-full w-auto object-contain transition-opacity duration-300"
+                    className={`h-full w-auto object-contain transition-all duration-300 ${!isScrolled ? 'scale-100' : 'scale-75 sm:scale-100'}`}
                     priority
                   />
                 </div>
@@ -250,9 +246,8 @@ export default function NavbarWithCustomGif() {
                         openLogin();
                       }
                     }}
-                    className={`transition-colors cursor-pointer flex items-center justify-center ${
-                      isScrolled ? "text-black" : "text-brand"
-                    } hover:opacity-70`}
+                    className={`transition-colors cursor-pointer flex items-center justify-center ${isScrolled ? "text-black" : "text-brand"
+                      } hover:opacity-70`}
                     aria-label={isAuthenticated && user ? "User menu" : "Login"}
                   >
                     <svg
@@ -269,14 +264,13 @@ export default function NavbarWithCustomGif() {
                       />
                     </svg>
                   </button>
-                  
+
                   {/* Wishlist Badge on Profile Icon - Only show when dropdown is closed */}
                   {isAuthenticated && user && !isUserMenuOpen && wishlist.length > 0 && (
-                    <div className={`absolute -top-1 -right-1 text-[10px] font-semibold min-w-[18px] h-[18px] flex items-center justify-center rounded-full cart-badge-pulse transition-colors duration-300 ${
-                      isScrolled 
-                        ? "bg-foreground text-background" 
-                        : "bg-background text-foreground"
-                    }`}>
+                    <div className={`absolute -top-1 -right-1 text-[10px] font-semibold min-w-[18px] h-[18px] flex items-center justify-center rounded-full cart-badge-pulse transition-colors duration-300 ${isScrolled
+                      ? "bg-foreground text-background"
+                      : "bg-background text-foreground"
+                      }`}>
                       {wishlist.length}
                     </div>
                   )}
@@ -316,7 +310,7 @@ export default function NavbarWithCustomGif() {
                           </svg>
                           <span>View Profile</span>
                         </Link>
-                        
+
                         <Link
                           href="/wishlist"
                           onClick={() => setIsUserMenuOpen(false)}
@@ -340,11 +334,24 @@ export default function NavbarWithCustomGif() {
                       {/* Logout Button */}
                       <div className="px-4 py-3 border-t border-gray-100">
                         <button
-                          onClick={async () => {
-                            setIsUserMenuOpen(false);
-                            const { error } = await signOut();
-                            if (!error) {
-                              showSuccess('Logged out successfully');
+                          onClick={async (e) => {
+                            e.preventDefault(); // Prevent any default behavior
+                            console.log('Logout clicked');
+                            try {
+                              setIsUserMenuOpen(false);
+                              console.log('Calling signOut...');
+                              const { error } = await signOut();
+                              console.log('signOut result:', { error });
+                              if (!error) {
+                                showSuccess('Logged out successfully');
+                                console.log('Success message shown');
+                              } else {
+                                console.error('Logout error:', error);
+                                // Fallback: force reload if signOut fails weirdly
+                                window.location.href = '/';
+                              }
+                            } catch (err) {
+                              console.error('Logout exception:', err);
                             }
                           }}
                           className="w-full py-2 bg-brand text-white text-sm font-medium rounded hover:bg-brand/90 transition-all cursor-pointer"
@@ -361,9 +368,8 @@ export default function NavbarWithCustomGif() {
                 <div className="relative flex items-center justify-center">
                   <button
                     onClick={openCart}
-                    className={`transition-colors cursor-pointer flex items-center justify-center ${
-                      isScrolled ? "text-black" : "text-brand"
-                    } hover:opacity-70`}
+                    className={`transition-colors cursor-pointer flex items-center justify-center ${isScrolled ? "text-black" : "text-brand"
+                      } hover:opacity-70`}
                     aria-label="Cart"
                   >
                     <svg
@@ -380,16 +386,15 @@ export default function NavbarWithCustomGif() {
                       />
                     </svg>
                   </button>
-                  
+
                   {/* Cart Badge */}
                   {(() => {
                     const cartCount = useCart().getCartCount();
                     return cartCount > 0 ? (
-                      <div className={`absolute -top-1 -right-1 text-[10px] font-semibold min-w-[18px] h-[18px] flex items-center justify-center rounded-full cart-badge-pulse transition-colors duration-300 ${
-                        isScrolled 
-                          ? "bg-foreground text-background" 
-                          : "bg-background text-foreground"
-                      }`}>
+                      <div className={`absolute -top-1 -right-1 text-[10px] font-semibold min-w-[18px] h-[18px] flex items-center justify-center rounded-full cart-badge-pulse transition-colors duration-300 ${isScrolled
+                        ? "bg-foreground text-background"
+                        : "bg-background text-foreground"
+                        }`}>
                         {cartCount}
                       </div>
                     ) : null;
@@ -403,20 +408,18 @@ export default function NavbarWithCustomGif() {
 
       {/* Sidebar Overlay */}
       <div
-        className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 ${
-          isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 ${isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         onClick={closeMenu}
       />
 
       {/* Sidebar Menu */}
       <aside
-        className={`fixed top-0 left-0 h-full w-80 sm:w-96 bg-white z-50 transform transition-transform duration-300 ease-in-out ${
-          isMenuOpen ? "translate-x-0" : "-translate-x-full"
-        } overflow-y-auto`}
+        className={`fixed top-0 left-0 h-full w-80 sm:w-96 bg-white z-50 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? "translate-x-0" : "-translate-x-full"
+          } overflow-y-auto`}
       >
         <div className="flex flex-col h-full">
-        
+
 
           {/* Logo */}
           <div className="px-5 flex justify-start items-center border-b border-gray-200">
@@ -464,7 +467,7 @@ export default function NavbarWithCustomGif() {
                   </div>
                   <span className="text-sm font-medium tracking-wide">Back</span>
                 </button>
-                
+
                 {/* Submenu Title */}
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold tracking-wide text-brand uppercase">
@@ -472,13 +475,15 @@ export default function NavbarWithCustomGif() {
                   </h3>
                   <p className="text-xs text-gray-500 mt-1">Browse our collections</p>
                 </div>
-                
+
                 {/* Submenu Items */}
                 <ul className="space-y-2">
                   <li>
-                    <Link
-                      href="/"
-                      onClick={closeMenu}
+                    <button
+                      onClick={() => {
+                        closeMenu();
+                        scrollToSection('winter-arc-section');
+                      }}
                       className="group w-full block py-4 px-4 rounded-lg text-sm tracking-wide text-gray-900 hover:bg-brand hover:text-white transition-all duration-200 cursor-pointer border border-gray-200 hover:border-brand text-left"
                     >
                       <div className="flex items-center justify-between">
@@ -497,7 +502,7 @@ export default function NavbarWithCustomGif() {
                           />
                         </svg>
                       </div>
-                    </Link>
+                    </button>
                   </li>
                   <li>
                     <button
@@ -652,9 +657,9 @@ export default function NavbarWithCustomGif() {
 
       {/* Search Component */}
       {isSearchOpen && (
-        <SearchComponent 
+        <SearchComponent
           key={isSearchOpen ? 'search-open' : 'search-closed'}
-          isOpen={isSearchOpen} 
+          isOpen={isSearchOpen}
           onClose={() => setIsSearchOpen(false)}
         />
       )}

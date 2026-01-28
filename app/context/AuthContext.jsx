@@ -79,7 +79,7 @@ export function AuthProvider({ children }) {
     try {
       // First, get the current session to check if it exists
       const { data: { session: currentSession } } = await supabase.auth.getSession();
-      
+
       if (!currentSession) {
         // No session, nothing to refresh
         setUser(null);
@@ -91,7 +91,7 @@ export function AuthProvider({ children }) {
       if (currentSession.expires_at) {
         const now = Math.floor(Date.now() / 1000);
         const timeUntilExpiry = currentSession.expires_at - now;
-        
+
         // If token is already expired, clear everything and reload page
         if (timeUntilExpiry <= 0) {
           console.log('⚠️ Token is expired, clearing session and reloading...');
@@ -117,10 +117,10 @@ export function AuthProvider({ children }) {
       if (error) {
         console.error('Error refreshing session:', error);
         // If refresh fails, the session might be expired
-        if (error.message?.includes('refresh_token_not_found') || 
-            error.message?.includes('invalid_grant') ||
-            error.message?.includes('JWT') ||
-            error.message?.includes('expired')) {
+        if (error.message?.includes('refresh_token_not_found') ||
+          error.message?.includes('invalid_grant') ||
+          error.message?.includes('JWT') ||
+          error.message?.includes('expired')) {
           // Session expired, clear everything and reload page
           console.log('⚠️ Session expired, clearing session and reloading...');
           setUser(null);
@@ -140,7 +140,7 @@ export function AuthProvider({ children }) {
         }
         return { session: null, error };
       }
-      
+
       setUser(session?.user ?? null);
       if (session?.user) {
         await fetchProfile(session.user.id);
@@ -184,7 +184,7 @@ export function AuthProvider({ children }) {
       try {
         // First, ensure we wait for session restoration
         const { data: { session }, error } = await supabase.auth.getSession();
-        
+
         if (!mounted) return;
 
         if (error) {
@@ -197,14 +197,14 @@ export function AuthProvider({ children }) {
 
         // Set user state immediately
         setUser(session?.user ?? null);
-        
+
         // If we have a session, fetch profile and ensure session is valid
         if (session?.user) {
           // Verify session is not expired
           if (session.expires_at) {
             const now = Math.floor(Date.now() / 1000);
             const timeUntilExpiry = session.expires_at - now;
-            
+
             // If token is expired, clear session
             if (timeUntilExpiry <= 0) {
               console.log('⚠️ Initial session expired, clearing...');
@@ -222,7 +222,7 @@ export function AuthProvider({ children }) {
               return;
             }
           }
-          
+
           // Fetch profile after session is confirmed valid
           await fetchProfile(session.user.id);
         } else {
@@ -248,7 +248,7 @@ export function AuthProvider({ children }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.email || 'no user');
-      
+
       // Handle token refresh errors
       if (event === 'TOKEN_REFRESHED' && !session) {
         console.log('⚠️ Token refresh failed, clearing session and reloading...');
@@ -267,7 +267,7 @@ export function AuthProvider({ children }) {
         setLoading(false);
         return;
       }
-      
+
       // Handle signed out event
       if (event === 'SIGNED_OUT') {
         setUser(null);
@@ -283,7 +283,7 @@ export function AuthProvider({ children }) {
         setLoading(false);
         return;
       }
-      
+
       setUser(session?.user ?? null);
       if (session?.user) {
         await fetchProfile(session.user.id);
@@ -376,15 +376,17 @@ export function AuthProvider({ children }) {
 
   const signOut = async () => {
     try {
-      // Sign out from Supabase (this should clear the session)
-      const { error } = await supabase.auth.signOut();
-      
-      // Explicitly clear localStorage token (even if expired or signOut failed)
+      // 1. Immediate Local Cleanup (Optimistic Logout)
+      // We don't wait for the server to acknowledge because if it hangs, the user is stuck.
+
+      // Clear all state
+      setUser(null);
+      setProfile(null);
+
+      // Clear localStorage
       if (typeof window !== 'undefined') {
         try {
-          // Remove the Supabase auth token from localStorage
           localStorage.removeItem('sb-auth-token');
-          // Also remove any other Supabase-related keys
           Object.keys(localStorage).forEach(key => {
             if (key.startsWith('sb-')) {
               localStorage.removeItem(key);
@@ -395,27 +397,37 @@ export function AuthProvider({ children }) {
           console.error('Error clearing localStorage:', storageError);
         }
       }
-      
-      if (error) throw error;
-      
-      setUser(null);
-      setProfile(null);
+
+      // Redirect immediately
       router.push('/');
+
+      // 2. Perform Server SignOut in background (with timeout)
+      // We wrap this so it doesn't block the UI flow if the network is weird
+      const serverSignOut = new Promise(async (resolve) => {
+        try {
+          // Give it max 2 seconds to be nice, otherwise ignore
+          const { error } = await Promise.race([
+            supabase.auth.signOut(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
+          ]);
+          resolve({ error });
+        } catch (e) {
+          console.warn('Server signOut timed out or failed (non-critical):', e);
+          resolve({ error: e });
+        }
+      });
+
+      // We don't await this promise to block the function return, 
+      // but we let it run. or validly we could await it since we already cleared state.
+      // To ensure strictly "fire and forget" UI feeling, we just return success.
+
       return { error: null };
     } catch (error) {
       console.error('Error signing out:', error);
-      // Even if signOut fails, clear state and localStorage
-      setUser(null);
-      setProfile(null);
+      // Ensure redirect happens even on error
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('sb-auth-token');
-        Object.keys(localStorage).forEach(key => {
-          if (key.startsWith('sb-')) {
-            localStorage.removeItem(key);
-          }
-        });
+        window.location.href = '/';
       }
-      router.push('/');
       return { error };
     }
   };

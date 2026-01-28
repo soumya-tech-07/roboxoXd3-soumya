@@ -7,13 +7,13 @@ export default function BlogMagazineLayout({ blog }) {
     return (
       <div className="space-y-8 sm:space-y-10">
         {/* Hero Image - Centered, Natural Aspect Ratio */}
-        <div className="w-full flex justify-center -mx-4 sm:mx-0">
-          <div className="relative w-full max-w-2xl bg-[#f5f3f0]" style={{ aspectRatio: '3/4', maxHeight: '600px' }}>
+        <div className="w-full flex justify-center items-center">
+          <div className="relative w-full max-w-2xl bg-[#f5f3f0] mx-auto" style={{ aspectRatio: '3/4', maxHeight: '600px' }}>
             <Image
               src={blog.image}
               alt={blog.title}
               fill
-              className="object-contain"
+              className="object-contain object-center"
               sizes="(max-width: 768px) 100vw, 672px"
               priority
             />
@@ -27,7 +27,7 @@ export default function BlogMagazineLayout({ blog }) {
               {blog.heading}
             </h2>
           )}
-          
+
           <div className="space-y-4 text-base sm:text-lg leading-relaxed text-gray-900">
             {blog.content.split('\n\n').map((paragraph, index) => (
               <p key={index} className="leading-relaxed">
@@ -44,13 +44,13 @@ export default function BlogMagazineLayout({ blog }) {
     return (
       <div className="space-y-8 sm:space-y-10">
         {/* Hero Image - Centered */}
-        <div className="w-full flex justify-center -mx-4 sm:mx-0">
-          <div className="relative w-full max-w-2xl bg-[#f5f3f0]" style={{ aspectRatio: '3/4', maxHeight: '600px' }}>
+        <div className="w-full flex justify-center items-center">
+          <div className="relative w-full max-w-2xl bg-[#f5f3f0] mx-auto" style={{ aspectRatio: '3/4', maxHeight: '600px' }}>
             <Image
               src={blog.image}
               alt={blog.title}
               fill
-              className="object-contain"
+              className="object-contain object-center"
               sizes="(max-width: 768px) 100vw, 672px"
               priority
             />
@@ -93,13 +93,13 @@ export default function BlogMagazineLayout({ blog }) {
       <div className="space-y-8 sm:space-y-10">
         {/* Single Hero Image - Centered (Only show first image from productImages array) */}
         {blog.productImages && blog.productImages.length > 0 && (
-          <div className="w-full flex justify-center -mx-4 sm:mx-0">
-            <div className="relative w-full max-w-2xl bg-[#f5f3f0]" style={{ aspectRatio: '3/4', maxHeight: '600px' }}>
+          <div className="w-full flex justify-center items-center">
+            <div className="relative w-full max-w-2xl bg-[#f5f3f0] mx-auto" style={{ aspectRatio: '3/4', maxHeight: '600px' }}>
               <Image
                 src={blog.productImages[0]}
                 alt={blog.title}
                 fill
-                className="object-contain"
+                className="object-contain object-center"
                 sizes="(max-width: 768px) 100vw, 672px"
                 priority
               />

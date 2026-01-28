@@ -58,8 +58,9 @@ export default function CartSidebar() {
     updateQuantity(productId, size, newQuantity);
   };
 
-  const handleSaveForLater = async (productId) => {
+  const handleSaveForLater = async (productId, size) => {
     await addToWishlist(productId);
+    await removeFromCart(productId, size);
   };
 
   const handleOverlayClick = (e) => {
@@ -72,17 +73,15 @@ export default function CartSidebar() {
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] transition-opacity duration-300 ease-out ${
-          isCartOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] transition-opacity duration-300 ease-out ${isCartOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={handleOverlayClick}
       />
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 right-0 h-full w-80 sm:w-96 lg:w-[480px] bg-white z-[101] transform transition-transform duration-300 ease-out shadow-2xl ${
-          isCartOpen ? 'translate-x-0' : 'translate-x-full'
-        } overflow-y-auto flex flex-col`}
+        className={`fixed top-0 right-0 h-full w-80 sm:w-96 lg:w-[480px] bg-white z-[101] transform transition-transform duration-300 ease-out shadow-2xl ${isCartOpen ? 'translate-x-0' : 'translate-x-full'
+          } overflow-y-auto flex flex-col`}
       >
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
@@ -211,7 +210,7 @@ export default function CartSidebar() {
                         {!isInWishlist(item.productId) && (
                           <button
                             type="button"
-                            onClick={() => handleSaveForLater(item.productId)}
+                            onClick={() => handleSaveForLater(item.productId, item.size)}
                             className="text-xs text-gray-600 hover:text-brand underline transition-colors cursor-pointer flex items-center gap-1"
                             aria-label="Save for later"
                           >
@@ -231,7 +230,7 @@ export default function CartSidebar() {
                             SAVE FOR LATER
                           </button>
                         )}
-                        
+
                         {/* Remove Button */}
                         <button
                           type="button"

@@ -125,10 +125,11 @@ export default function LatestDrop() {
   }
 
   return (
-    <section 
+    <section
+      id="winter-arc-section"
       className="bg-gray-100 py-8 sm:py-12 md:py-16 relative overflow-hidden"
       style={{
-        backgroundImage: `url('/images/men.jpeg')`,        backgroundSize: 'cover',
+        backgroundImage: `url('/images/men.jpeg')`, backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}
