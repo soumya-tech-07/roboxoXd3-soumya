@@ -445,7 +445,7 @@ export default function FAQPage() {
             Frequently Asked Questions
           </h1>
           <p className="text-sm sm:text-base text-gray-600 max-w-2xl">
-            Everything you need to know about ordering, shipping, returns, and more. 
+            Everything you need to know about ordering, shipping, returns, and more.
             Can&apos;t find what you&apos;re looking for? Contact us at{' '}
             <a href="mailto:retrolouve@gmail.com" className="underline">retrolouve@gmail.com</a>
           </p>
@@ -453,30 +453,7 @@ export default function FAQPage() {
 
         {/* Quick Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
-          {/* Exchange/Return Request Card */}
-          <Link
-            href="/exchange-return"
-            className="group border-2 border-gray-900 p-6 hover:bg-gray-900 hover:text-white transition-all duration-300 cursor-pointer"
-          >
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold tracking-wide mb-2 uppercase">
-                  Place an Exchange/Return Request
-                </h3>
-                <p className="text-xs opacity-80">
-                  Start your exchange or return process here
-                </p>
-              </div>
-              <svg className="w-5 h-5 flex-shrink-0 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </Link>
+
 
           {/* Exchange/Returns Policy Card */}
           <Link
@@ -539,9 +516,8 @@ export default function FAQPage() {
                           {item.q}
                         </span>
                         <svg
-                          className={`shrink-0 w-5 h-5 text-gray-600 transition-transform duration-300 ${
-                            isOpen ? 'rotate-180' : ''
-                          }`}
+                          className={`shrink-0 w-5 h-5 text-gray-600 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''
+                            }`}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -552,9 +528,8 @@ export default function FAQPage() {
 
                       {/* Answer */}
                       <div
-                        className={`overflow-hidden transition-all duration-300 ${
-                          isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                        }`}
+                        className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                          }`}
                       >
                         <div className="px-6 pb-5 text-sm sm:text-base text-gray-900 leading-relaxed">
                           {typeof item.a === 'string' ? <p>{item.a}</p> : item.a}

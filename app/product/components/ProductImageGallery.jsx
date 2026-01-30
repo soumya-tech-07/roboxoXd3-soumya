@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
+import LuxuryImage from '@/app/components/ui/LuxuryImage';
 
 export default function ProductImageGallery({ images, productName, badge }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -85,15 +86,15 @@ export default function ProductImageGallery({ images, productName, badge }) {
         onTouchEnd={handleTouchEnd}
         onClick={() => setIsFullscreen(true)}
       >
-        <Image
+        <LuxuryImage
           src={mainImage}
           alt={productName}
           fill
-          className="object-contain"
           priority
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           unoptimized={mainImage?.startsWith('http')}
         />
-        
+
         {/* Fullscreen Icon Overlay */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
           <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg">
@@ -179,18 +180,16 @@ export default function ProductImageGallery({ images, productName, badge }) {
             <button
               key={index}
               onClick={() => setSelectedImageIndex(index)}
-              className={`relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 bg-gray-100 overflow-hidden border-2 transition-all cursor-pointer ${
-                selectedImageIndex === index
+              className={`relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 bg-gray-100 overflow-hidden border-2 transition-all cursor-pointer ${selectedImageIndex === index
                   ? 'border-black'
                   : 'border-gray-200 hover:border-gray-400'
-              }`}
+                }`}
               aria-label={`View image ${index + 1}`}
             >
-              <Image
+              <LuxuryImage
                 src={image}
                 alt={`${productName} view ${index + 1}`}
                 fill
-                className="object-cover"
                 sizes="96px"
                 unoptimized={image?.startsWith('http')}
               />
@@ -309,4 +308,3 @@ export default function ProductImageGallery({ images, productName, badge }) {
     </div>
   );
 }
-

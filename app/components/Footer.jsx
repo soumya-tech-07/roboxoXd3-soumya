@@ -6,21 +6,21 @@ export default function Footer() {
   return (
     <footer className="bg-gray-100">
 
-            {/* Bottom Bar */}
-            <div className="bg-brand text-white">
+      {/* Bottom Bar */}
+      <div className="bg-brand text-white">
         <div className="mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 text-[10px] tracking-wider">
             <span>CONNECT</span>
             <div className="flex gap-4 sm:gap-8 items-center">
-              <Link 
-                href="mailto:retrolouve@gmail.com" 
+              <Link
+                href="mailto:retrolouve@gmail.com"
                 className="flex items-center gap-2 hover:opacity-70 transition-opacity"
               >
                 <Mail size={16} />
                 <span>EMAIL</span>
               </Link>
-              <Link 
-                href="https://www.instagram.com/retrolouve?igsh=MTlsZDB2emlkMnllcA%3D%3D" 
+              <Link
+                href="https://www.instagram.com/retrolouve?igsh=MTlsZDB2emlkMnllcA%3D%3D"
                 className="flex items-center gap-2 hover:opacity-70 transition-opacity"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -86,6 +86,11 @@ export default function Footer() {
                   FAQ
                 </Link>
               </li>
+              <li>
+                <Link href="/exchange-return" className="hover:underline uppercase">
+                  Place an Exchange/Return Request
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -119,8 +124,8 @@ export default function Footer() {
         <div className="mx-auto px-4 sm:px-8 md:px-16 py-6 sm:py-8">
           <h3 className="text-black text-[10px] font-semibold mb-3 sm:mb-4 tracking-wider">POPULAR SEARCHES</h3>
            */}
-          {/* Shop by Category */}
-          {/* <div className="mb-6">
+      {/* Shop by Category */}
+      {/* <div className="mb-6">
             <h4 className="text-[10px] font-medium mb-2 text-gray-600">SHOP BY CATEGORY</h4>
             <p className="text-[10px] text-gray-500 leading-relaxed">
               <Link href="#" className="hover:underline">OVERSIZED T-SHIRTS</Link>, 
@@ -133,8 +138,8 @@ export default function Footer() {
             </p>
           </div> */}
 
-          {/* Shop by Style */}
-          {/* <div className="mb-6">
+      {/* Shop by Style */}
+      {/* <div className="mb-6">
             <h4 className="text-[10px] font-medium mb-2 text-gray-600">SHOP BY STYLE</h4>
             <p className="text-[10px] text-gray-500 leading-relaxed">
               <Link href="#" className="hover:underline">PRINTED SHIRTS</Link>, 
@@ -148,8 +153,8 @@ export default function Footer() {
             </p>
           </div> */}
 
-          {/* Shop by Color */}
-          {/* <div>
+      {/* Shop by Color */}
+      {/* <div>
             <h4 className="text-[10px] font-medium mb-2 text-gray-600">SHOP BY COLOR</h4>
             <p className="text-[10px] text-gray-500 leading-relaxed">
               <Link href="#" className="hover:underline">BLACK T-SHIRTS</Link>, 

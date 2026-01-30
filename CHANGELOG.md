@@ -1685,12 +1685,13 @@ className={`... ${!isScrolled ? 'scale-100' : 'scale-75 sm:scale-100'}`}
 
 ---
 
+
 ## 🐛 Known Issues / Edge Cases
 
-1. **Size Recommendation:** Won't show if user has no measurements or size chart is missing
-2. **Save for Later:** Button hidden if product already in wishlist (by design)
-3. **Badge Animation:** May need reduced-motion media query for accessibility
-4. **Title Case:** Special characters and acronyms may need special handling
+1. **Size Recommendation:** Hidden for guest users or if product size chart is unavailable (Shows "Add Measurements" prompt for logged-in users).
+2. **Save for Later:** Button hidden if product already in wishlist (by design).
+3. **Badge Animation:** May need reduced-motion media query for accessibility.
+4. **Title Case:** Special characters and acronyms may need special handling.
 
 ---
 

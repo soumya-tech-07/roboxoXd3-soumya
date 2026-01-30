@@ -28,10 +28,10 @@ export default function SizeRecommendation({ productCategory, availableSizes, on
         setStatus('loading');
         console.log('SizeRecommendation: Starting fetch for', { productCategory, user: user?.id });
 
-        // Fetch user's body measurements
+        // 1. Fetch user's body measurements
         const { data: profile, error: profileError } = await supabase
           .from('user_profiles')
-          .select('body_measurements, body_measurements_unit') // Fetch unit too
+          .select('body_measurements, body_measurements_unit')
           .eq('user_id', user.id)
           .single();
 
@@ -52,24 +52,45 @@ export default function SizeRecommendation({ productCategory, availableSizes, on
           return;
         }
 
-        // Fetch size chart for the product category
-        const { data: sizeChart, error: chartError } = await supabase
-          .from('size_charts')
-          .select('*')
-          .eq('category', productCategory)
+        // 2. Fetch TOLERANCE RANGES (New logic)
+        // Normalize category keys to match DB (e.g. SWEATPANTS -> Pants)
+        let searchCategory = productCategory;
+        const catUpper = String(productCategory).toUpperCase();
+
+        if (catUpper.includes('SWEATPANT') || catUpper.includes('PANT') || catUpper.includes('GLOW IN THE DARK')) {
+          searchCategory = 'Pants';
+        }
+        else if (catUpper.includes('SHIRT') || catUpper.includes('TEE') || catUpper.includes('TOP')) {
+          // Distinguish women's tops if possible, otherwise default to Shirt
+          // For now mapping generic "Shirt"
+          searchCategory = 'Shirt';
+        }
+        else if (catUpper.includes('JACKET')) {
+          if (catUpper.includes('FUR')) searchCategory = 'Fur Jacket';
+          else searchCategory = 'Varsity Jacket';
+        }
+
+        console.log(`SizeRecommendation: Normalized '${productCategory}' -> '${searchCategory}'`);
+
+        const { data: toleranceData, error: toleranceError } = await supabase
+          .from('size_tolerance_ranges')
+          .select('tolerances')
+          .eq('category', searchCategory)
           .single();
 
-        if (chartError || !sizeChart?.measurements) {
-          console.log('SizeRecommendation: Size chart error or empty', { chartError, sizeChart });
+        if (toleranceError || !toleranceData?.tolerances) {
+          console.log('SizeRecommendation: Tolerance data missing for category', productCategory);
+          // Fallback: If no tolerance data exists, we can't recommend safely.
           setStatus('error');
           return;
         }
 
-        const chartMeasurements = sizeChart.measurements;
-        console.log('SizeRecommendation: Chart measurements found:', chartMeasurements);
+        // The tolerances are already a clean array: [{ size: 'S', key: 'chest', min: 30, max: 36 }, ...]
+        const toleranceChart = toleranceData.tolerances;
+        console.log('SizeRecommendation: Tolerance Chart found:', toleranceChart);
 
         // Find the best matching size
-        const bestSize = findBestSize(userMeasurements, userUnit, chartMeasurements, availableSizes);
+        const bestSize = findBestSize(userMeasurements, userUnit, toleranceChart, availableSizes);
         console.log('SizeRecommendation: Calculated best size:', bestSize);
 
         if (bestSize) {
@@ -89,15 +110,13 @@ export default function SizeRecommendation({ productCategory, availableSizes, on
   }, [user, productCategory, availableSizes]);
 
   // Algorithm to find best matching size
-  const findBestSize = (userMeasurements, userUnit, chartMeasurements, availableSizes) => {
-    if (!Array.isArray(chartMeasurements) || chartMeasurements.length === 0) {
+  const findBestSize = (userMeasurements, userUnit, toleranceChart, availableSizes) => {
+    if (!Array.isArray(toleranceChart) || toleranceChart.length === 0) {
       return null;
     }
 
     // Determine conversion factor (User Unit -> Chart Unit)
-    // Assuming Chart is ALWAYS in INCHES for now (based on codebase context)
-    // If user is CM, convert to Inches (divide by 2.54)
-    // If user is IN, keep as is
+    // Assuming Tolerances are ALWAYS in INCHES based on provided data
     const convertToChartUnit = (value) => {
       if (userUnit === 'CM') {
         return value / 2.54;
@@ -105,102 +124,108 @@ export default function SizeRecommendation({ productCategory, availableSizes, on
       return value;
     };
 
-    // Helper for case-insensitive lookup
-    const getValueCaseInsensitive = (obj, key) => {
-      const foundKey = Object.keys(obj).find(k => k.toLowerCase() === key.toLowerCase());
-      return foundKey ? obj[foundKey] : undefined;
+    // Helper for case-insensitive measurement lookup
+    // (e.g., matching User's "Chest" to Tolerance Key "chest")
+    const getUserValueForKey = (measurements, targetKey) => {
+      const foundKey = Object.keys(measurements).find(k => k.toLowerCase() === targetKey.toLowerCase());
+      return foundKey ? measurements[foundKey] : undefined;
     };
 
-    // Helper to parse chart values which might be ranges "28-30" or strings "30 in"
-    const parseChartValue = (value) => {
-      if (typeof value === 'number') return value;
-      if (!value) return NaN;
+    // Group tolerances by Size to score them
+    // toleranceChart is flat: [{size: S, ...}, {size: S, ...}, {size: M, ...}]
+    // We want to verify if a User matches ALL criteria for a specific Size.
 
-      const str = String(value);
-      // Extract all numbers
-      const matches = str.match(/(\d+(\.\d+)?)/g);
+    // Get unique sizes from tolerance chart that are also available in product
+    const sizesToCheck = [...new Set(toleranceChart.map(t => t.size))].filter(s => availableSizes.includes(s));
 
-      if (!matches) return NaN;
+    const validSizes = [];
 
-      if (matches.length >= 2) {
-        // It's a range, take the average
-        const min = parseFloat(matches[0]);
-        const max = parseFloat(matches[1]);
-        return (min + max) / 2;
-      }
+    sizesToCheck.forEach(size => {
+      // Get all rules for this size (e.g. S might have Chest 30-36 AND Waist 28-30)
+      const rules = toleranceChart.filter(t => t.size === size);
 
-      return parseFloat(matches[0]);
-    };
+      let isMatch = true;
+      let totalDistance = 0;
+      let matchedRulesCount = 0;
+      let maxBoundary = 0;
 
-    // Calculate match score for each size
-    const sizeScores = chartMeasurements.map((sizeData) => {
-      const size = sizeData.size;
-      let totalDifference = 0;
-      let matchedFields = 0;
+      for (const rule of rules) {
+        const userValueRaw = getUserValueForKey(userMeasurements, rule.key);
 
-      // Compare each measurement the user has entered
-      Object.keys(userMeasurements).forEach((key) => {
-        const rawUserValue = parseFloat(userMeasurements[key]);
-        const chartValueRaw = getValueCaseInsensitive(sizeData, key);
-        const chartValue = parseChartValue(chartValueRaw);
+        // If user hasn't provided this measurement, we skip this rule (lenient match)
+        // OR strict match? Let's stick to lenient: if provided, must fit.
+        if (userValueRaw === undefined) continue;
 
-        console.log(`SizeRecommendation: Comparing Size ${size} - Key: ${key}`, {
-          userValue: rawUserValue,
-          chartValue: chartValue,
-          userKey: key,
-          chartValueRaw
-        });
+        const val = parseFloat(userValueRaw);
+        if (isNaN(val)) continue;
 
-        if (!isNaN(rawUserValue) && !isNaN(chartValue) && rawUserValue > 0) {
-          // CONVERT user value to match chart unit (Inches)
-          const userValue = convertToChartUnit(rawUserValue);
+        // Convert to Inches
+        const valInches = convertToChartUnit(val);
 
-          // Calculate absolute difference
-          const difference = Math.abs(userValue - chartValue);
-          totalDifference += difference;
-          matchedFields++;
+        console.log(`Checking Size ${size} Rule [${rule.key}]: ${rule.min}-${rule.max} vs User: ${valInches.toFixed(2)}`);
+
+        // STRICT RANGE CHECK
+        if (valInches >= rule.min && valInches <= rule.max) {
+          // In range!
+          totalDistance += 0;
+        } else {
+          // Out of range
+          // Calculate distance to nearest boundary
+          const dMin = Math.abs(valInches - rule.min);
+          const dMax = Math.abs(valInches - rule.max);
+          totalDistance += Math.min(dMin, dMax);
+          isMatch = false;
         }
-      });
 
-      // If no fields matched, return null
-      if (matchedFields === 0) {
-        console.log(`SizeRecommendation: No matched fields for Size ${size}`);
-        return { size, score: Infinity };
+        if (rule.max > maxBoundary) maxBoundary = rule.max;
+        matchedRulesCount++;
       }
 
-      // Average difference (lower is better)
-      const averageDifference = totalDifference / matchedFields;
-      console.log(`SizeRecommendation: Size ${size} Score: ${averageDifference}`);
-
-      return { size, score: averageDifference };
+      // If we checked at least one rule and it passed ALL range checks
+      if (matchedRulesCount > 0) {
+        validSizes.push({
+          size,
+          isPerfect: isMatch,
+          score: isMatch ? 0 : (totalDistance / matchedRulesCount), // Average distance
+          magnitude: maxBoundary
+        });
+      }
     });
 
-    // Filter out sizes not available in the product
-    const validSizes = sizeScores.filter(
-      (s) => s.score !== Infinity && availableSizes.includes(s.size)
-    );
+    if (validSizes.length === 0) return null;
 
-    if (validSizes.length === 0) {
-      return null;
-    }
+    // Sort:
+    // 1. Score (0 is perfect)
+    // 2. Magnitude (Larger is better if scores match)
+    validSizes.sort((a, b) => {
+      if (a.score !== b.score) return a.score - b.score;
+      return b.magnitude - a.magnitude;
+    });
 
-    // Find the size with the lowest score (best match)
-    const bestMatch = validSizes.reduce((best, current) =>
-      current.score < best.score ? current : best
-    );
+    const best = validSizes[0];
+    console.log('Best match found:', best);
 
-    // Only recommend if the match is reasonable (within 3 inches average difference)
-    if (bestMatch.score <= 3) {
-      return bestMatch.size;
+    // If perfect match (Score 0) -> Recommend
+    // If not perfect, but close (<= 3), recommend as fallback
+    if (best.score <= 3) {
+      return best.size;
     }
 
     return null;
   };
 
   // Render logic
-  if (!user || status === 'idle' || status === 'error') {
-    return null;
+  if (!user) return null;
+
+  if (status === 'error') {
+    return (
+      <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs">
+        Unable to load size chart for category: {productCategory}
+      </div>
+    );
   }
+
+  if (status === 'idle') return null;
 
   // Common container classes
   const containerClasses = "mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg";
