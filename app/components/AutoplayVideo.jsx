@@ -15,7 +15,7 @@ export default function AutoplayVideo() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const videoSrc = isMobile ? "/videos/mobile.mp4" : "/videos/desktop.mp4";
+  const videoSrc = isMobile ? "/bottomvideo/Vertical.mov" : "/bottomvideo/Horizontal.mov";
 
   return (
     <section className="relative w-full h-screen overflow-hidden">
