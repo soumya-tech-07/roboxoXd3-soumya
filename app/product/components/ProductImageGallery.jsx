@@ -80,7 +80,7 @@ export default function ProductImageGallery({ images, productName, badge }) {
     <div>
       {/* Main Image Preview */}
       <div
-        className="relative aspect-3/4 bg-gray-100 overflow-hidden mb-4 cursor-pointer group"
+        className="relative w-full aspect-[3/4] bg-gray-100 overflow-hidden mb-4 cursor-pointer group"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

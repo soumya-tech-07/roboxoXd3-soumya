@@ -11,13 +11,38 @@ export default function LuxuryImage({
     alt,
     width,
     height,
-    className,
+    className = '',
     priority = false,
     sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
+    fill,
     ...props
 }) {
     const [isLoading, setIsLoading] = useState(true);
 
+    // If using fill prop, don't wrap in a div (parent should handle sizing)
+    if (fill) {
+        return (
+            <Image
+                src={src}
+                alt={alt}
+                fill
+                priority={priority}
+                placeholder="blur"
+                blurDataURL={BLUR_DATA_URL}
+                sizes={sizes}
+                className={`
+                    object-cover
+                    transition-all duration-700 ease-in-out
+                    ${isLoading ? 'scale-110 blur-sm grayscale' : 'scale-100 blur-0 grayscale-0'}
+                    ${className}
+                `}
+                onLoad={() => setIsLoading(false)}
+                {...props}
+            />
+        );
+    }
+
+    // For width/height props, wrap in container
     return (
         <div className={`relative overflow-hidden ${className}`}>
             <Image
@@ -30,10 +55,10 @@ export default function LuxuryImage({
                 blurDataURL={BLUR_DATA_URL}
                 sizes={sizes}
                 className={`
-          object-cover w-full h-full
-          transition-all duration-700 ease-in-out
-          ${isLoading ? 'scale-110 blur-sm grayscale' : 'scale-100 blur-0 grayscale-0'}
-        `}
+                    object-cover w-full h-full
+                    transition-all duration-700 ease-in-out
+                    ${isLoading ? 'scale-110 blur-sm grayscale' : 'scale-100 blur-0 grayscale-0'}
+                `}
                 onLoad={() => setIsLoading(false)}
                 {...props}
             />

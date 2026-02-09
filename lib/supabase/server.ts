@@ -31,6 +31,17 @@ export async function createClient() {
           }
         },
       },
+      auth: {
+        // Suppress noisy auth errors for expired tokens
+        autoRefreshToken: false, // Server-side doesn't need auto-refresh
+        persistSession: false,    // Server-side doesn't persist
+        detectSessionInUrl: false,
+      },
+      global: {
+        headers: {
+          'x-client-info': 'retrolouve-server',
+        },
+      },
     }
   );
 }

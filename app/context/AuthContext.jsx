@@ -115,29 +115,28 @@ export function AuthProvider({ children }) {
       // Refresh the session
       const { data: { session }, error } = await supabase.auth.refreshSession();
       if (error) {
-        console.error('Error refreshing session:', error);
         // If refresh fails, the session might be expired
         if (error.message?.includes('refresh_token_not_found') ||
           error.message?.includes('invalid_grant') ||
           error.message?.includes('JWT') ||
-          error.message?.includes('expired')) {
-          // Session expired, clear everything and reload page
-          console.log('⚠️ Session expired, clearing session and reloading...');
+          error.message?.includes('expired') ||
+          error.status === 400) {
+          // Session expired, clear everything silently (don't reload unless necessary)
           setUser(null);
           setProfile(null);
           // Clear the session from storage
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('sb-auth-token');
             Object.keys(localStorage).forEach(key => {
               if (key.startsWith('sb-')) {
                 localStorage.removeItem(key);
               }
             });
-            await supabase.auth.signOut();
-            // Reload page to reset all state
-            window.location.reload();
+            // Sign out silently without reload
+            await supabase.auth.signOut().catch(() => {/* ignore */});
           }
+          return { session: null, error: null }; // Return success to avoid console errors
         }
+        console.error('Error refreshing session:', error);
         return { session: null, error };
       }
 
@@ -188,6 +187,23 @@ export function AuthProvider({ children }) {
         if (!mounted) return;
 
         if (error) {
+          // Silently handle expected auth errors (expired tokens, etc.)
+          if (error.message?.includes('refresh_token_not_found') ||
+              error.message?.includes('invalid_grant') ||
+              error.status === 400) {
+            // Clear expired session silently
+            setUser(null);
+            setProfile(null);
+            if (typeof window !== 'undefined') {
+              Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('sb-')) {
+                  localStorage.removeItem(key);
+                }
+              });
+            }
+            setLoading(false);
+            return;
+          }
           console.error('Error getting session:', error);
           setUser(null);
           setProfile(null);

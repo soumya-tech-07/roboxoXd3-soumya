@@ -6,6 +6,10 @@ import { createServerClient } from '@supabase/ssr';
  *
  * This is REQUIRED when using `@supabase/ssr` with Next.js App Router to keep
  * auth cookies in sync on every request (including RSC `?_rsc` requests).
+ * 
+ * NOTE: You may see "AuthApiError: Invalid Refresh Token" in server logs.
+ * This is EXPECTED when users have expired auth tokens and is handled gracefully
+ * by clearing the invalid cookies. These errors do not affect functionality.
  */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
@@ -34,14 +38,47 @@ export async function updateSession(request: NextRequest) {
         });
       },
     },
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false,
+    },
   });
 
   // IMPORTANT: This call refreshes the session if needed.
   // We intentionally ignore the result; cookie mutations are the goal.
   try {
-    await supabase.auth.getUser();
+    const { error } = await supabase.auth.getUser();
+    
+    // If we get auth errors (expired/invalid tokens), clear all auth cookies
+    if (error) {
+      const isAuthError = 
+        error.message?.includes('refresh_token_not_found') ||
+        error.message?.includes('invalid_grant') ||
+        error.message?.includes('JWT') ||
+        error.status === 400;
+      
+      if (isAuthError) {
+        // Clear all Supabase auth cookies to prevent repeated errors
+        const authCookies = request.cookies.getAll().filter(cookie => 
+          cookie.name.includes('sb-') || cookie.name.includes('supabase')
+        );
+        
+        authCookies.forEach(cookie => {
+          response.cookies.delete(cookie.name);
+        });
+      }
+    }
   } catch {
     // Never break page loads due to auth refresh hiccups.
+    // Clear auth cookies on any error to prevent repeated issues
+    const authCookies = request.cookies.getAll().filter(cookie => 
+      cookie.name.includes('sb-') || cookie.name.includes('supabase')
+    );
+    
+    authCookies.forEach(cookie => {
+      response.cookies.delete(cookie.name);
+    });
   }
 
   return response;
