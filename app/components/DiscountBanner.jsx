@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 export default function DiscountBanner() {
   const [isVisible, setIsVisible] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  const couponCode = 'WELCOME20';
+  const couponCode = 'WELCOME10';
 
   useEffect(() => {
     // Check if user has seen the banner before
@@ -76,7 +76,7 @@ export default function DiscountBanner() {
             <div className="absolute inset-0 flex items-center justify-center p-6">
               <div className="text-center">
                 <div className="text-6xl md:text-7xl font-bold text-brand mb-2">
-                  20%
+                  10%
                 </div>
                 <div className="text-xl md:text-2xl font-semibold text-gray-900 tracking-wide">
                   OFF
@@ -95,7 +95,7 @@ export default function DiscountBanner() {
                 Welcome to Retro Louve!
               </h2>
               <p className="text-sm md:text-base text-gray-600 mb-4">
-                Get <span className="font-semibold text-brand">20% OFF</span> on your first order. 
+                Get <span className="font-semibold text-brand">10% OFF</span> on your first order. 
                 Use the coupon code below at checkout.
               </p>
             </div>
