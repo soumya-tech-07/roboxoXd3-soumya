@@ -65,22 +65,22 @@ export default function ProductCard({
             src={primaryImage}
             alt={product.name}
             fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             unoptimized={primaryImage.startsWith('https://')}
-            className={`object-cover transition-opacity duration-500 ${
-              hasHoverImage && hovered ? 'opacity-0' : 'opacity-100'
-            }`}
+            className={`object-cover transition-opacity duration-500 ${hasHoverImage && hovered ? 'opacity-0' : 'opacity-100'
+              }`}
           />
-          
+
           {/* Hover Image */}
           {hasHoverImage && (
             <Image
               src={hoverImage}
               alt={`${product.name} - Back`}
               fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               unoptimized={hoverImage.startsWith('https://')}
-              className={`object-cover transition-opacity duration-500 ${
-                hovered ? 'opacity-100' : 'opacity-0'
-              }`}
+              className={`object-cover transition-opacity duration-500 ${hovered ? 'opacity-100' : 'opacity-0'
+                }`}
             />
           )}
 

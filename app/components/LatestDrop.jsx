@@ -6,8 +6,6 @@ import {
 } from './productIds';
 import { createClient } from '@/lib/supabase';
 import ProductCard from './ProductCard';
-import { useAuth } from '../context/AuthContext';
-
 const supabase = createClient();
 
 export default function LatestDrop() {
@@ -15,21 +13,12 @@ export default function LatestDrop() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mounted, setMounted] = useState(false);
-  const { loading: authLoading } = useAuth();
-
-  // CRITICAL: Hydration safety check - prevents stale server UI from flashing
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Fetch products from Supabase - WAIT for auth to initialize first
+  // Fetch products from Supabase
   useEffect(() => {
-    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
-    if (authLoading) {
-      console.log('LatestDrop: Waiting for auth...');
-      return;
-    }
-
     const fetchProducts = async () => {
       console.log('LatestDrop: Starting fetch...');
       try {
@@ -67,7 +56,7 @@ export default function LatestDrop() {
     };
 
     fetchProducts();
-  }, [authLoading]);
+  }, []);
 
   const products = useMemo(() => {
     // IMPORTANT: Do NOT fall back to static catalog.

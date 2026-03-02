@@ -6,6 +6,7 @@ import Image from 'next/image';
 export default function HomeBackgroundVideo() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const videoRefs = useRef([]);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -15,8 +16,9 @@ export default function HomeBackgroundVideo() {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 640); // sm breakpoint
     };
-    
+
     checkScreenSize();
+    setMounted(true);
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
@@ -68,7 +70,7 @@ export default function HomeBackgroundVideo() {
     const video = videoRefs.current[currentSlide];
     if (video && typeof video.play === 'function') {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     }
   }, [currentSlide, carouselItems]);
 
@@ -149,11 +151,12 @@ export default function HomeBackgroundVideo() {
           return (
             <div
               key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                }`}
             >
-              {item.type === 'video' ? (
+              {!mounted ? (
+                <div className="absolute inset-0 w-full h-full bg-gray-900" />
+              ) : item.type === 'video' ? (
                 <div className="absolute inset-0 w-full h-full overflow-hidden">
                   <video
                     ref={(el) => (videoRefs.current[index] = el)}
@@ -167,38 +170,40 @@ export default function HomeBackgroundVideo() {
                 </div>
               ) : (
                 <>
-                  {/* Mobile Image (up to sm) */}
-                  {(() => {
-                    const mobileSrc = item.mobileSrc || item.src;
-                    return mobileSrc && mobileSrc.trim() !== '' ? (
-                      <div className="block sm:hidden absolute inset-0 w-full h-full">
-                        <Image
-                          src={mobileSrc}
-                          alt={item.alt}
-                          fill
-                          className="object-cover"
-                          priority={index === 0}
-                          sizes="100vw"
-                        />
-                      </div>
-                    ) : null;
-                  })()}
-                  {/* Desktop Image (after sm) */}
-                  {(() => {
-                    const desktopSrc = item.desktopSrc || item.src;
-                    return desktopSrc && desktopSrc.trim() !== '' ? (
-                      <div className="hidden sm:block absolute inset-0 w-full h-full">
-                        <Image
-                          src={desktopSrc}
-                          alt={item.alt}
-                          fill
-                          className="object-cover"
-                          priority={index === 0}
-                          sizes="100vw"
-                        />
-                      </div>
-                    ) : null;
-                  })()}
+                  {/* Conditional Rendering based on isMobile */}
+                  {isMobile ? (
+                    (() => {
+                      const mobileSrc = item.mobileSrc || item.src;
+                      return mobileSrc && mobileSrc.trim() !== '' ? (
+                        <div className="absolute inset-0 w-full h-full">
+                          <Image
+                            src={mobileSrc}
+                            alt={item.alt}
+                            fill
+                            className="object-cover"
+                            priority={index === 0}
+                            sizes="100vw"
+                          />
+                        </div>
+                      ) : null;
+                    })()
+                  ) : (
+                    (() => {
+                      const desktopSrc = item.desktopSrc || item.src;
+                      return desktopSrc && desktopSrc.trim() !== '' ? (
+                        <div className="absolute inset-0 w-full h-full">
+                          <Image
+                            src={desktopSrc}
+                            alt={item.alt}
+                            fill
+                            className="object-cover"
+                            priority={index === 0}
+                            sizes="100vw"
+                          />
+                        </div>
+                      ) : null;
+                    })()
+                  )}
                 </>
               )}
             </div>
@@ -254,7 +259,7 @@ export default function HomeBackgroundVideo() {
 
         {/* Shop Men and Women Buttons */}
         <div className="absolute bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-30 flex flex-col justify-center items-center sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
-        <button
+          <button
             onClick={() => scrollToSection('womens-section')}
             className=" w-[180px] sm:w-auto sm:min-w-[180px] px-6 sm:px-8 border-2 border-white hover:border-brand hover:bg-brand hover:text-white py-3  text-white text-xs sm:text-sm md:text-base tracking-wider font-medium transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm"
             aria-label="Shop Womens"
@@ -262,7 +267,7 @@ export default function HomeBackgroundVideo() {
           >
             SHOP WOMEN
           </button>
-         
+
           <button
             onClick={() => scrollToSection('mens-section')}
             className="w-[180px] sm:w-auto sm:min-w-[180px] px-6 sm:px-8 border-2 border-white hover:border-brand hover:bg-brand hover:text-white py-3  text-white text-xs sm:text-sm md:text-base tracking-wider font-medium transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm"
@@ -272,7 +277,7 @@ export default function HomeBackgroundVideo() {
             SHOP MEN
           </button>
 
-         
+
         </div>
 
         {/* Navigation Dots */}
@@ -281,11 +286,10 @@ export default function HomeBackgroundVideo() {
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`transition-all duration-300 rounded-full cursor-pointer ${
-                index === currentSlide
-                  ? 'w-8 h-2 bg-white'
-                  : 'w-2 h-2 bg-white/50 hover:bg-white/75'
-              }`}
+              className={`transition-all duration-300 rounded-full cursor-pointer ${index === currentSlide
+                ? 'w-8 h-2 bg-white'
+                : 'w-2 h-2 bg-white/50 hover:bg-white/75'
+                }`}
               aria-label={`Go to slide ${index + 1}`}
               type="button"
             />

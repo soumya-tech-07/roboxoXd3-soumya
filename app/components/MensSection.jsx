@@ -3,8 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from '@/lib/supabase';
 import ProductCard from './ProductCard';
-import { useAuth } from '../context/AuthContext';
-
 const supabase = createClient();
 
 export default function MensSection() {
@@ -12,20 +10,12 @@ export default function MensSection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mounted, setMounted] = useState(false);
-  const { loading: authLoading } = useAuth();
-
-  // CRITICAL: Hydration safety check - prevents stale server UI from flashing
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Fetch mens products from Supabase - WAIT for auth to initialize first
+  // Fetch mens products from Supabase
   useEffect(() => {
-    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
-    if (authLoading) {
-      return;
-    }
-
     const fetchProducts = async () => {
       try {
         setLoading(true);
@@ -55,7 +45,7 @@ export default function MensSection() {
     };
 
     fetchProducts();
-  }, [authLoading]);
+  }, []);
 
   const mensProducts = useMemo(() => {
     // IMPORTANT: Do NOT fall back to static catalog.
@@ -120,11 +110,11 @@ export default function MensSection() {
   }
 
   return (
-    <section 
-      id="mens-section" 
+    <section
+      id="mens-section"
       className="bg-white py-8 sm:py-12 md:py-16 scroll-mt-20 relative overflow-hidden"
       style={{
-        backgroundImage: `url('/images/mens.jpeg')`,        backgroundSize: 'cover',
+        backgroundImage: `url('/images/mens.jpeg')`, backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}

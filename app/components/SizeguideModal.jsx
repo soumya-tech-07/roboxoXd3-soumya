@@ -353,7 +353,7 @@ export default function SizeGuideModal({
                   onClick={handleCustomizeClick}
                   className="bg-brand text-white px-8 py-3 rounded-lg hover:bg-red-700 active:scale-95 transition-all text-sm font-semibold tracking-wide uppercase cursor-pointer"
                 >
-                  CUSTOMIZE YOUR SIZE
+                  FIND YOUR FIT
                 </button>
               </div>
             </div>
@@ -363,7 +363,7 @@ export default function SizeGuideModal({
             {/* Customize Form */}
             <div className="pt-8 pb-4 px-4 sm:px-6 text-center border-b border-gray-200 bg-gradient-to-b from-brand/5 via-brand/3 to-transparent">
               <p className="text-[10px] tracking-[0.4em] text-brand mb-2 font-medium">
-                CUSTOMIZE
+                FIND YOUR FIT
               </p>
               <h2 className="text-sm sm:text-base tracking-[0.15em] font-semibold text-gray-900">
                 BASIC INFORMATION
