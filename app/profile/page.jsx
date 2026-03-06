@@ -12,15 +12,47 @@ import MeasurementForm from '../components/MeasurementForm';
 
 const supabase = createClient();
 
+function EyeIcon({ open }) {
+  return open ? (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+    </svg>
+  ) : (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  );
+}
+
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, loading: authLoading, profile } = useAuth();
+  const {
+    user,
+    isAuthenticated,
+    loading: authLoading,
+    profile,
+    updateProfile,
+    updatePassword,
+  } = useAuth();
   const { openLogin } = useAuthModal();
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
   const [activeTab, setActiveTab] = useState('account');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const [firstName, setFirstName] = useState(profile?.first_name || '');
+  const [lastName, setLastName] = useState(profile?.last_name || '');
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editingPassword, setEditingPassword] = useState(false);
 
   // Redirect to home and open login modal if not authenticated
   useEffect(() => {
@@ -38,6 +70,100 @@ export default function ProfilePage() {
       loadOrders();
     }
   }, [isAuthenticated, user, activeTab]);
+
+  // Keep local name state in sync with loaded profile
+  useEffect(() => {
+    if (profile) {
+      setFirstName(profile.first_name || '');
+      setLastName(profile.last_name || '');
+    }
+  }, [profile]);
+
+  const handleProfileSave = async (event) => {
+    event.preventDefault();
+
+    if (!firstName.trim() && !lastName.trim()) {
+      showError('Please enter at least one name field.');
+      return;
+    }
+
+    try {
+      setSavingProfile(true);
+      const { error } = await updateProfile({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+      });
+
+      if (error) {
+        showError(error.message || 'Failed to update profile details.');
+        return;
+      }
+
+      showSuccess('Profile details updated successfully.');
+      setEditingProfile(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      showError('Something went wrong while updating your profile.');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const cancelEditProfile = () => {
+    setFirstName(profile?.first_name || '');
+    setLastName(profile?.last_name || '');
+    setEditingProfile(false);
+  };
+
+  const handlePasswordChange = async (event) => {
+    event.preventDefault();
+
+    if (!newPassword) {
+      showError('Please enter a new password.');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      showError('New password must be at least 6 characters long.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      showError('New password and confirmation do not match.');
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+      const { error } = await updatePassword(newPassword);
+
+      if (error) {
+        showError(error.message || 'Failed to change password.');
+        return;
+      }
+
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      showSuccess('Password updated successfully.');
+      setEditingPassword(false);
+    } catch (error) {
+      console.error('Error updating password:', error);
+      showError('Something went wrong while updating your password.');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const cancelEditPassword = () => {
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setShowCurrentPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+    setEditingPassword(false);
+  };
 
   const loadOrders = async () => {
     if (!user) return;
@@ -233,43 +359,249 @@ export default function ProfilePage() {
         <div className="bg-white">
           {/* Account Info Tab */}
           {activeTab === 'account' && (
-            <div className="max-w-2xl">
-              <div className="space-y-6">
-                <div className="border border-gray-200 rounded-lg p-6">
-                  <h2 className="text-lg font-medium text-gray-900 mb-6" style={{ letterSpacing: '-0.02em' }}>
-                    ACCOUNT DETAILS
+            <div className="max-w-2xl space-y-4">
+
+              {/* ── PERSONAL INFORMATION ── */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                {/* Card header with Edit toggle */}
+                <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                  <h2 className="text-sm font-medium text-gray-900 tracking-wider">
+                    PERSONAL INFORMATION
                   </h2>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs tracking-widest text-gray-500 mb-2">
-                        NAME
-                      </label>
-                      <p className="text-base text-gray-900" style={{ lineHeight: '1.6' }}>
-                        {profile?.first_name && profile?.last_name
-                          ? `${profile.first_name} ${profile.last_name}`
-                          : 'Not set'}
-                      </p>
-                    </div>
-                    <div className="border-t border-gray-200 pt-4">
-                      <label className="block text-xs tracking-widest text-gray-500 mb-2">
-                        EMAIL
-                      </label>
-                      <p className="text-base text-gray-900" style={{ lineHeight: '1.6' }}>
-                        {user?.email}
-                      </p>
-                    </div>
-                  </div>
+                  {!editingProfile && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingProfile(true)}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-black transition-colors cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
+                      </svg>
+                      Edit
+                    </button>
+                  )}
                 </div>
 
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                  <p className="text-sm text-gray-600" style={{ lineHeight: '1.6' }}>
-                    To update your account details, please contact our support team at{' '}
-                    <a href="mailto:retrolouve@gmail.com" className="text-black hover:underline">
-                      retrolouve@gmail.com
-                    </a>
-                  </p>
+                <div className="p-6">
+                  {editingProfile ? (
+                    /* ── Edit form ── */
+                    <form onSubmit={handleProfileSave} className="space-y-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">
+                            FIRST NAME
+                          </label>
+                          <input
+                            type="text"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            autoFocus
+                            className="w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                            placeholder="Enter first name"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">
+                            LAST NAME
+                          </label>
+                          <input
+                            type="text"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            className="w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                            placeholder="Enter last name"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">
+                          EMAIL ADDRESS
+                        </label>
+                        <div className="flex items-center gap-2 border border-gray-200 bg-gray-50 rounded px-3 py-2.5">
+                          <span className="text-sm text-gray-500 select-all">{user?.email}</span>
+                          <span className="ml-auto text-xs text-gray-400 bg-gray-200 px-2 py-0.5 rounded shrink-0">
+                            cannot edit
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-1">
+                        <button
+                          type="submit"
+                          disabled={savingProfile}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-xs tracking-widest rounded hover:bg-gray-800 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                        >
+                          {savingProfile ? (
+                            <>
+                              <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              SAVING...
+                            </>
+                          ) : 'SAVE CHANGES'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditProfile}
+                          disabled={savingProfile}
+                          className="px-5 py-2.5 border border-gray-300 text-gray-600 text-xs tracking-widest rounded hover:border-gray-400 hover:text-gray-800 disabled:opacity-50 cursor-pointer transition-colors"
+                        >
+                          CANCEL
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    /* ── Read-only view ── */
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center shrink-0">
+                        <span className="text-white text-base font-medium select-none">
+                          {firstName
+                            ? firstName.charAt(0).toUpperCase()
+                            : user?.email?.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-sm font-medium text-gray-900">
+                          {firstName || lastName
+                            ? `${firstName} ${lastName}`.trim()
+                            : <span className="text-gray-400 italic">No name set</span>}
+                        </p>
+                        <p className="text-sm text-gray-500">{user?.email}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* ── CHANGE PASSWORD ── */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                {/* Card header with toggle */}
+                <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                  <h2 className="text-sm font-medium text-gray-900 tracking-wider">
+                    PASSWORD
+                  </h2>
+                  {!editingPassword && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingPassword(true)}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-black transition-colors cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
+                      </svg>
+                      Change
+                    </button>
+                  )}
+                </div>
+
+                <div className="p-6">
+                  {editingPassword ? (
+                    /* ── Password form ── */
+                    <form onSubmit={handlePasswordChange} className="space-y-5">
+                      {/* Current Password */}
+                      <div>
+                        <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">
+                          CURRENT PASSWORD
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showCurrentPassword ? 'text' : 'password'}
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            autoFocus
+                            className="w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 pr-10 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                            placeholder="Enter current password"
+                          />
+                          <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer" tabIndex={-1}>
+                            <EyeIcon open={showCurrentPassword} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* New Password */}
+                        <div>
+                          <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">
+                            NEW PASSWORD
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showNewPassword ? 'text' : 'password'}
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              className="w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 pr-10 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                              placeholder="Min. 6 characters"
+                            />
+                            <button type="button" onClick={() => setShowNewPassword(!showNewPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer" tabIndex={-1}>
+                              <EyeIcon open={showNewPassword} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Confirm Password */}
+                        <div>
+                          <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">
+                            CONFIRM PASSWORD
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showConfirmPassword ? 'text' : 'password'}
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              className={`w-full border bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 pr-10 text-sm rounded focus:outline-none focus:ring-1 focus:border-black transition-colors ${
+                                confirmPassword && newPassword !== confirmPassword
+                                  ? 'border-red-400 focus:ring-red-400'
+                                  : 'border-gray-300 focus:ring-black'
+                              }`}
+                              placeholder="Re-enter new password"
+                            />
+                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer" tabIndex={-1}>
+                              <EyeIcon open={showConfirmPassword} />
+                            </button>
+                          </div>
+                          {confirmPassword && newPassword !== confirmPassword && (
+                            <p className="mt-1.5 text-xs text-red-500">Passwords do not match</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-1">
+                        <button
+                          type="submit"
+                          disabled={changingPassword}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-xs tracking-widest rounded hover:bg-gray-800 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                        >
+                          {changingPassword ? (
+                            <>
+                              <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              UPDATING...
+                            </>
+                          ) : 'UPDATE PASSWORD'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditPassword}
+                          disabled={changingPassword}
+                          className="px-5 py-2.5 border border-gray-300 text-gray-600 text-xs tracking-widest rounded hover:border-gray-400 hover:text-gray-800 disabled:opacity-50 cursor-pointer transition-colors"
+                        >
+                          CANCEL
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    /* ── Read-only view ── */
+                    <div className="flex items-center gap-3">
+                      <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      <p className="text-sm text-gray-500">••••••••••••</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
             </div>
           )}
 
