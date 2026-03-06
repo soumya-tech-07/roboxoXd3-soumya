@@ -46,21 +46,16 @@ export function AuthProvider({ children }) {
       const now = Math.floor(Date.now() / 1000);
       const timeUntilExpiry = session.expires_at - now;
 
-      // If token is expired, clear everything and reload page
+      // If token is expired, clear everything without reloading
       if (timeUntilExpiry <= 0) {
-        console.log('⚠️ Token expired, clearing session and reloading...');
+        console.log('⚠️ Token expired, clearing session...');
         setUser(null);
         setProfile(null);
-        // Clear expired token from storage
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('sb-auth-token');
           Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('sb-')) {
-              localStorage.removeItem(key);
-            }
+            if (key.startsWith('sb-')) localStorage.removeItem(key);
           });
-          // Reload page to reset all state
-          window.location.reload();
+          await supabase.auth.signOut().catch(() => {});
         }
         return;
       }
@@ -92,23 +87,18 @@ export function AuthProvider({ children }) {
         const now = Math.floor(Date.now() / 1000);
         const timeUntilExpiry = currentSession.expires_at - now;
 
-        // If token is already expired, clear everything and reload page
+        // If token is already expired, clear everything without reloading
         if (timeUntilExpiry <= 0) {
-          console.log('⚠️ Token is expired, clearing session and reloading...');
+          console.log('⚠️ Token is expired, clearing session...');
           setUser(null);
           setProfile(null);
-          // Clear expired token from storage
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('sb-auth-token');
             Object.keys(localStorage).forEach(key => {
-              if (key.startsWith('sb-')) {
-                localStorage.removeItem(key);
-              }
+              if (key.startsWith('sb-')) localStorage.removeItem(key);
             });
-            // Reload page to reset all state
-            window.location.reload();
+            await supabase.auth.signOut().catch(() => {});
           }
-          return { session: null, error: { message: 'Token expired' } };
+          return { session: null, error: null };
         }
       }
 
@@ -181,8 +171,18 @@ export function AuthProvider({ children }) {
     // This prevents race conditions where components fetch data before session is restored
     const initializeAuth = async () => {
       try {
-        // First, ensure we wait for session restoration
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Add an 8-second timeout: if the Supabase client is stuck waiting for a
+        // token refresh (queuing all requests), getSession() will never resolve.
+        // The timeout ensures loading is always set to false within a bounded time.
+        const { data: { session }, error } = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise((resolve) =>
+            setTimeout(
+              () => resolve({ data: { session: null }, error: null }),
+              8000
+            )
+          ),
+        ]);
 
         if (!mounted) return;
 
@@ -191,56 +191,48 @@ export function AuthProvider({ children }) {
           if (error.message?.includes('refresh_token_not_found') ||
               error.message?.includes('invalid_grant') ||
               error.status === 400) {
-            // Clear expired session silently
             setUser(null);
             setProfile(null);
             if (typeof window !== 'undefined') {
               Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('sb-')) {
-                  localStorage.removeItem(key);
-                }
+                if (key.startsWith('sb-')) localStorage.removeItem(key);
               });
             }
-            setLoading(false);
             return;
           }
           console.error('Error getting session:', error);
           setUser(null);
           setProfile(null);
-          setLoading(false);
           return;
         }
 
         // Set user state immediately
         setUser(session?.user ?? null);
 
-        // If we have a session, fetch profile and ensure session is valid
+        // If we have a session, validate expiry then kick off profile fetch
         if (session?.user) {
-          // Verify session is not expired
           if (session.expires_at) {
             const now = Math.floor(Date.now() / 1000);
             const timeUntilExpiry = session.expires_at - now;
 
-            // If token is expired, clear session
             if (timeUntilExpiry <= 0) {
               console.log('⚠️ Initial session expired, clearing...');
               setUser(null);
               setProfile(null);
               if (typeof window !== 'undefined') {
-                localStorage.removeItem('sb-auth-token');
                 Object.keys(localStorage).forEach(key => {
-                  if (key.startsWith('sb-')) {
-                    localStorage.removeItem(key);
-                  }
+                  if (key.startsWith('sb-')) localStorage.removeItem(key);
                 });
               }
-              setLoading(false);
               return;
             }
           }
 
-          // Fetch profile after session is confirmed valid
-          await fetchProfile(session.user.id);
+          // IMPORTANT: Do NOT await fetchProfile here.
+          // The Supabase client queues all DB queries while a token refresh is
+          // in progress. Awaiting fetchProfile would block the finally{} block,
+          // keeping authLoading = true forever. Fire it and let it resolve async.
+          fetchProfile(session.user.id);
         } else {
           setProfile(null);
         }
@@ -251,6 +243,8 @@ export function AuthProvider({ children }) {
           setProfile(null);
         }
       } finally {
+        // This runs immediately after fetchProfile is fired (not awaited),
+        // so authLoading is set to false without waiting for the profile fetch.
         if (mounted) {
           setLoading(false);
         }
@@ -265,20 +259,19 @@ export function AuthProvider({ children }) {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.email || 'no user');
 
-      // Handle token refresh errors
+      // Handle token refresh failures - clear session without reloading the page.
+      // window.location.reload() was removed because it caused infinite reload loops:
+      // middleware may rotate the refresh token, invalidating the one in localStorage,
+      // which triggered another reload on the next mount, repeating indefinitely.
       if (event === 'TOKEN_REFRESHED' && !session) {
-        console.log('⚠️ Token refresh failed, clearing session and reloading...');
+        console.log('⚠️ Token refresh failed, clearing session...');
         setUser(null);
         setProfile(null);
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('sb-auth-token');
           Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('sb-')) {
-              localStorage.removeItem(key);
-            }
+            if (key.startsWith('sb-')) localStorage.removeItem(key);
           });
-          // Reload page to reset all state
-          window.location.reload();
+          await supabase.auth.signOut().catch(() => {});
         }
         setLoading(false);
         return;
@@ -291,9 +284,7 @@ export function AuthProvider({ children }) {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('sb-auth-token');
           Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('sb-')) {
-              localStorage.removeItem(key);
-            }
+            if (key.startsWith('sb-')) localStorage.removeItem(key);
           });
         }
         setLoading(false);
@@ -301,12 +292,18 @@ export function AuthProvider({ children }) {
       }
 
       setUser(session?.user ?? null);
+
+      // IMPORTANT: Set loading to false BEFORE fetching profile.
+      // fetchProfile uses the same Supabase client which queues all DB queries
+      // while a token refresh is in progress. Awaiting it here would block
+      // setLoading(false), keeping authLoading = true indefinitely on reload.
+      setLoading(false);
+
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        fetchProfile(session.user.id); // Fire and forget — non-blocking
       } else {
         setProfile(null);
       }
-      setLoading(false);
     });
 
     // Handle visibility change - refresh session when tab becomes visible
