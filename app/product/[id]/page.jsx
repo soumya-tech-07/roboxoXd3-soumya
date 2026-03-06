@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase';
+import { createPublicClient } from '@/lib/supabase/public';
 import { ensurePublicImageUrl } from '@/lib/image-helpers';
 import SizeGuideModal from '../../components/SizeguideModal';
 import { useWishlist } from '../../context/WishlistContext';
@@ -20,8 +20,6 @@ import ProductActionButtons from '../components/ProductActionButtons';
 import ProductAccordion from '../components/ProductAccordion';
 import ProductShareContact from '../components/ProductShareContact';
 
-const supabase = createClient();
-
 const PLACEHOLDER_ICON = 'https://placehold.co/100x100/e5d4e8/666666?text=Icon';
 
 export default function ProductPage() {
@@ -29,19 +27,14 @@ export default function ProductPage() {
   const [dbProduct, setDbProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const { loading: authLoading } = useAuth();
 
   const productIdentifier = useMemo(() => {
     const value = Array.isArray(params?.id) ? params?.id[0] : params?.id;
     return value ?? '';
   }, [params]);
 
-  // Fetch product from Supabase - WAIT for auth to initialize first
   useEffect(() => {
-    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
-    if (authLoading) {
-      return;
-    }
+    const supabase = createPublicClient();
 
     const fetchProduct = async () => {
       if (!productIdentifier) {
@@ -99,7 +92,7 @@ export default function ProductPage() {
     };
 
     fetchProduct();
-  }, [authLoading, productIdentifier]);
+  }, [productIdentifier]);
 
   const derivedProduct = useMemo(() => {
     // IMPORTANT: No static ProductCatalog fallback (can show stale prices).

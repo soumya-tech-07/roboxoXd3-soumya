@@ -4,9 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   latestDropProductIds,
 } from './productIds';
-import { createClient } from '@/lib/supabase';
+import { createPublicClient } from '@/lib/supabase/public';
 import ProductCard from './ProductCard';
-const supabase = createClient();
 
 export default function LatestDrop() {
   const [dbProducts, setDbProducts] = useState([]);
@@ -17,22 +16,19 @@ export default function LatestDrop() {
     setMounted(true);
   }, []);
 
-  // Fetch products from Supabase
   useEffect(() => {
+    const supabase = createPublicClient();
+
     const fetchProducts = async () => {
-      console.log('LatestDrop: Starting fetch...');
       try {
         setLoading(true);
         setError(null);
-        console.log('LatestDrop: Querying IDs:', latestDropProductIds);
 
         const { data, error } = await supabase
           .from('products')
           .select('*')
           .in('id', latestDropProductIds)
           .eq('is_active', true);
-
-        console.log('LatestDrop: Supabase response:', { dataLength: data?.length, error });
 
         if (error) {
           console.error('Error fetching latest drop products:', error);
@@ -50,7 +46,6 @@ export default function LatestDrop() {
         setDbProducts([]);
         setError(err?.message || 'Failed to load products');
       } finally {
-        console.log('LatestDrop: Finished loading');
         setLoading(false);
       }
     };

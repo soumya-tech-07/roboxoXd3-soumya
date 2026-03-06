@@ -3,10 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { createClient } from '@/lib/supabase';
-import { useAuth } from '../context/AuthContext';
-
-const supabase = createClient();
+import { createPublicClient } from '@/lib/supabase/public';
 
 // Helper function to convert text to Title Case
 const toTitleCase = (str) => {
@@ -25,14 +22,9 @@ export default function SearchComponent({ isOpen, onClose }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const inputRef = useRef(null);
-  const { loading: authLoading } = useAuth();
 
-  // Fetch all active products from Supabase - WAIT for auth to initialize first
   useEffect(() => {
-    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
-    if (authLoading) {
-      return;
-    }
+    const supabase = createPublicClient();
 
     const fetchProducts = async () => {
       try {
@@ -60,7 +52,7 @@ export default function SearchComponent({ isOpen, onClose }) {
     };
 
     fetchProducts();
-  }, [authLoading]);
+  }, []);
 
   // Map Supabase products to match ProductCatalog format
   const products = useMemo(() => {

@@ -50,35 +50,27 @@ export async function updateSession(request: NextRequest) {
   try {
     const { error } = await supabase.auth.getUser();
     
-    // If we get auth errors (expired/invalid tokens), clear all auth cookies
+    // Only clear cookies when we are certain the token is invalid.
+    // Do NOT clear on generic errors (e.g. network timeouts) — that would
+    // silently log out users whenever Supabase has a brief connectivity hiccup.
     if (error) {
-      const isAuthError = 
+      const isDefinitelyInvalidToken =
         error.message?.includes('refresh_token_not_found') ||
-        error.message?.includes('invalid_grant') ||
-        error.message?.includes('JWT') ||
-        error.status === 400;
+        error.message?.includes('invalid_grant');
       
-      if (isAuthError) {
-        // Clear all Supabase auth cookies to prevent repeated errors
+      if (isDefinitelyInvalidToken) {
         const authCookies = request.cookies.getAll().filter(cookie => 
           cookie.name.includes('sb-') || cookie.name.includes('supabase')
         );
-        
         authCookies.forEach(cookie => {
           response.cookies.delete(cookie.name);
         });
       }
     }
   } catch {
-    // Never break page loads due to auth refresh hiccups.
-    // Clear auth cookies on any error to prevent repeated issues
-    const authCookies = request.cookies.getAll().filter(cookie => 
-      cookie.name.includes('sb-') || cookie.name.includes('supabase')
-    );
-    
-    authCookies.forEach(cookie => {
-      response.cookies.delete(cookie.name);
-    });
+    // A network error or timeout reaching Supabase — do NOT clear cookies.
+    // The user's session is still valid; we just couldn't verify it right now.
+    // Clearing here would log out users on every transient network hiccup in production.
   }
 
   return response;

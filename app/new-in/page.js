@@ -4,30 +4,21 @@ import { useEffect, useMemo, useState } from 'react';
 import NavbarWithCustomGif from '../components/NavbarWithCustomGif';
 import FilterBar from '../components/FilterBar';
 import ProductGrid from '../components/ProductGrid';
-import { createClient } from '@/lib/supabase';
+import { createPublicClient } from '@/lib/supabase/public';
 import { ensurePublicImageUrl } from '@/lib/image-helpers';
-import { useAuth } from '../context/AuthContext';
-
-const supabase = createClient();
 
 export default function NewInPage() {
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { loading: authLoading } = useAuth();
 
   const [sortBy, setSortBy] = useState('FEATURED');
   const [selectedCategory, setSelectedCategory] = useState('VIEW ALL');
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedAvailability, setSelectedAvailability] = useState(null);
 
-  // Load active products from Supabase - WAIT for auth to initialize first
   useEffect(() => {
-    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
-    if (authLoading) {
-      return;
-    }
-
+    const supabase = createPublicClient();
     let mounted = true;
 
     const load = async () => {
@@ -90,7 +81,7 @@ export default function NewInPage() {
     return () => {
       mounted = false;
     };
-  }, [authLoading]);
+  }, []);
 
   // Products with size and availability - assign default values for products missing them
   const productsWithFilters = useMemo(() => {

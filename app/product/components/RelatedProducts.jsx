@@ -1,11 +1,8 @@
 'use client';
 
 import { useMemo, useRef, useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase';
+import { createPublicClient } from '@/lib/supabase/public';
 import ProductCard from '../../components/ProductCard';
-import { useAuth } from '../../context/AuthContext';
-
-const supabase = createClient();
 
 export default function RelatedProducts({ currentProductId, category }) {
   const scrollContainerRef = useRef(null);
@@ -14,14 +11,9 @@ export default function RelatedProducts({ currentProductId, category }) {
   const [dbProducts, setDbProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { loading: authLoading } = useAuth();
 
-  // Fetch all products from Supabase - WAIT for auth to initialize first
   useEffect(() => {
-    // CRITICAL: Don't fetch until auth is initialized to avoid race conditions
-    if (authLoading) {
-      return;
-    }
+    const supabase = createPublicClient();
 
     const fetchProducts = async () => {
       try {
@@ -50,7 +42,7 @@ export default function RelatedProducts({ currentProductId, category }) {
     };
 
     fetchProducts();
-  }, [authLoading]);
+  }, []);
 
   // Get all products, excluding current product if provided
   const allProducts = useMemo(() => {

@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { createClient } from '@/lib/supabase';
+import { createPublicClient } from '@/lib/supabase/public';
 import ProductCard from './ProductCard';
-const supabase = createClient();
 
 export default function MensSection() {
   const [dbProducts, setDbProducts] = useState([]);
@@ -14,8 +13,9 @@ export default function MensSection() {
     setMounted(true);
   }, []);
 
-  // Fetch mens products from Supabase
   useEffect(() => {
+    const supabase = createPublicClient();
+
     const fetchProducts = async () => {
       try {
         setLoading(true);
