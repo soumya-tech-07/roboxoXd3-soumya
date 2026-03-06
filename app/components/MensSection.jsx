@@ -79,7 +79,7 @@ export default function MensSection() {
       <section className="bg-white py-8 sm:py-12 md:py-16 scroll-mt-20 relative overflow-hidden min-h-[600px] sm:min-h-[700px]">
         <div className="absolute inset-0 bg-black/30 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-          <h1 className="text-brand mb-4 sm:mb-6 text-lg sm:text-xl" style={{ fontFamily: 'Gliker, sans-serif' }}>FOR MEN&apos;S</h1>
+          <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>FOR MEN&apos;S</h1>
           {/* Skeleton Loading Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[...Array(8)].map((_, i) => (
@@ -100,7 +100,7 @@ export default function MensSection() {
       <section className="bg-white py-8 sm:py-12 md:py-16 scroll-mt-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/30 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-          <h1 className="text-brand mb-4 sm:mb-6 text-lg sm:text-xl" style={{ fontFamily: 'Gliker, sans-serif' }}>FOR MEN&apos;S</h1>
+          <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>FOR MEN&apos;S</h1>
           <p className="text-white/80 text-sm">
             Products couldn’t be loaded. Please reload.
           </p>
@@ -124,7 +124,7 @@ export default function MensSection() {
       {/* Reduced white overlay for more visible background */}
       <div className="absolute inset-0 bg-black/30 z-0"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-        <h1 className="text-brand mb-4 sm:mb-6 text-lg sm:text-xl" style={{ fontFamily: 'Gliker, sans-serif' }}>FOR MEN&apos;S</h1>
+        <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>FOR MEN&apos;S</h1>
         {/* Product Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {mensProducts.map((product) => (

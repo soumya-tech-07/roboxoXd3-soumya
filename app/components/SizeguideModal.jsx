@@ -266,7 +266,10 @@ export default function SizeGuideModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-2 sm:px-4 py-4 sm:py-8 overflow-y-auto">
+    <div
+      data-sizeguide-modal
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-2 sm:px-4 py-4 sm:py-8 overflow-y-auto"
+    >
       {/* Modal */}
       <div className="relative w-full max-w-4xl bg-white text-gray-900 shadow-2xl rounded-lg border border-gray-200 animate-in fade-in zoom-in duration-200 my-auto">
         {/* Close button */}
@@ -649,6 +652,19 @@ export default function SizeGuideModal({
           </>
         )}
       </div>
+
+      <style jsx global>{`
+        [data-sizeguide-modal] input[type="number"]::-webkit-outer-spin-button,
+        [data-sizeguide-modal] input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+
+        [data-sizeguide-modal] input[type="number"] {
+          -moz-appearance: textfield;
+          appearance: textfield;
+        }
+      `}</style>
     </div>
   );
 }

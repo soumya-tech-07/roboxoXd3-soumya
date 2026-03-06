@@ -9,7 +9,7 @@ export default function AboutLovePage() {
         {/* Header with line */}
         <div className="flex items-center gap-8 mb-12 sm:mb-16">
           <h3 className="text-xs sm:text-sm tracking-[0.3em] font-light whitespace-nowrap">
-            2 0 2 5 E d i t i o n
+            2 0 2 6 E d i t i o n
           </h3>
           <div className="flex-1 h-px bg-black"></div>
         </div>

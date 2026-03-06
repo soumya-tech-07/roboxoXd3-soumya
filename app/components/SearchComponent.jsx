@@ -213,7 +213,7 @@ export default function SearchComponent({ isOpen, onClose }) {
               <Link href="/" className="absolute left-6 shrink-0 animate-in fade-in slide-in-from-left-4 duration-500 delay-100" onClick={onClose}>
                 <div className="relative h-16 sm:h-20 w-auto transition-transform duration-300 hover:scale-105">
                   <Image
-                    src="/images/retro.png"
+                    src="/images/4.png"
                     alt="Retro Louve"
                     width={150}
                     height={40}

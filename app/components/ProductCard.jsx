@@ -125,7 +125,7 @@ export default function ProductCard({
             {product.name}
           </h3>
           <p className={`text-xs ${priceColor}`}>
-            RS. {product.price?.toLocaleString('en-IN')}
+            Rs. {product.price?.toLocaleString('en-IN')}
           </p>
           {product.category && (
             <p className="text-[10px] text-gray-500 uppercase tracking-wide">
