@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createPublicClient } from '@/lib/supabase/public';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -11,7 +12,8 @@ export default function ContactPage() {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success' | 'error' | null
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e) => {
     setFormData({
@@ -24,24 +26,37 @@ export default function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus(null);
+    setErrorMessage('');
 
-    // Simulate form submission
+    const supabase = createPublicClient();
+    const { error } = await supabase.from('contact_submissions').insert({
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone?.trim() || null,
+      subject: formData.subject.trim(),
+      message: formData.message.trim()
+    });
+
+    setIsSubmitting(false);
+
+    if (error) {
+      setSubmitStatus('error');
+      setErrorMessage(error.message || 'Something went wrong. Please try again.');
+      return;
+    }
+
+    setSubmitStatus('success');
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      subject: '',
+      message: ''
+    });
+
     setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitStatus('success');
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
-      });
-      
-      // Reset status message after 5 seconds
-      setTimeout(() => {
-        setSubmitStatus(null);
-      }, 5000);
-    }, 1500);
+      setSubmitStatus(null);
+    }, 5000);
   };
 
   const contactInfo = [
@@ -170,6 +185,12 @@ export default function ContactPage() {
                   <div className="bg-green-50 border-l-4 border-green-400 text-green-700 px-4 py-3 rounded text-sm">
                     <p className="font-medium">Thank you for your message!</p>
                     <p className="text-xs mt-1">We&apos;ll get back to you soon.</p>
+                  </div>
+                )}
+                {submitStatus === 'error' && (
+                  <div className="bg-red-50 border-l-4 border-red-400 text-red-700 px-4 py-3 rounded text-sm">
+                    <p className="font-medium">Something went wrong.</p>
+                    <p className="text-xs mt-1">{errorMessage}</p>
                   </div>
                 )}
 
