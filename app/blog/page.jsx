@@ -1,14 +1,31 @@
 'use client';
 
-import { blogPages } from './data/blogData';
+import { useEffect, useState, useMemo } from 'react';
+import { createPublicClient } from '@/lib/supabase/public';
 import { useBlogNavigation } from './hooks/useBlogNavigation';
 import BlogMagazineLayout from './components/BlogMagazineLayout';
 import BlogNavigation from './components/BlogNavigation';
 
-// ARCHIVED: Newspaper Layout (commented out - code preserved in BlogNewspaperLayout.jsx)
-// import BlogNewspaperLayout from './components/BlogNewspaperLayout';
+/** Maps a row from blog_posts to the shape expected by BlogMagazineLayout and BlogNavigation. */
+function mapBlogPostFromDb(row) {
+  return {
+    id: row.id,
+    type: row.type || 'post',
+    title: row.title || '',
+    heading: row.heading ?? null,
+    content: row.content ?? '',
+    image: row.image_url ?? '',
+    cta: row.cta ?? '',
+    sections: Array.isArray(row.sections) ? row.sections : (row.sections ? [row.sections] : []),
+    productImages: Array.isArray(row.product_images) ? row.product_images : (row.product_images ? [row.product_images] : []),
+  };
+}
 
 export default function BlogPage() {
+  const [blogPages, setBlogPages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const {
     currentPage,
     nextPage,
@@ -17,45 +34,85 @@ export default function BlogPage() {
     canGoPrev,
   } = useBlogNavigation(blogPages.length);
 
-  const currentBlog = blogPages[currentPage];
+  const currentBlog = useMemo(() => blogPages[currentPage] ?? null, [blogPages, currentPage]);
+
+  useEffect(() => {
+    const supabase = createPublicClient();
+    async function fetchBlogPosts() {
+      try {
+        setLoading(true);
+        setError(null);
+        const { data, error: fetchError } = await supabase
+          .from('blog_posts')
+          .select('id, type, title, heading, content, image_url, cta, sections, product_images')
+          .eq('is_published', true)
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: true });
+
+        if (fetchError) {
+          setError(fetchError.message);
+          setBlogPages([]);
+          return;
+        }
+        setBlogPages((data || []).map(mapBlogPostFromDb));
+      } catch (err) {
+        setError(err?.message || 'Failed to load blog');
+        setBlogPages([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchBlogPosts();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="relative min-h-screen w-full pt-20 sm:pt-28 lg:pt-32 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4" />
+          <p className="text-sm text-gray-600">Loading blog...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="relative min-h-screen w-full pt-20 sm:pt-28 lg:pt-32 flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <p className="text-gray-700 mb-4">Unable to load the blog.</p>
+          <p className="text-sm text-gray-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentBlog || blogPages.length === 0) {
+    return (
+      <div className="relative min-h-screen w-full pt-20 sm:pt-28 lg:pt-32 flex items-center justify-center">
+        <div className="text-center max-w-md px-4">
+          <h1 className="text-2xl font-bold text-black mb-2">No posts yet</h1>
+          <p className="text-gray-600">Create and publish posts from the admin panel.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen w-full pt-20 sm:pt-28 lg:pt-32">
-      {/* A4 Paper Container */}
       <div className="flex justify-center items-start py-8 sm:py-12 lg:py-16 px-4 sm:px-6">
-        {/* A4 Paper Sheet - 210mm x 297mm (A4 dimensions) */}
-        <div 
+        <div
           className="w-full max-w-7xl bg-[#f5f3f0] shadow-[0_0_20px_rgba(0,0,0,0.1)] mx-auto"
           style={{
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)',
           }}
         >
-          {/* Paper Content */}
           <div className="px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20 py-12 sm:py-16 md:py-20">
-            {/* Title */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl font-black tracking-tight mb-8 sm:mb-12 md:mb-16 text-black">
               {currentBlog.title}
             </h1>
-
-            {/* Magazine Layout (Active) */}
             <BlogMagazineLayout blog={currentBlog} />
-
-            {/* ARCHIVED: Newspaper Layout (Commented Out) */}
-            {/* 
-            <BlogNewspaperLayout blog={currentBlog} />
-            
-            The original Newspaper layout has been replaced with Magazine layout,
-            which is optimized for vertical fashion imagery. The Newspaper layout
-            code is preserved in: app/blog/components/BlogNewspaperLayout.jsx
-            
-            To restore the Newspaper layout:
-            1. Uncomment the import at the top: import BlogNewspaperLayout from './components/BlogNewspaperLayout';
-            2. Replace <BlogMagazineLayout blog={currentBlog} /> with <BlogNewspaperLayout blog={currentBlog} />
-            3. Optionally, add back the layout toggle button for both options
-            */}
           </div>
-
-          {/* Bottom Navigation Bar */}
           <BlogNavigation
             currentPage={currentPage}
             totalPages={blogPages.length}
@@ -70,55 +127,3 @@ export default function BlogPage() {
     </div>
   );
 }
-
-/* 
-===========================================
-ARCHIVED: LAYOUT TOGGLE FUNCTIONALITY
-===========================================
-The layout toggle feature (Magazine/Newspaper switcher) has been removed
-as Magazine layout is now the default and only active layout.
-
-Original toggle code (commented out for reference):
-
-import { useState } from 'react';
-
-const [layoutMode, setLayoutMode] = useState('magazine');
-
-// Layout Toggle Button JSX:
-<div className="flex justify-center py-4 sm:py-6 px-4">
-  <div className="inline-flex items-center gap-3 sm:gap-4 bg-white border border-gray-200 rounded-sm px-4 sm:px-6 py-2.5 sm:py-3 shadow-sm">
-    <span className="text-xs sm:text-sm font-medium text-gray-600 uppercase tracking-wide">
-      Layout:
-    </span>
-    <button
-      onClick={() => setLayoutMode('magazine')}
-      className={`px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium uppercase tracking-wide transition-all duration-200 ${
-        layoutMode === 'magazine'
-          ? 'bg-black text-white'
-          : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-      }`}
-    >
-      Magazine
-    </button>
-    <button
-      onClick={() => setLayoutMode('newspaper')}
-      className={`px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium uppercase tracking-wide transition-all duration-200 ${
-        layoutMode === 'newspaper'
-          ? 'bg-black text-white'
-          : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-      }`}
-    >
-      Newspaper
-    </button>
-  </div>
-</div>
-
-// Conditional rendering:
-{layoutMode === 'magazine' ? (
-  <BlogMagazineLayout blog={currentBlog} />
-) : (
-  <BlogNewspaperLayout blog={currentBlog} />
-)}
-
-===========================================
-*/

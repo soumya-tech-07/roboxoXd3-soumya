@@ -143,15 +143,23 @@ export default function WishlistPage() {
           ) : wishlistProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {wishlistProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  aspectRatio="aspect-[3/4]"
-                  showHoverImage={false}
-                  onRemove={removeFromWishlist}
-                  textColor="text-black"
-                  priceColor="text-gray-600"
-                />
+                <div key={product.id} className="flex flex-col">
+                  <ProductCard
+                    product={product}
+                    aspectRatio="aspect-[3/4]"
+                    showHoverImage={false}
+                    onRemove={removeFromWishlist}
+                    textColor="text-black"
+                    priceColor="text-gray-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeFromWishlist(product.id)}
+                    className="mt-3 w-full cursor-pointer hover:bg-brand hover:text-white py-2.5 px-3 text-xs font-medium tracking-wider border-2 border-gray-300 text-gray-700 hover:border-gray-400 transition-colors"
+                  >
+                    REMOVE FROM WISHLIST
+                  </button>
+                </div>
               ))}
             </div>
           ) : (

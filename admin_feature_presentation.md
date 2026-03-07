@@ -1,223 +1,143 @@
-# Retro Louve Admin Center: Complete Feature Specification
+export const blogPages = [
+  {
+    type: 'intro',
+    title: 'RETRO JOURNAL',
+    heading: "INDIA'S NEW ERA OF LUXURY FASHION — CURATED BY RETRO LOUVE",
+    content: `Winter in India has always carried its own quiet kind of magic — the misty mornings in Delhi, the golden sunsets in Mumbai, the crisp nights of Bangalore. This year, the season ushers in a new definition of luxury: one that blends warmth with couture craftsmanship, practicality with refined glamour.
 
-**Your Command Center for Daily Operations**
+At Retro Louve, we craft pieces not to follow trends but to re-shape them — for the modern Indian woman and man who chooses elegance as a lifestyle, not an occasional indulgence.
 
-We've built a comprehensive Admin Panel that gives you complete control over your e-commerce operations. This system is designed to be intuitive, powerful, and scalable as your business grows.
+Here, we present six winter fashion trends dominating elite wardrobes worldwide — reimagined through Retro Louve's signature language of sophistication.`,
+    image: '/images/blog/1.jpg',
+    cta: 'CLICK HERE TO SEE HOW YOU CAN ENRICH YOUR WARDROBE WITH UPDATED FASHION TRENDS BY RETRO LOUVE',
+  },
+  {
+    type: 'product',
+    title: 'TWILL & FAUX LEATHER LOWER',
+    content: `The Twill & Faux Leather Lower is where contemporary tailoring meets urban sophistication. Crafted with premium twill and accented with faux leather, it offers structure, comfort, and versatility. Designed for both men and women, it seamlessly blends refined elegance with modern streetwear sensibilities, making it a cornerstone piece for the Retdo Louve winter wardrobe.`,
+    sections: [
+      {
+        heading: 'Retro Louve Reimagines It:',
+        text: 'Pair these lowers with the Black Faux Leather Jacket with Peach Sherpa for a polished, city-ready ensemble or combine with the Unisex Black Varsity Jacket and Melange French Terry Vest for layered, textural sophistication.',
+      },
+      {
+        heading: 'Why It Elevates Luxury:',
+        text: 'Luxury is reflected in material fusion and meticulous tailoring. The combination of soft twill and faux leather transforms standard lower into a statement of subtle power and style-conscious design.',
+      },
+    ],
+    image: '/images/blog/2.jpg',
+    cta: 'CLICK HERE TO SEE HOW YOU CAN BE MORE FASHIONABLE',
+  },
+  {
+    type: 'product',
+    title: 'UNISEX BLACK VARSITY JACKET',
+    content: `The Unisex Black Varsity Jacket is a modern reinterpretation of classic athletic wear, elevated with premium fabrics and meticulous craftsmanship. Made with twill, taffeta, and polyfill, it combines warmth, structure, and refined comfort. Its unisex design makes it versatile for both men and women, embodying sophisticated street-style elegance.`,
+    sections: [
+      {
+        heading: 'Retro Louve Reimagines It:',
+        text: 'Layer it over a high-quality cotton shirt or the White Lycra Top with Red Lace, paired with Twill-Faux Leather Lowers for a polished urban ensemble. Add a belt or scarf to create definition and playful layering for city strolls, café outings, or evening gatherings.',
+      },
+      {
+        heading: 'Why It Elevates Luxury:',
+        text: 'Premium materials and tailored construction transform a sporty jacket into a statement of understated refinement, perfect for those who value versatility and style.',
+      },
+    ],
+    image: '/images/blog/3.jpg',
+    cta: 'CLICK HERE TO SEE HOW YOU CAN BE MORE FASHIONABLE',
+  },
+  {
+    type: 'product',
+    title: 'BLACK OFF-SHOULDER HOSIERY TOP',
+    content: `The Black Off-Shoulder Hosiery Top exudes sculpted elegance and contemporary sophistication, designed for women who embrace understated sensuality. Crafted from premium hosiery fabric, it hugs the body gracefully while framing the shoulders, creating a sleek, refined silhouette that transitions effortlessly from day to night.`,
+    sections: [
+      {
+        heading: 'Retro Louve Reimagines It:',
+        text: 'Pair it with Twill-Faux Leather Lowers or layer under the Melange French Terry Vest for cocktail evenings, rooftop dinners, or stylish winter parties. For a casual daytime look, combine with tailored trousers and a soft scarf for subtle texture.',
+      },
+      {
+        heading: 'Why It Elevates Luxury:',
+        text: 'Luxury is in the balance of minimalism and sensuality. The off-shoulder design, paired with high-quality fabric, transforms a simple top into a versatile piece that signals sophistication without effort.',
+      },
+    ],
+    image: '/images/blog/4.JPG',
+    cta: 'CLICK HERE TO SEE HOW YOU CAN BE MORE FASHIONABLE',
+  },
+  {
+    type: 'product',
+    title: 'WHITE LYCRA TOP WITH RED LACE',
+    content: `The White Lycra Top with Red Lace embodies delicate elegance fused with modern sophistication. Crafted from soft lycra, it hugs the body while offering comfort and flexibility, while the intricate red lace adds a touch of romantic couture-inspired detail.`,
+    sections: [
+      {
+        heading: 'Retro Louve Reimagines It:',
+        text: 'Pair it with the Black Faux Leather Jacket with Peach Sherpa and Twill-Faux Leather Lower for an urban-chic daytime ensemble. For evening occasions, layer it under a blazer or the Melange French Terry Vest to add depth and dimension to your outfit.',
+      },
+      {
+        heading: 'Why It Elevates Luxury:',
+        text: 'Luxury lies in the attention to detail — the delicate lace and high-quality fabric transform a simple top into a refined statement piece, perfect for individuals who appreciate subtle sophistication.',
+      },
+    ],
+    image: '/images/blog/5.PNG',
+    cta: 'CLICK HERE TO SEE HOW YOU CAN BE MORE FASHIONABLE',
+  },
+  {
+    type: 'product',
+    title: 'FAUX FUR OPULENCE: WARMTH THAT WHISPERS LUXURY',
+    content: `Winter fashion meets modern elegance in the Black Faux Leather Jacket with Peach Sherpa — a statement piece designed to combine urban boldness with cozy refinement.`,
+    sections: [
+      {
+        heading: 'Retro Louve Reimagines It:',
+        text: 'Let the sherpa lining of our Faux Leather Jacket be your subtle entry into the fur trend, or layer a neutral faux fur muffler over your winter ensemble. Together, the texture play feels rich, warm and quietly extravagant.',
+      },
+      {
+        heading: 'Why It Elevates Luxury:',
+        text: 'Texture equals perceived value. The more layered, the more elevated. Ideal for: Christmas dinners, rooftop parties, New Year itineraries.',
+      },
+    ],
+    image: '/images/blog/6.png',
+    cta: 'CLICK HERE TO SEE HOW YOU CAN BE MORE FASHIONABLE',
+  },
+  {
+    type: 'product-grid',
+    title: 'BLACK & BLUE HIGH-QUALITY COTTON SHIRTS (UNISEX)',
+    content: `The Black and Blue High-Quality Cotton Shirts are a timeless expression of elegance and versatility, designed for both men and women who value refined simplicity. Crafted from premium cotton, these shirts offer softness, durability, and a crisp finish, making them perfect for layering or wearing solo. They are the ideal foundation for creating sophisticated winter ensembles.`,
+    sections: [
+      {
+        heading: 'Retro Louve Reimagines It:',
+        text: 'Style these shirts under the Melange French Terry Vest or the Unisex Black Varsity Jacket for a polished, urban-chic look. Pair with the Twill & Faux Leather Lower for day-to-night versatility, or layer under the Black Faux Leather Jacket with Peach Sherpa for statement evening ensembles. These shirts also complement the White Lycra Top with Red Lace or Black Off-Shoulder Hosiery Top when layering is desired.',
+      },
+      {
+        heading: 'Why It Elevates Luxury:',
+        text: 'The combination of premium cotton and precise tailoring transforms a basic shirt into a refined wardrobe essential. Clean lines, impeccable fit, and tactile comfort signal understated sophistication.',
+      },
+    ],
+    productImages: [
+      '/images/blog/7.jpg',
+      '/images/blog/7.jpg',
+      '/images/blog/7.jpg',
+      '/images/blog/7.jpg',
+      '/images/blog/7.jpg',
+      '/images/blog/7.jpg',
+      '/images/blog/7.jpg',
+      '/images/blog/7.jpg',
+    ],
+    cta: 'THATS ALL FOLKS!',
+  },
+  {
+    type: 'product',
+    title: 'MELANGE FRENCH TERRY VEST (UNISEX)',
+    content: `The Melange French Terry Vest is a study in modern minimalism and understated luxury. Designed primarily for men but effortlessly wearable by women, it is crafted from plush French terry that balances comfort, warmth, and contemporary style. Its clean lines and versatile silhouette make it a must-have layering piece for the sophisticated Indian wardrobe.`,
+    sections: [
+      {
+        heading: 'Retro Louve Reimagines It:',
+        text: 'Layer it over the Black or Blue High-Quality Cotton Shirts for polished office-to-evening transitions, or combine with the Twill-Faux Leather Lower and a Black Varsity Jacket for elevated street-style sophistication. Pairing it with the White Lycra Top with Red Lace or the Black Off-Shoulder Hosiery Top creates dimension and texture, perfect for evening outings or casual chic events.',
+      },
+      {
+        heading: 'Why It Elevates Luxury:',
+        text: 'The tactile richness of French terry and the minimalist design transform a simple vest into a curated statement of elegance, demonstrating that understated layering can feel as luxurious as any bold piece.',
+      },
+    ],
+    image: '/images/blog/8.jpg',
+    cta: 'CLICK HERE TO SEE HOW YOU CAN BE MORE FASHIONABLE',
+  },
+];
 
----
-
-## 🎯 Core Features Included
-
-### 1. Dashboard Overview
-**What You'll See:**
-*   **Today's Snapshot:** Quick view of today's orders, revenue, and pending actions
-*   **Recent Orders:** Last 10 orders with status indicators (New, Processing, Shipped, Delivered)
-*   **Low Stock Alerts:** Automatic notifications when products fall below threshold
-*   **Quick Actions:** One-click access to most common tasks
-
-**How It Helps You:**
-Start your day with a clear picture of what needs attention. No need to dig through multiple screens—everything critical is right on your dashboard.
-
----
-
-### 2. Order Management System
-
-#### 2.1 Order List View
-**What You Can Do:**
-*   View all orders in a clean, sortable table
-*   Filter by status (Pending, Processing, Shipped, Delivered, Cancelled)
-*   Filter by date range (Today, This Week, This Month, Custom Range)
-*   Search by Order ID or Customer Name
-*   See key info at a glance: Order Number, Customer, Total Amount, Payment Status, Order Status
-
-#### 2.2 Order Details Page
-**Complete Order Information:**
-*   **Customer Details:** Name, Email, Phone Number, Shipping Address
-*   **Order Items:** Product images, names, sizes, quantities, individual prices
-*   **Pricing Breakdown:** Subtotal, Shipping Charges, Discounts Applied, Final Total
-*   **Payment Info:** Payment Method (Razorpay), Transaction ID, Payment Status
-*   **Timeline:** Order placed time, payment confirmed time, status change history
-
-#### 2.3 Order Actions
-**What You Can Do:**
-*   **Update Status:** Change order status with dropdown (Processing → Shipped → Delivered)
-*   **Add Tracking:** Enter courier name and tracking number for shipped orders
-*   **Cancel Order:** Mark orders as cancelled with reason selection
-*   **Print Details:** Generate printable order summary for packing slips
-
-**Workflow Example:**
-1. New order arrives → Shows as "Pending"
-2. You verify payment → Update to "Processing"
-3. You pack and ship → Update to "Shipped" + Add tracking number
-4. Customer receives → Update to "Delivered"
-
----
-
-### 3. Product Management
-
-#### 3.1 Product Catalog View
-**What You'll See:**
-*   Complete list of all products with thumbnail images
-*   Key details: Product Name, Category, Price, Stock Count, Status (Active/Inactive)
-*   Search functionality to quickly find products
-*   Filter by category (Men's, Women's, Unisex)
-*   Sort by name, price, or stock level
-
-#### 3.2 Edit Product
-**What You Can Update:**
-*   **Pricing:** Change product price instantly
-*   **Stock Management:** Update available quantity for each size (S, M, L, XL, XXL)
-*   **Product Status:** Toggle between Active (visible on site) and Inactive (hidden from customers)
-*   **Basic Info:** Update product description if needed
-
-**Real-Time Updates:**
-Any changes you make are instantly reflected on the live website. Update a price at 2 PM, customers see the new price at 2:01 PM.
-
-#### 3.3 Add New Product
-**Simple Product Creation:**
-*   Upload product image (drag & drop or browse)
-*   Enter product name and description
-*   Set category (Men's/Women's/Unisex)
-*   Set base price
-*   Define available sizes and stock for each
-*   Set product as Active or Draft
-
----
-
-### 4. Inventory Control
-
-#### 4.1 Stock Management
-**Prevent Overselling:**
-*   Real-time stock tracking across all sizes
-*   Automatic "Out of Stock" badges when quantity hits zero
-*   Low stock warnings (customizable threshold, default: 5 units)
-*   Bulk stock update option for multiple products
-
-#### 4.2 Stock Alerts
-**Stay Informed:**
-*   Dashboard notifications when products run low
-*   Weekly stock summary email (optional)
-*   Quick restock workflow from alert to update
-
----
-
-### 5. Customer Data Access
-
-**View Customer Information:**
-*   Customer name and contact details from orders
-*   Order history per customer
-*   Shipping addresses used
-*   Total purchase value per customer
-
-**Privacy & Security:**
-All customer data is encrypted and accessible only to authorized admin users.
-
----
-
-### 6. Security & Access Control
-
-#### 6.1 Admin Authentication
-*   Secure login with email and password
-*   Protected admin routes (customers cannot access)
-*   Session timeout after 8 hours of inactivity
-*   Password reset functionality
-
-#### 6.2 Activity Logging
-*   Track who made changes and when
-*   View history of order status updates
-*   Monitor product price changes
-
----
-
-## 🎨 User Experience Features
-
-### Clean, Modern Interface
-*   **Mobile Responsive:** Manage orders from your phone or tablet
-*   **Fast Loading:** Optimized for quick access even on slower connections
-*   **Intuitive Navigation:** Sidebar menu with clear sections
-*   **Search Everything:** Global search to find orders, products, or customers instantly
-
-### Time-Saving Tools
-*   **Keyboard Shortcuts:** Quick actions without clicking
-*   **Bulk Actions:** Update multiple orders at once
-*   **Auto-Save:** Changes save automatically, no "Save" button needed
-*   **Smart Filters:** Remember your last filter settings
-
----
-
-## 🚀 Scalability & Future Enhancements
-
-**The Architecture Advantage:**
-Your admin panel is built on a modular architecture. This means we can seamlessly add advanced features as your business scales, without rebuilding from scratch.
-
-### Phase 2 Modules (Available as Add-Ons)
-
-#### 🚚 Smart Logistics Module (Shiprocket/Delivery APIs)
-*   **One-Click Shipping:** Auto-generate shipping labels for Delivery Partners directly from the dashboard.
-*   **Live Tracking Sync:** Order status updates automatically when the courier scans the package.
-*   **Return Management:** Handle reverse pickups seamlessly.
-*   **Business Value:** Saves ~5 minutes per order by eliminating manual data entry on courier portals.
-
-#### 💬 WhatsApp Power-Connect Module
-*   **Instant Notifications:** Send automated WhatsApp messages for Order Confirmation, Shipping, and Delivery.
-*   **Abandoned Cart Recovery:** Auto-message customers who leave without buying (Higher conversion than email).
-*   **Customer Support Hub:** Chat with customers on WhatsApp directly from your Admin Dashboard.
-*   **Business Value:** Increases recovery rate by ~45% compared to email alone.
-
-#### 🌱 Lead Nurturing & Growth Suite
-*   **Smart Drip Campaigns:** Automated Email & WhatsApp sequences to nurture new leads into buyers.
-*   **Win-Back Automation:** Automatically re-engage customers who haven't bought in 60 days.
-*   **Personalized Offers:** Send birthday discounts and exclusive early-access alerts.
-*   **Business Value:** builds long-term customer loyalty and increases Lifetime Value (LTV).
-
-#### 📱 Social Media Command Center
-*   **Content Calendar:** Schedule posts for Facebook & Instagram directly from your Admin panel.
-*   **AI Content Creator:** Generate captions and creative ideas for social posts.
-*   **Direct Publishing:** Post product updates to social media in one click without switching apps.
-*   **Business Value:** Keeps your brand active and visible with 50% less effort.
-
-#### 📊 Advanced Analytics & Reporting
-*   **Revenue Charts:** Daily, weekly, monthly sales graphs.
-*   **Top Products:** Best sellers and trending items.
-*   **Export Reports:** Download data as Excel/CSV.
-*   **Business Value:** Data-driven decisions on inventory and marketing.
-
----
-
-## 📋 What This Means for Your Daily Workflow
-
-**Morning Routine (5 minutes):**
-1. Login to admin panel
-2. Check dashboard for new orders
-3. Review low stock alerts
-4. Update any pending orders to "Processing"
-
-**Order Fulfillment (2 minutes per order):**
-1. Open order details
-2. Print packing slip
-3. Pack items
-4. Update status to "Shipped" + add tracking
-5. System auto-emails customer with tracking info
-
-**Inventory Update (As needed):**
-1. Go to Products section
-2. Search for product
-3. Click "Edit"
-4. Update stock numbers
-5. Changes live instantly
-
-**No Technical Knowledge Required:**
-The interface is designed for business owners, not developers. If you can use Gmail or WhatsApp, you can use this admin panel.
-
----
-
-## 🎯 Why This Approach Works
-
-**Launch Fast, Scale Smart:**
-We're giving you everything you need to run your business from Day 1, without overwhelming you with features you don't need yet. As your order volume grows and your team expands, we can activate additional modules that match your exact needs.
-
-**Cost-Effective Growth:**
-Instead of paying for a bloated system with features you'll never use, you invest in capabilities precisely when they deliver ROI. Start lean, scale strategically.
-
-**Your Competitive Edge:**
-While competitors struggle with slow, template-based admin panels, you'll have a lightning-fast, custom-built command center that grows with your business.
