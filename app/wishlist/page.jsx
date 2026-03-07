@@ -186,7 +186,7 @@ export default function WishlistPage() {
                   Start adding items you love to your wishlist
                 </p>
                 <Link
-                  href="/new-in"
+                  href="/"
                   className="inline-block px-6 py-3 bg-brand text-white text-xs sm:text-sm tracking-wider hover:bg-brand/90 transition-colors"
                 >
                   SHOP NOW

@@ -14,7 +14,7 @@ export default function ProductNotFound() {
           The product you are looking for is unavailable or no longer exists.
         </p>
         <Link
-          href="/new-in"
+          href="/"
           className="inline-flex items-center justify-center px-6 py-3 border border-brand text-brand tracking-[0.2em] text-xs hover:bg-brand hover:text-white transition-colors"
         >
           CONTINUE SHOPPING

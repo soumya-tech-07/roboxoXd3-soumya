@@ -254,7 +254,7 @@ export default function CartPage() {
                 </button>
 
                 <Link
-                  href="/new-in"
+                  href="/"
                   className="block text-center text-xs text-gray-600 hover:text-brand mt-4 underline"
                 >
                   Continue Shopping
@@ -286,7 +286,7 @@ export default function CartPage() {
                 Start adding items to your shopping bag
               </p>
               <Link
-                href="/new-in"
+                href="/"
                 className="inline-block px-6 py-3 bg-brand text-white text-xs sm:text-sm tracking-wider hover:bg-brand/90 transition-colors"
               >
                 SHOP NOW
