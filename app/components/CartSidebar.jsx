@@ -1,12 +1,16 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useToast } from '../context/ToastContext';
+
+const supabase = createClient();
 
 export default function CartSidebar() {
   const router = useRouter();
@@ -21,6 +25,8 @@ export default function CartSidebar() {
     closeCart,
   } = useCart();
   const { addToWishlist, isInWishlist } = useWishlist();
+  const { showError } = useToast();
+  const [stockByItem, setStockByItem] = useState({});
 
   // Close cart sidebar when user logs out or token expires
   useEffect(() => {
@@ -29,10 +35,44 @@ export default function CartSidebar() {
     }
   }, [isAuthenticated, user, closeCart]);
 
-  // Cart items already have product data from CartContext
   const cartItems = useMemo(() => {
-    return cart.filter((item) => item.product); // Filter out any items with missing products
+    return cart.filter((item) => item.product);
   }, [cart]);
+
+  const cartItemKeys = useMemo(
+    () => cartItems.map((i) => `${i.productId}-${i.size}`).sort().join(','),
+    [cartItems]
+  );
+
+  useEffect(() => {
+    if (!isCartOpen || !cartItems.length) {
+      setStockByItem({});
+      return;
+    }
+    const productIds = [...new Set(cartItems.map((i) => i.productId))];
+    let mounted = true;
+    supabase
+      .from('products')
+      .select('id, stock_by_size')
+      .in('id', productIds)
+      .then(({ data, error }) => {
+        if (!mounted || error) return;
+        const map = {};
+        (data || []).forEach((p) => {
+          const bySize = p.stock_by_size || {};
+          Object.keys(bySize).forEach((size) => {
+            map[`${p.id}-${size}`] = Number(bySize[size]) || 0;
+          });
+        });
+        setStockByItem(map);
+      });
+    return () => { mounted = false; };
+  }, [isCartOpen, cartItemKeys, cartItems.length]);
+
+  const getStockForItem = (productId, size) => {
+    const key = `${productId}-${size || 'null'}`;
+    return stockByItem[key] != null ? stockByItem[key] : null;
+  };
 
   const cartTotal = useMemo(() => {
     return cartItems.reduce((total, item) => {
@@ -55,7 +95,16 @@ export default function CartSidebar() {
   }, [isCartOpen, closeCart]);
 
   const handleQuantityChange = (productId, size, newQuantity) => {
-    updateQuantity(productId, size, newQuantity);
+    if (newQuantity < 1) {
+      updateQuantity(productId, size, 0);
+      return;
+    }
+    const maxStock = getStockForItem(productId, size);
+    const capped = maxStock != null ? Math.min(newQuantity, maxStock) : newQuantity;
+    if (maxStock != null && newQuantity > maxStock) {
+      showError(`Only ${maxStock} left for this size`);
+    }
+    updateQuantity(productId, size, capped);
   };
 
   const handleSaveForLater = async (productId, size) => {
@@ -179,7 +228,7 @@ export default function CartSidebar() {
                                 item.quantity - 1
                               )
                             }
-                            className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
+                            className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             aria-label="Decrease quantity"
                           >
                             −
@@ -196,7 +245,8 @@ export default function CartSidebar() {
                                 item.quantity + 1
                               )
                             }
-                            className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
+                            disabled={getStockForItem(item.productId, item.size) != null && item.quantity >= getStockForItem(item.productId, item.size)}
+                            className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             aria-label="Increase quantity"
                           >
                             +

@@ -14,7 +14,7 @@ export default function ExchangePolicyPage() {
       content: [
         {
           heading: 'Return Window',
-          text: 'Returns are accepted within 15 days of delivery date.',
+          text: 'Returns are accepted within 7 days of delivery date. After 7 days from delivery, the order is no longer eligible for return.',
         },
         {
           heading: 'Return Conditions',
@@ -57,7 +57,7 @@ export default function ExchangePolicyPage() {
       content: [
         {
           heading: 'Exchange Window',
-          text: 'Exchanges are accepted within 15 days of delivery date.',
+          text: 'Exchanges are accepted within 7 days of delivery date. After 7 days from delivery, the order is no longer eligible for exchange.',
         },
         {
           heading: 'Exchange Process',
@@ -147,20 +147,20 @@ export default function ExchangePolicyPage() {
       ),
       content: [
         {
-          heading: 'Unboxing Video Required',
-          text: 'For damage or wrong item claims, an unboxing video is mandatory. Claims without video cannot be accepted.',
+          heading: 'What to Do',
+          text: 'If you received a damaged or wrong item, please contact us as soon as possible with your order number and a description of the issue.',
         },
         {
-          heading: 'What to Do',
+          heading: 'How to Report',
           list: [
-            'Record a clear, complete unboxing video before opening the package',
-            'Email the video to orders.retrolouve@gmail.com within 24 hours of delivery',
-            'Include your order number and a description of the issue',
+            'Go to the Exchange/Return Request page or contact us via the Contact page',
+            'Provide your order number and a clear description of the damage or wrong item',
+            'Our team will review and respond within 48-72 hours',
           ],
         },
         {
           heading: 'Processing Time',
-          text: 'Damaged or wrong item claims are processed within 48-72 hours after receiving your unboxing video.',
+          text: 'Damaged or wrong item claims are processed within 48-72 hours after we receive your request.',
         },
       ],
     },
@@ -254,15 +254,15 @@ export default function ExchangePolicyPage() {
           <ul className="space-y-2 text-sm text-yellow-800">
             <li className="flex items-start gap-2">
               <span className="font-semibold">•</span>
+              <span>Returns and exchanges are allowed only within 7 days of delivery.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="font-semibold">•</span>
               <span>All products must be unused, unwashed, and with tags attached for returns/exchanges.</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="font-semibold">•</span>
               <span>Sale items are final sale and cannot be returned or exchanged.</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="font-semibold">•</span>
-              <span>Unboxing video is mandatory for damage or wrong item claims.</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="font-semibold">•</span>

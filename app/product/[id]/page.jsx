@@ -169,7 +169,8 @@ export default function ProductPage() {
       return;
     }
 
-    addToCart(dbProduct.id, selectedSize || null, 1);
+    const stockForSize = derivedProduct.sizesWithStock?.find((s) => s.size === selectedSize)?.stock ?? 0;
+    addToCart(dbProduct.id, selectedSize || null, 1, stockForSize);
   };
 
   const handleBuyNow = async () => {
@@ -186,8 +187,8 @@ export default function ProductPage() {
       return;
     }
 
-    // Add to cart and open cart sidebar
-    const result = await addToCart(dbProduct.id, selectedSize || null, 1);
+    const stockForSize = derivedProduct.sizesWithStock?.find((s) => s.size === selectedSize)?.stock ?? 0;
+    const result = await addToCart(dbProduct.id, selectedSize || null, 1, stockForSize);
 
     // Open cart sidebar after successful add
     if (result?.success) {

@@ -41,6 +41,12 @@ export default function CheckoutPage() {
   // Payment method
   const [paymentMethod, setPaymentMethod] = useState('COD'); // COD or ONLINE
 
+  // Coupon
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+
   // Cart items already have product data from CartContext
   const cartItems = useMemo(() => {
     return cart.filter((item) => item.product); // Filter out any items with missing products
@@ -57,7 +63,26 @@ export default function CheckoutPage() {
 
   const shippingCost = cartTotal >= 2499 ? 0 : 99;
   const codFee = paymentMethod === 'COD' ? 99 : 0;
-  const total = cartTotal + shippingCost + codFee;
+
+  // Discount from coupon (applies to subtotal only)
+  const discountAmount = useMemo(() => {
+    if (!appliedCoupon || cartTotal <= 0) return 0;
+    const type = (appliedCoupon.discount_type || '').toLowerCase();
+    const value = Number(appliedCoupon.discount_value) || 0;
+    const minOrder = Number(appliedCoupon.min_order_amount) || 0;
+    if (cartTotal < minOrder) return 0;
+    if (type === 'percentage') {
+      const amount = (cartTotal * value) / 100;
+      const maxDiscount = appliedCoupon.max_discount_amount != null ? Number(appliedCoupon.max_discount_amount) : null;
+      return maxDiscount != null ? Math.min(amount, maxDiscount) : amount;
+    }
+    if (type === 'fixed' || type === 'amount') {
+      return Math.min(value, cartTotal);
+    }
+    return 0;
+  }, [appliedCoupon, cartTotal]);
+
+  const total = Math.max(0, cartTotal + shippingCost + codFee - discountAmount);
 
   // Redirect to home and open login modal if not authenticated
   useEffect(() => {
@@ -216,6 +241,70 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleApplyCoupon = async () => {
+    const code = (couponCode || '').trim().toUpperCase();
+    if (!code) {
+      setCouponError('Enter a coupon code');
+      return;
+    }
+    setCouponError('');
+    setApplyingCoupon(true);
+    try {
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from('discount_coupons')
+        .select('id, code, discount_type, discount_value, min_order_amount, max_discount_amount, valid_from, valid_until, usage_limit, used_count')
+        .ilike('code', code)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) {
+        setCouponError('Invalid or expired coupon');
+        return;
+      }
+      if (data.valid_from && new Date(data.valid_from) > new Date()) {
+        setCouponError('This coupon is not yet valid');
+        return;
+      }
+      if (data.valid_until && new Date(data.valid_until) < new Date()) {
+        setCouponError('This coupon has expired');
+        return;
+      }
+      // Per-user usage limit: check how many times this user has already used this coupon
+      const limit = data.usage_limit != null ? Number(data.usage_limit) : null;
+      if (limit != null) {
+        const { count, error: countError } = await supabase
+          .from('coupon_redemptions')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('coupon_id', data.id);
+        if (!countError && (count ?? 0) >= limit) {
+          setCouponError(limit === 1 ? 'You have already used this coupon' : `You can only use this coupon ${limit} time(s)`);
+          return;
+        }
+      }
+      const minOrder = Number(data.min_order_amount) || 0;
+      if (cartTotal < minOrder) {
+        setCouponError(`Minimum order amount is ₹ ${minOrder.toLocaleString('en-IN')}`);
+        return;
+      }
+      setAppliedCoupon(data);
+      setCouponCode('');
+    } catch (err) {
+      console.error('Coupon apply error:', err);
+      setCouponError(err.message || 'Failed to apply coupon');
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError('');
+    setCouponCode('');
+  };
+
   const handleRazorpayPayment = async (orderId) => {
     return new Promise((resolve, reject) => {
       if (!window.Razorpay) {
@@ -291,13 +380,15 @@ export default function CheckoutPage() {
       country: address.country,
     };
 
-    // Create order using the function
+    // Create order using the function (pass discount and coupon if applied)
     const { data: orderId, error } = await supabase.rpc('create_order_from_cart', {
       p_user_id: user.id,
       p_shipping_address: shippingAddress,
       p_billing_address: shippingAddress,
       p_payment_method: paymentMethod,
       p_notes: null,
+      p_discount: discountAmount || 0,
+      p_coupon_id: appliedCoupon?.id || null,
     });
 
     if (error) throw error;
@@ -858,6 +949,48 @@ export default function CheckoutPage() {
               </h2>
 
               <div className="space-y-3 mb-6">
+                {/* Coupon */}
+                <div className="space-y-2">
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between gap-2 py-2 px-3 bg-green-50 border border-green-200 rounded">
+                      <span className="text-sm font-medium text-green-800">
+                        {appliedCoupon.code} applied
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="text-xs text-green-700 hover:text-green-900 underline cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) => {
+                          setCouponCode(e.target.value.toUpperCase());
+                          setCouponError('');
+                        }}
+                        placeholder="Coupon code"
+                        className="flex-1 border border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 px-3 py-2 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={applyingCoupon}
+                        className="px-4 py-2 border border-gray-800 bg-gray-900 text-white text-sm font-medium rounded hover:bg-gray-800 disabled:opacity-50 cursor-pointer"
+                      >
+                        {applyingCoupon ? '...' : 'Apply'}
+                      </button>
+                    </div>
+                  )}
+                  {couponError && (
+                    <p className="text-xs text-red-600">{couponError}</p>
+                  )}
+                </div>
+
                 <div className="flex justify-between text-sm text-gray-700">
                   <span>Subtotal</span>
                   <span>₹ {cartTotal.toLocaleString('en-IN')}</span>
@@ -872,6 +1005,12 @@ export default function CheckoutPage() {
                   <div className="flex justify-between text-sm text-gray-700">
                     <span>COD Fee</span>
                     <span>₹ {codFee.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Discount</span>
+                    <span>-₹ {discountAmount.toLocaleString('en-IN')}</span>
                   </div>
                 )}
                 <div className="border-t border-gray-300 pt-3 mt-3">

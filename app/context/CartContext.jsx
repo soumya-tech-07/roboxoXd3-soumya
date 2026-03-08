@@ -81,7 +81,7 @@ export function CartProvider({ children }) {
     }
   };
 
-  const addToCart = async (productId, size = null, quantity = 1) => {
+  const addToCart = async (productId, size = null, quantity = 1, maxQuantity = null) => {
     // Wait for auth to be ready
     if (authLoading) {
       showError('Please wait, loading...');
@@ -102,6 +102,28 @@ export function CartProvider({ children }) {
       return { success: false, error: 'Operation in progress' };
     }
 
+    // Enforce stock limit when maxQuantity is provided
+    const existingItem = cart.find(
+      (item) => item.productId === productId && item.size === size
+    );
+    let effectiveQuantity = quantity;
+    if (maxQuantity != null && maxQuantity !== undefined) {
+      if (maxQuantity <= 0) {
+        showError('This size is out of stock');
+        return { success: false, error: 'Out of stock' };
+      }
+      if (existingItem) {
+        const newTotal = Math.min(existingItem.quantity + quantity, maxQuantity);
+        effectiveQuantity = newTotal - existingItem.quantity;
+        if (effectiveQuantity <= 0) {
+          showError(`Only ${maxQuantity} left. You already have the maximum in cart.`);
+          return { success: false, error: 'Max quantity reached' };
+        }
+      } else {
+        effectiveQuantity = Math.min(quantity, maxQuantity);
+      }
+    }
+
     try {
       setLoading(true);
 
@@ -115,14 +137,11 @@ export function CartProvider({ children }) {
         return { success: false, error: 'Session expired' };
       }
 
-      // Check if item already exists
-      const existingItem = cart.find(
-        (item) => item.productId === productId && item.size === size
-      );
-
       if (existingItem) {
-        // Update quantity
-        const newQuantity = existingItem.quantity + quantity;
+        // Update quantity (use new total that respects max)
+        const newQuantity = maxQuantity != null
+          ? Math.min(existingItem.quantity + quantity, maxQuantity)
+          : existingItem.quantity + quantity;
         const { error } = await supabase
           .from('cart_items')
           .update({ quantity: newQuantity })
@@ -138,7 +157,7 @@ export function CartProvider({ children }) {
           }
           throw error;
         }
-        showSuccess('Cart updated');
+        showSuccess(newQuantity < existingItem.quantity + quantity ? `Only ${maxQuantity} left — cart updated` : 'Cart updated');
       } else {
         // Insert new item
         const { data, error } = await supabase
@@ -147,7 +166,7 @@ export function CartProvider({ children }) {
             user_id: user.id,
             product_id: productId,
             size: size,
-            quantity: quantity,
+            quantity: effectiveQuantity,
           })
           .select()
           .single();
@@ -162,7 +181,7 @@ export function CartProvider({ children }) {
           }
           throw error;
         }
-        showSuccess('Added to cart');
+        showSuccess(effectiveQuantity < quantity && maxQuantity != null ? `Only ${maxQuantity} left — added ${effectiveQuantity} to cart` : 'Added to cart');
       }
 
       // Reload cart

@@ -1,13 +1,17 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useToast } from '../context/ToastContext';
+
+const supabase = createClient();
 
 export default function CartPage() {
   const router = useRouter();
@@ -15,12 +19,13 @@ export default function CartPage() {
   const { openLogin } = useAuthModal();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const { addToWishlist, isInWishlist } = useWishlist();
+  const { showError } = useToast();
+  const [stockByItem, setStockByItem] = useState({});
 
   // Redirect to home and open login modal if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/');
-      // Small delay to ensure navigation completes, then open login modal
       setTimeout(() => {
         openLogin();
       }, 100);
@@ -29,8 +34,57 @@ export default function CartPage() {
 
   // Cart items already have product data from CartContext
   const cartItems = useMemo(() => {
-    return cart.filter((item) => item.product); // Filter out any items with missing products
+    return cart.filter((item) => item.product);
   }, [cart]);
+
+  const cartItemKeys = useMemo(
+    () => cartItems.map((i) => `${i.productId}-${i.size}`).sort().join(','),
+    [cartItems]
+  );
+
+  // Fetch stock_by_size for products in cart
+  useEffect(() => {
+    if (!cartItems.length) {
+      setStockByItem({});
+      return;
+    }
+    const productIds = [...new Set(cartItems.map((i) => i.productId))];
+    let mounted = true;
+    supabase
+      .from('products')
+      .select('id, stock_by_size')
+      .in('id', productIds)
+      .then(({ data, error }) => {
+        if (!mounted || error) return;
+        const map = {};
+        (data || []).forEach((p) => {
+          const bySize = p.stock_by_size || {};
+          Object.keys(bySize).forEach((size) => {
+            const key = `${p.id}-${size}`;
+            map[key] = Number(bySize[size]) || 0;
+          });
+        });
+        setStockByItem(map);
+      });
+    return () => { mounted = false; };
+  }, [cartItemKeys, cartItems.length]);
+
+  const getStockForItem = (productId, size) => {
+    const key = `${productId}-${size || 'null'}`;
+    return stockByItem[key] != null ? stockByItem[key] : null;
+  };
+
+  // Cap cart quantities to current stock when stock data is loaded
+  useEffect(() => {
+    if (Object.keys(stockByItem).length === 0) return;
+    cartItems.forEach((item) => {
+      const maxStock = getStockForItem(item.productId, item.size);
+      if (maxStock != null && item.quantity > maxStock) {
+        updateQuantity(item.productId, item.size, maxStock);
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stockByItem]);
 
   const cartTotal = useMemo(() => {
     return cartItems.reduce((total, item) => {
@@ -42,7 +96,16 @@ export default function CartPage() {
   }, [cartItems]);
 
   const handleQuantityChange = (productId, size, newQuantity) => {
-    updateQuantity(productId, size, newQuantity);
+    if (newQuantity < 1) {
+      updateQuantity(productId, size, 0);
+      return;
+    }
+    const maxStock = getStockForItem(productId, size);
+    const capped = maxStock != null ? Math.min(newQuantity, maxStock) : newQuantity;
+    if (maxStock != null && newQuantity > maxStock) {
+      showError(`Only ${maxStock} left for this size`);
+    }
+    updateQuantity(productId, size, capped);
   };
 
   const handleSaveForLater = async (productId) => {
@@ -113,38 +176,46 @@ export default function CartPage() {
 
                     {/* Quantity Controls */}
                     <div className="flex items-start gap-4 sm:flex-col sm:items-end">
-                      <div className="flex items-center border border-gray-300">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleQuantityChange(
-                              item.productId,
-                              item.size,
-                              item.quantity - 1
-                            )
-                          }
-                          className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
-                          aria-label="Decrease quantity"
-                        >
-                          −
-                        </button>
-                        <span className="px-4 py-2 text-sm min-w-[3rem] text-black text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleQuantityChange(
-                              item.productId,
-                              item.size,
-                              item.quantity + 1
-                            )
-                          }
-                          className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer"
-                          aria-label="Increase quantity"
-                        >
-                          +
-                        </button>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center border border-gray-300">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.productId,
+                                item.size,
+                                item.quantity - 1
+                              )
+                            }
+                            className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label="Decrease quantity"
+                          >
+                            −
+                          </button>
+                          <span className="px-4 py-2 text-sm min-w-[3rem] text-black text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.productId,
+                                item.size,
+                                item.quantity + 1
+                              )
+                            }
+                            disabled={getStockForItem(item.productId, item.size) != null && item.quantity >= getStockForItem(item.productId, item.size)}
+                            className="px-3 py-2 hover:bg-gray-100 text-gray-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label="Increase quantity"
+                          >
+                            +
+                          </button>
+                        </div>
+                        {getStockForItem(item.productId, item.size) != null && (
+                          <p className="text-xs text-amber-600">
+                            Only {getStockForItem(item.productId, item.size)} left
+                          </p>
+                        )}
                       </div>
 
                       {/* Action Buttons */}
