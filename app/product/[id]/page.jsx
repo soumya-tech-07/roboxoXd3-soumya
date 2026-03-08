@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { createPublicClient } from '@/lib/supabase/public';
 import { ensurePublicImageUrl } from '@/lib/image-helpers';
+import { getSizesWithStock } from '@/lib/product-helpers';
 import SizeGuideModal from '../../components/SizeguideModal';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
@@ -115,8 +116,11 @@ export default function ProductPage() {
       gallery = mainImages;
     }
 
-    const sizes =
-      dbProduct.sizes && Array.isArray(dbProduct.sizes) ? dbProduct.sizes : ['S', 'M', 'L', 'XL'];
+    let sizesWithStock = getSizesWithStock(dbProduct.stock_by_size).filter((x) => (x.stock || 0) > 0);
+    if (sizesWithStock.length === 0) {
+      sizesWithStock = ['S', 'M', 'L', 'XL'].map((size) => ({ size, stock: 0 }));
+    }
+    const sizes = sizesWithStock.map((x) => x.size);
 
     return {
       name: dbProduct.name,
@@ -128,6 +132,7 @@ export default function ProductPage() {
         ? gallery
         : ['https://placehold.co/800x1200/e5d4e8/666666?text=Image'],
       sizes,
+      sizesWithStock,
       description:
         dbProduct.description ||
         'Premium garment crafted for comfort and durability.',
@@ -251,7 +256,7 @@ export default function ProductPage() {
 
             <div className="border-t border-gray-200 pt-6 mb-6">
               <ProductSizeSelector
-                sizes={product.sizes}
+                sizesWithStock={product.sizesWithStock}
                 selectedSize={selectedSize}
                 onSizeSelect={setSelectedSize}
                 onSizeGuideOpen={() => setIsSizeGuideOpen(true)}

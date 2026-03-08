@@ -476,7 +476,12 @@ export function AuthProvider({ children }) {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .upsert({ id: user.id, email: user.email, ...updates })
+        .upsert({
+          id: user.id,
+          email: user.email,
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
         .select()
         .single();
 

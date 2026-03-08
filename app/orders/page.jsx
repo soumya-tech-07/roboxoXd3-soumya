@@ -50,6 +50,16 @@ export default function OrdersPage() {
 
       if (error) throw error;
 
+      const { data: exchangeReturnData } = await supabase
+        .from('exchange_return_requests')
+        .select('id, order_id, request_type, status')
+        .eq('user_id', user.id);
+      const requestsByOrderId = {};
+      (exchangeReturnData || []).forEach((r) => {
+        if (!requestsByOrderId[r.order_id]) requestsByOrderId[r.order_id] = [];
+        requestsByOrderId[r.order_id].push(r);
+      });
+
       // Load order items for each order with product images
       const ordersWithItems = await Promise.all(
         (data || []).map(async (order) => {
@@ -91,6 +101,7 @@ export default function OrdersPage() {
           return {
             ...order,
             items: itemsWithImages || [],
+            exchangeReturnRequests: requestsByOrderId[order.id] || [],
           };
         })
       );
@@ -158,6 +169,21 @@ export default function OrdersPage() {
         return 'Cancelled';
       default:
         return 'Pending';
+    }
+  };
+
+  const getExchangeReturnStatusColor = (status) => {
+    switch ((status || '').toLowerCase()) {
+      case 'pending':
+        return 'text-amber-700 bg-amber-50';
+      case 'approved':
+        return 'text-blue-700 bg-blue-50';
+      case 'rejected':
+        return 'text-red-700 bg-red-50';
+      case 'processed':
+        return 'text-green-700 bg-green-50';
+      default:
+        return 'text-gray-700 bg-gray-50';
     }
   };
 
@@ -235,6 +261,18 @@ export default function OrdersPage() {
                           minute: '2-digit',
                         })}
                       </p>
+                      {order.exchangeReturnRequests?.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {order.exchangeReturnRequests.map((req) => (
+                            <span
+                              key={req.id}
+                              className={`px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide ${getExchangeReturnStatusColor(req.status)}`}
+                            >
+                              {req.request_type} — {req.status}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-col sm:items-end gap-2">
                       <p className="text-lg font-semibold text-gray-900">

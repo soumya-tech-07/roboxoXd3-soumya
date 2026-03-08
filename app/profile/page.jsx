@@ -43,6 +43,13 @@ export default function ProfilePage() {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [firstName, setFirstName] = useState(profile?.first_name || '');
   const [lastName, setLastName] = useState(profile?.last_name || '');
+  const [phone, setPhone] = useState(profile?.phone || '');
+  const [addressLine1, setAddressLine1] = useState(profile?.address_line1 || '');
+  const [addressLine2, setAddressLine2] = useState(profile?.address_line2 || '');
+  const [city, setCity] = useState(profile?.city || '');
+  const [state, setState] = useState(profile?.state || '');
+  const [postalCode, setPostalCode] = useState(profile?.postal_code || '');
+  const [country, setCountry] = useState(profile?.country || 'India');
   const [savingProfile, setSavingProfile] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -71,11 +78,18 @@ export default function ProfilePage() {
     }
   }, [isAuthenticated, user, activeTab]);
 
-  // Keep local name state in sync with loaded profile
+  // Keep local state in sync with loaded profile
   useEffect(() => {
     if (profile) {
       setFirstName(profile.first_name || '');
       setLastName(profile.last_name || '');
+      setPhone(profile.phone || '');
+      setAddressLine1(profile.address_line1 || '');
+      setAddressLine2(profile.address_line2 || '');
+      setCity(profile.city || '');
+      setState(profile.state || '');
+      setPostalCode(profile.postal_code || '');
+      setCountry(profile.country || 'India');
     }
   }, [profile]);
 
@@ -92,6 +106,13 @@ export default function ProfilePage() {
       const { error } = await updateProfile({
         first_name: firstName.trim(),
         last_name: lastName.trim(),
+        phone: phone.trim() || null,
+        address_line1: addressLine1.trim() || null,
+        address_line2: addressLine2.trim() || null,
+        city: city.trim() || null,
+        state: state.trim() || null,
+        postal_code: postalCode.trim() || null,
+        country: country.trim() || null,
       });
 
       if (error) {
@@ -112,6 +133,13 @@ export default function ProfilePage() {
   const cancelEditProfile = () => {
     setFirstName(profile?.first_name || '');
     setLastName(profile?.last_name || '');
+    setPhone(profile?.phone || '');
+    setAddressLine1(profile?.address_line1 || '');
+    setAddressLine2(profile?.address_line2 || '');
+    setCity(profile?.city || '');
+    setState(profile?.state || '');
+    setPostalCode(profile?.postal_code || '');
+    setCountry(profile?.country || 'India');
     setEditingProfile(false);
   };
 
@@ -426,6 +454,87 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
+                      <div>
+                        <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">
+                          PHONE
+                        </label>
+                        <input
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                          placeholder="e.g. +91 98765 43210"
+                        />
+                      </div>
+
+                      <div className="border-t border-gray-100 pt-4 mt-4">
+                        <h3 className="text-xs font-medium tracking-widest text-gray-500 mb-3">ADDRESS</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">ADDRESS LINE 1</label>
+                            <input
+                              type="text"
+                              value={addressLine1}
+                              onChange={(e) => setAddressLine1(e.target.value)}
+                              className="w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                              placeholder="Street, building, area"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">ADDRESS LINE 2 (optional)</label>
+                            <input
+                              type="text"
+                              value={addressLine2}
+                              onChange={(e) => setAddressLine2(e.target.value)}
+                              className="w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                              placeholder="Landmark, floor, etc."
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">CITY</label>
+                              <input
+                                type="text"
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                                className="w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                                placeholder="City"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">STATE</label>
+                              <input
+                                type="text"
+                                value={state}
+                                onChange={(e) => setState(e.target.value)}
+                                className="w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                                placeholder="State"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">POSTAL CODE</label>
+                              <input
+                                type="text"
+                                value={postalCode}
+                                onChange={(e) => setPostalCode(e.target.value)}
+                                className="w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                                placeholder="PIN / ZIP"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium tracking-widest text-gray-500 mb-2">COUNTRY</label>
+                            <input
+                              type="text"
+                              value={country}
+                              onChange={(e) => setCountry(e.target.value)}
+                              className="w-full border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                              placeholder="Country"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
                       <div className="flex items-center gap-3 pt-1">
                         <button
                           type="submit"
@@ -459,13 +568,33 @@ export default function ProfilePage() {
                             : user?.email?.charAt(0).toUpperCase()}
                         </span>
                       </div>
-                      <div className="space-y-0.5">
+                      <div className="space-y-0.5 min-w-0 flex-1">
                         <p className="text-sm font-medium text-gray-900">
                           {firstName || lastName
                             ? `${firstName} ${lastName}`.trim()
                             : <span className="text-gray-400 italic">No name set</span>}
                         </p>
                         <p className="text-sm text-gray-500">{user?.email}</p>
+                        {phone && <p className="text-sm text-gray-600">{phone}</p>}
+                        {(profile?.address_line1 || profile?.city) && (
+                          <div className="mt-3 pt-3 border-t border-gray-100">
+                            <p className="text-xs font-medium tracking-widest text-gray-400 mb-1">ADDRESS</p>
+                            <p className="text-sm text-gray-600">
+                              {profile.address_line1}
+                              {profile.address_line2 && `, ${profile.address_line2}`}
+                              {(profile.city || profile.state || profile.postal_code) && (
+                                <br />
+                              )}
+                              {[profile.city, profile.state, profile.postal_code].filter(Boolean).join(', ')}
+                              {profile.country && (
+                                <>
+                                  <br />
+                                  {profile.country}
+                                </>
+                              )}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

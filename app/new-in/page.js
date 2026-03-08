@@ -6,6 +6,7 @@ import FilterBar from '../components/FilterBar';
 import ProductGrid from '../components/ProductGrid';
 import { createPublicClient } from '@/lib/supabase/public';
 import { ensurePublicImageUrl } from '@/lib/image-helpers';
+import { getSizesFromStockBySize } from '@/lib/product-helpers';
 
 export default function NewInPage() {
   const [allProducts, setAllProducts] = useState([]);
@@ -54,7 +55,7 @@ export default function NewInPage() {
             slug: p.slug,
             price: Number(p.price || 0),
             category: p.category || 'APPAREL',
-            size: Array.isArray(p.sizes) && p.sizes.length ? p.sizes : ['S', 'M', 'L', 'XL'],
+            size: (() => { const s = getSizesFromStockBySize(p.stock_by_size); return s.length > 0 ? s : ['S', 'M', 'L', 'XL']; })(),
             availability: p.availability || 'IN STOCK',
             stock: p.stock ?? 0,
             description: p.description || '',

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase';
+import { getSizesFromStockBySize } from '@/lib/product-helpers';
 import { useAuth } from '../context/AuthContext';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useToast } from '../context/ToastContext';
@@ -27,7 +28,6 @@ export default function ExchangeReturnPage() {
     exchangeSize: '',
     exchangeProductId: '',
     description: '',
-    hasUnboxingVideo: false,
   });
 
   // Redirect to home and open login modal if not authenticated
@@ -53,9 +53,30 @@ export default function ExchangeReturnPage() {
 
       if (error) throw error;
 
+      // Only delivered/completed orders within 7 days of delivery are eligible
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const deliveredOrders = (data || []).filter((order) => {
+        if (!['delivered', 'completed'].includes((order.status || '').toLowerCase())) return false;
+        const deliveryDate = order.delivered_at ? new Date(order.delivered_at) : new Date(order.updated_at);
+        return deliveryDate >= sevenDaysAgo;
+      });
+      const deliveredOrderIds = deliveredOrders.map((o) => o.id);
+
+      const { data: requestsData } = await supabase
+        .from('exchange_return_requests')
+        .select('id, order_id, order_item_id, status')
+        .eq('user_id', user.id)
+        .in('order_id', deliveredOrderIds);
+      const requestsByOrderId = {};
+      (requestsData || []).forEach((r) => {
+        if (!requestsByOrderId[r.order_id]) requestsByOrderId[r.order_id] = [];
+        requestsByOrderId[r.order_id].push(r);
+      });
+
       // Load order items for each order with product details
       const ordersWithItems = await Promise.all(
-        (data || []).map(async (order) => {
+        deliveredOrders.map(async (order) => {
           const { data: items, error: itemsError } = await supabase
             .from('order_items')
             .select('*')
@@ -70,7 +91,7 @@ export default function ExchangeReturnPage() {
               if (item.product_id) {
                 const { data: product, error: productError } = await supabase
                   .from('products')
-                  .select('id, name, image_url, gallery, sizes')
+                  .select('id, name, image_url, gallery, stock_by_size')
                   .eq('id', item.product_id)
                   .single();
 
@@ -94,6 +115,7 @@ export default function ExchangeReturnPage() {
           return {
             ...order,
             items: itemsWithProducts || [],
+            exchangeReturnRequests: requestsByOrderId[order.id] || [],
           };
         })
       );
@@ -113,12 +135,32 @@ export default function ExchangeReturnPage() {
     }
   }, [isAuthenticated, user, loadOrders]);
 
+  const selectedOrder = orders.find((o) => o.id === formData.orderId);
+  const orderRequests = selectedOrder?.exchangeReturnRequests || [];
+  const nonEligibleStatuses = ['pending', 'approved', 'processed'];
+  const itemHasExistingRequest = (orderItemId) =>
+    orderRequests.some(
+      (r) => String(r.order_item_id) === String(orderItemId) && nonEligibleStatuses.includes((r.status || '').toLowerCase())
+    );
+  const eligibleItems = selectedOrder?.items?.filter((item) => !itemHasExistingRequest(item.id)) || [];
+
+  useEffect(() => {
+    const order = orders.find((o) => o.id === formData.orderId);
+    const requests = order?.exchangeReturnRequests || [];
+    const hasExisting = (id) => requests.some((r) => String(r.order_item_id) === String(id) && ['pending', 'approved', 'processed'].includes((r.status || '').toLowerCase()));
+    const eligible = (order?.items || []).filter((item) => !hasExisting(item.id));
+    if (formData.itemId && eligible.length > 0 && !eligible.some((i) => String(i.id) === String(formData.itemId))) {
+      setFormData((prev) => ({ ...prev, itemId: '' }));
+    }
+  }, [formData.orderId, formData.itemId, orders]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: type === 'checkbox' ? checked : value };
+      if (name === 'orderId') next.itemId = '';
+      return next;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -137,13 +179,22 @@ export default function ExchangeReturnPage() {
     try {
       setSubmitting(true);
 
-      // Here you would typically save to a database table for exchange/return requests
-      // For now, we'll simulate the submission
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const { error } = await supabase.from('exchange_return_requests').insert({
+        user_id: user.id,
+        order_id: formData.orderId,
+        order_item_id: formData.itemId,
+        request_type: formData.requestType,
+        reason: formData.reason,
+        exchange_size: formData.exchangeSize || null,
+        exchange_product_id: formData.exchangeProductId ? Number(formData.exchangeProductId) : null,
+        description: formData.description?.trim() || null,
+        status: 'pending',
+      });
+
+      if (error) throw error;
 
       showSuccess('Your request has been submitted successfully! Our team will review it within 48-72 hours.');
-      
-      // Reset form
+
       setFormData({
         orderId: '',
         itemId: '',
@@ -152,24 +203,22 @@ export default function ExchangeReturnPage() {
         exchangeSize: '',
         exchangeProductId: '',
         description: '',
-        hasUnboxingVideo: false,
       });
 
-      // Redirect to orders page after 2 seconds
       setTimeout(() => {
         router.push('/orders');
       }, 2000);
     } catch (error) {
       console.error('Error submitting request:', error);
-      showError('Failed to submit request. Please try again.');
+      showError(error.message || 'Failed to submit request. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const selectedOrder = orders.find((o) => o.id === formData.orderId);
-  const selectedItem = selectedOrder?.items?.find((item) => item.id === formData.itemId);
+  const selectedItem = selectedOrder?.items?.find((item) => String(item.id) === String(formData.itemId));
   const selectedProduct = selectedItem?.product;
+  const selectedItemImage = selectedItem?.productImage ?? selectedItem?.product?.image_url ?? selectedItem?.product?.gallery?.[0];
 
   if (authLoading || loading) {
     return (
@@ -254,10 +303,20 @@ export default function ExchangeReturnPage() {
               <option value="">Choose an order...</option>
               {orders.map((order) => (
                 <option key={order.id} value={order.id}>
-                  Order #{order.order_number} - {new Date(order.created_at).toLocaleDateString()} - ₹{Number(order.total).toFixed(2)}
+                  Order #{order.order_number} - {new Date(order.created_at).toLocaleDateString()} - ₹{Number(order.total).toLocaleString('en-IN')}
                 </option>
               ))}
             </select>
+            {orders.length === 0 && (
+              <p className="text-xs text-amber-600 mt-2">
+                No eligible orders. Exchange/return is allowed only for delivered orders and within 7 days of delivery.
+              </p>
+            )}
+            {orders.length > 0 && (
+              <p className="text-xs text-gray-500 mt-2">
+                Return/exchange is allowed only within 7 days of delivery.
+              </p>
+            )}
           </div>
 
           {/* Select Item */}
@@ -274,26 +333,40 @@ export default function ExchangeReturnPage() {
                 required
               >
                 <option value="">Choose an item...</option>
-                {selectedOrder.items?.map((item) => (
+                {eligibleItems.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.product_name} - Size: {item.size || 'N/A'} - Qty: {item.quantity}
                   </option>
                 ))}
               </select>
+              {selectedOrder.items?.length > 0 && eligibleItems.length < selectedOrder.items.length && (
+                <p className="text-xs text-gray-500 mt-2">
+                  Items with a return/exchange in progress or already returned/exchanged are not listed. Rejected requests can be submitted again.
+                </p>
+              )}
 
               {/* Selected Item Preview */}
               {selectedItem && (
-                <div className="mt-4 p-4 bg-gray-50 border border-gray-200 flex gap-4">
-                  {selectedItem.productImage && (
-                    <Image
-                      src={selectedItem.productImage}
-                      alt={selectedItem.product_name}
-                      width={80}
-                      height={80}
-                      className="object-cover"
-                    />
-                  )}
-                  <div className="flex-1">
+                <div className="mt-4 p-4 bg-gray-50 border border-gray-200 flex gap-4 items-center">
+                  <div className="relative w-20 h-24 shrink-0 rounded overflow-hidden bg-gray-200">
+                    {selectedItemImage ? (
+                      <Image
+                        src={selectedItemImage}
+                        alt={selectedItem.product_name}
+                        fill
+                        className="object-cover"
+                        sizes="80px"
+                        unoptimized={typeof selectedItemImage === 'string' && selectedItemImage.startsWith('https://')}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-semibold text-gray-900 mb-1">
                       {selectedItem.product_name}
                     </h4>
@@ -317,24 +390,27 @@ export default function ExchangeReturnPage() {
               </label>
               <div className="space-y-4">
                 {/* Exchange Size */}
-                {selectedProduct.sizes && Array.isArray(selectedProduct.sizes) && selectedProduct.sizes.length > 0 && (
-                  <div>
-                    <label className="block text-xs text-gray-700 mb-2">Different Size</label>
-                    <select
-                      name="exchangeSize"
-                      value={formData.exchangeSize}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border-2 border-gray-200 text-sm text-gray-900 focus:outline-none focus:border-brand transition-colors cursor-pointer"
-                    >
-                      <option value="">Select size...</option>
-                      {selectedProduct.sizes.map((size) => (
-                        <option key={size} value={size}>
-                          {size}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                {(() => {
+                  const exchangeSizes = getSizesFromStockBySize(selectedProduct.stock_by_size);
+                  return exchangeSizes.length > 0 && (
+                    <div>
+                      <label className="block text-xs text-gray-700 mb-2">Different Size</label>
+                      <select
+                        name="exchangeSize"
+                        value={formData.exchangeSize}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border-2 border-gray-200 text-sm text-gray-900 focus:outline-none focus:border-brand transition-colors cursor-pointer"
+                      >
+                        <option value="">Select size...</option>
+                        {exchangeSizes.map((size) => (
+                          <option key={size} value={size}>
+                            {size}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -374,29 +450,6 @@ export default function ExchangeReturnPage() {
               className="w-full px-4 py-3 border-2 border-gray-200 text-sm text-gray-900 focus:outline-none focus:border-brand transition-colors resize-none"
               placeholder="Please provide any additional details about your request..."
             />
-          </div>
-
-          {/* Unboxing Video */}
-          <div className="mb-8">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                name="hasUnboxingVideo"
-                checked={formData.hasUnboxingVideo}
-                onChange={handleChange}
-                className="w-4 h-4 text-brand focus:ring-brand"
-              />
-              <span className="text-sm text-gray-900">
-                I have recorded an unboxing video (Required for damage/wrong item claims)
-              </span>
-            </label>
-            <p className="text-xs text-gray-500 mt-2 ml-7">
-              Please email your unboxing video to{' '}
-              <a href="mailto:orders.retrolouve@gmail.com" className="underline">
-                orders.retrolouve@gmail.com
-              </a>{' '}
-              within 24 hours of delivery.
-            </p>
           </div>
 
           {/* Important Notice */}
