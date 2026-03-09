@@ -2,9 +2,6 @@
 
 import Image from 'next/image';
 
-/** Use unoptimized for external URLs (e.g. Supabase Storage) so they load reliably. */
-const isExternalUrl = (src) => typeof src === 'string' && (src.startsWith('http://') || src.startsWith('https://'));
-
 /**
  * Tiptap/rich-text HTML class: headings, lists, links, images.
  * Use with dangerouslySetInnerHTML so Tiptap output from admin renders correctly.
@@ -48,8 +45,8 @@ export default function BlogMagazineLayout({ blog }) {
                 fill
                 className="object-contain object-center"
                 sizes="(max-width: 768px) 100vw, 672px"
-                priority
-                unoptimized={isExternalUrl(blog.image)}
+                quality={70}
+                loading="lazy"
               />
             </div>
           </div>
@@ -78,8 +75,8 @@ export default function BlogMagazineLayout({ blog }) {
                 fill
                 className="object-contain object-center"
                 sizes="(max-width: 768px) 100vw, 672px"
-                priority
-                unoptimized={isExternalUrl(blog.image)}
+                quality={70}
+                loading="lazy"
               />
             </div>
           </div>
@@ -115,8 +112,8 @@ export default function BlogMagazineLayout({ blog }) {
                 fill
                 className="object-contain object-center"
                 sizes="(max-width: 768px) 100vw, 672px"
-                priority
-                unoptimized={isExternalUrl(blog.productImages[0])}
+                quality={70}
+                loading="lazy"
               />
             </div>
           </div>
@@ -152,8 +149,8 @@ export default function BlogMagazineLayout({ blog }) {
               fill
               className="object-contain object-center"
               sizes="(max-width: 768px) 100vw, 672px"
-              priority
-              unoptimized={isExternalUrl(blog.image)}
+              quality={70}
+              loading="lazy"
             />
           </div>
         </div>
