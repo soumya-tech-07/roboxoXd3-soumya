@@ -1116,8 +1116,8 @@ export default function ProfilePage() {
 
           {/* Body Measurements Tab */}
           {activeTab === 'measurements' && (
-            <div className="max-w-3xl">
-              <div className="border border-gray-200 rounded-lg p-6 sm:p-8">
+            <div className="w-full">
+              <div className="border border-gray-200 rounded-lg p-6 sm:p-8 lg:p-10">
                 <div className="mb-6">
                   <h2 className="text-lg font-medium text-gray-900 mb-2" style={{ letterSpacing: '-0.02em' }}>
                     YOUR MEASUREMENTS
@@ -1172,7 +1172,7 @@ export default function ProfilePage() {
                       step="50"
                       value={walletTopupAmount}
                       onChange={(e) => setWalletTopupAmount(e.target.value)}
-                      className="w-full sm:w-48 border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+                      className="input-no-spinner w-full sm:w-48 border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
                       placeholder="Amount (min ₹100)"
                     />
                     <button
@@ -1347,26 +1347,6 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* Body Measurements Tab */}
-          {activeTab === 'measurements' && (
-            <div className="max-w-3xl">
-              <div className="border border-gray-200 rounded-lg p-6 sm:p-8">
-                <div className="mb-6">
-                  <h2 className="text-lg font-medium text-gray-900 mb-2" style={{ letterSpacing: '-0.02em' }}>
-                    YOUR MEASUREMENTS
-                  </h2>
-                  <p className="text-sm text-gray-600" style={{ lineHeight: '1.6' }}>
-                    Save your measurements to get personalized size recommendations on product pages.
-                  </p>
-                </div>
-                <MeasurementForm
-                  loadAllCharts={true}
-                  showSizeChart={true}
-                  submitButtonText="UPDATE MEASUREMENTS"
-                />
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

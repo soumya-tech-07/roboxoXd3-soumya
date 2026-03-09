@@ -388,7 +388,7 @@ export default function MeasurementForm({
               required
               min="0"
               step="0.1"
-              className="w-full border-b border-gray-300 focus:border-black outline-none py-2.5 text-base text-gray-900 transition-colors text-center bg-transparent placeholder:text-gray-500"
+              className="input-no-spinner w-full border-b border-gray-300 focus:border-black outline-none py-2.5 text-base text-gray-900 transition-colors text-center bg-transparent placeholder:text-gray-500"
               style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
               placeholder="0.0"
             />
@@ -447,7 +447,7 @@ export default function MeasurementForm({
               required
               min="0"
               step="0.1"
-              className="w-full border-b border-gray-300 focus:border-black outline-none py-2.5 text-base text-gray-900 transition-colors text-center bg-transparent placeholder:text-gray-500"
+              className="input-no-spinner w-full border-b border-gray-300 focus:border-black outline-none py-2.5 text-base text-gray-900 transition-colors text-center bg-transparent placeholder:text-gray-500"
               style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
               placeholder="0.0"
             />
@@ -479,7 +479,7 @@ export default function MeasurementForm({
               onChange={handleInputChange}
               min="0"
               max="120"
-              className="w-full border-b border-gray-300 focus:border-black outline-none py-2 text-base text-gray-900 transition-colors text-center bg-transparent placeholder:text-gray-500"
+              className="input-no-spinner w-full border-b border-gray-300 focus:border-black outline-none py-2 text-base text-gray-900 transition-colors text-center bg-transparent placeholder:text-gray-500"
               style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
               placeholder="0"
             />
@@ -546,7 +546,7 @@ export default function MeasurementForm({
                       onChange={handleInputChange}
                       min="0"
                       step="0.1"
-                      className="w-full border-b border-gray-300 focus:border-black outline-none py-2 text-base text-gray-900 transition-colors text-center bg-transparent placeholder:text-gray-500"
+                      className="input-no-spinner w-full border-b border-gray-300 focus:border-black outline-none py-2 text-base text-gray-900 transition-colors text-center bg-transparent placeholder:text-gray-500"
                       style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
                       placeholder="0.0"
                     />
