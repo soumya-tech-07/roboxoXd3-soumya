@@ -16,7 +16,7 @@ function getServiceKey() {
   if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return process.env.SUPABASE_SERVICE_ROLE_KEY;
   }
-  
+
   try {
     const envPath = path.join(process.cwd(), '.env.local');
     if (fs.existsSync(envPath)) {
@@ -35,7 +35,7 @@ function getServiceKey() {
   } catch (e) {
     console.warn('⚠️ Unable to read .env.local:', e.message);
   }
-  
+
   return null;
 }
 
@@ -55,7 +55,7 @@ const supabase = createClient(SUPABASE_URL, serviceKey, {
 
 async function listStorageFiles() {
   console.log('🔍 Searching for green shirt images in storage...\n');
-  
+
   try {
     // List all files in the product-images bucket
     const { data: files, error } = await supabase.storage
@@ -74,8 +74,8 @@ async function listStorageFiles() {
     console.log(`📁 Found ${files.length} folders in products/\n`);
 
     // Search for folders containing "green" or "pistachio"
-    const greenFolders = files.filter(folder => 
-      folder.name.toLowerCase().includes('green') || 
+    const greenFolders = files.filter(folder =>
+      folder.name.toLowerCase().includes('green') ||
       folder.name.toLowerCase().includes('pistachio') ||
       folder.name.toLowerCase().includes('flag')
     );
@@ -90,10 +90,10 @@ async function listStorageFiles() {
     }
 
     console.log('✅ Found folders matching green/pistachio:\n');
-    
+
     for (const folder of greenFolders) {
       console.log(`📁 Folder: products/${folder.name}/`);
-      
+
       // List files in this folder
       const { data: folderFiles, error: folderError } = await supabase.storage
         .from('product-images')
@@ -127,3 +127,4 @@ async function listStorageFiles() {
 
 listStorageFiles();
 
+// push to github
