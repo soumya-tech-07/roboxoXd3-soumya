@@ -17,7 +17,7 @@ function getServiceKey() {
   if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return process.env.SUPABASE_SERVICE_ROLE_KEY;
   }
-  
+
   // Try .env.local
   try {
     const envPath = path.join(process.cwd(), '.env.local');
@@ -34,7 +34,7 @@ function getServiceKey() {
   } catch (e) {
     // Ignore
   }
-  
+
   return null;
 }
 
@@ -83,14 +83,14 @@ const images = [
 
 async function uploadImages() {
   console.log('🚀 Starting image uploads...\n');
-  
+
   let successCount = 0;
   let failCount = 0;
-  
+
   for (const image of images) {
     try {
       const filePath = path.join(process.cwd(), image.file);
-      
+
       if (!fs.existsSync(filePath)) {
         console.error(`❌ File not found: ${filePath}`);
         failCount++;
@@ -99,9 +99,9 @@ async function uploadImages() {
 
       const fileStats = fs.statSync(filePath);
       console.log(`📤 Uploading ${image.file} (${(fileStats.size / 1024).toFixed(2)} KB)...`);
-      
+
       const fileBuffer = fs.readFileSync(filePath);
-      
+
       // Upload to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('size-chart-images')
@@ -118,15 +118,15 @@ async function uploadImages() {
       }
 
       console.log(`✅ Uploaded: ${image.path}`);
-      
+
       // Get public URL
       const { data: urlData } = supabase.storage
         .from('size-chart-images')
         .getPublicUrl(image.path);
-      
+
       const publicUrl = urlData.publicUrl;
       console.log(`🔗 URL: ${publicUrl}`);
-      
+
       // Update database
       const { error: updateError } = await supabase
         .from('size_charts')
@@ -145,11 +145,11 @@ async function uploadImages() {
       failCount++;
     }
   }
-  
+
   console.log('\n📊 Summary:');
   console.log(`   ✅ Success: ${successCount}/${images.length}`);
   console.log(`   ❌ Failed: ${failCount}/${images.length}`);
-  
+
   if (successCount === images.length) {
     console.log('\n🎉 All images uploaded successfully!');
   }
@@ -162,3 +162,4 @@ uploadImages()
     process.exit(1);
   });
 
+//push to github
