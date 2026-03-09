@@ -6,10 +6,12 @@ import Image from 'next/image';
 export default function HomeBackgroundVideo() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(true);
+  const [isInView, setIsInView] = useState(true);
   const videoRefs = useRef([]);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const sectionRef = useRef(null);
 
   // Check screen size
   useEffect(() => {
@@ -18,10 +20,11 @@ export default function HomeBackgroundVideo() {
     };
 
     checkScreenSize();
-    setMounted(true);
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
+  // mounted state kept for backward compatibility (always true)
 
   // Carousel items - mix of images and videos
   const carouselItems = useMemo(
@@ -68,11 +71,23 @@ export default function HomeBackgroundVideo() {
     if (!currentItem || currentItem.type !== 'video') return;
 
     const video = videoRefs.current[currentSlide];
-    if (video && typeof video.play === 'function') {
+    if (isInView && video && typeof video.play === 'function') {
       video.currentTime = 0;
       video.play().catch(() => { });
     }
-  }, [currentSlide, carouselItems]);
+  }, [currentSlide, carouselItems, isInView]);
+
+  // Only autoplay videos when section is in viewport
+  useEffect(() => {
+    if (!sectionRef.current) return;
+    const el = sectionRef.current;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInView(entry.isIntersecting),
+      { threshold: 0.25 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Navigation functions
   const goToSlide = useCallback((index) => {
@@ -140,6 +155,7 @@ export default function HomeBackgroundVideo() {
 
   return (
     <section
+      ref={sectionRef}
       className="relative w-full h-screen overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -161,11 +177,12 @@ export default function HomeBackgroundVideo() {
                   <video
                     ref={(el) => (videoRefs.current[index] = el)}
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full object-cover pointer-events-none"
-                    src={isMobile ? item.mobileSrc : item.desktopSrc}
-                    autoPlay
+                    src={index === currentSlide ? (isMobile ? item.mobileSrc : item.desktopSrc) : undefined}
+                    autoPlay={isInView && index === currentSlide}
                     loop
                     muted
                     playsInline
+                    preload="metadata"
                   />
                 </div>
               ) : (

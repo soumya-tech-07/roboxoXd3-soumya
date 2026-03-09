@@ -356,7 +356,8 @@ export default function ExchangeReturnPage() {
                         fill
                         className="object-cover"
                         sizes="80px"
-                        unoptimized={typeof selectedItemImage === 'string' && selectedItemImage.startsWith('https://')}
+                        quality={60}
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400">

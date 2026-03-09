@@ -901,7 +901,8 @@ export default function CheckoutPage() {
                             src={item.product.image || 'https://placehold.co/800x1200/e5d4e8/666666?text=Image'}
                             alt={item.product.name}
                             fill
-                            unoptimized={item.product.image?.startsWith('https://')}
+                            quality={60}
+                            loading="lazy"
                             className="object-cover"
                             sizes="80px"
                           />

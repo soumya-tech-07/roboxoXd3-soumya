@@ -132,7 +132,7 @@ export default function RelatedProducts({ currentProductId, category }) {
 
   return (
     <section className="mt-16 sm:mt-20 lg:mt-24 border-t border-gray-200 pt-12 sm:pt-16">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto">
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6 sm:mb-8 tracking-wide">
           ALL PRODUCTS
         </h2>

@@ -95,11 +95,11 @@ export default function ProductImageGallery({ images, productName, badge }) {
           unoptimized={mainImage?.startsWith('http')}
         />
 
-        {/* Fullscreen Icon Overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-          <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg">
+        {/* Fullscreen Icon Overlay (bottom-right, transparent) */}
+        <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute bottom-4 right-4">
             <svg
-              className="w-6 h-6 text-black"
+              className="w-6 h-6 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

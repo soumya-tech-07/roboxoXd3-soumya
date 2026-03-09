@@ -144,7 +144,8 @@ export default function CartPage() {
                       src={item.product.image || 'https://placehold.co/800x1200/e5d4e8/666666?text=Image'}
                       alt={item.product.name}
                       fill
-                      unoptimized={item.product.image?.startsWith('https://')}
+                      quality={60}
+                      loading="lazy"
                       className="object-cover hover:scale-105 transition-transform duration-300"
                       sizes="(max-width: 640px) 100vw, 128px"
                     />

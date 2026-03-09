@@ -5,9 +5,11 @@ import Image from 'next/image';
 
 export default function HomeBackgroundVideo() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isInView, setIsInView] = useState(true);
   const videoRefs = useRef([]);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const sectionRef = useRef(null);
 
   // Carousel items - mix of images and videos with aesthetic fashion content
   const carouselItems = useMemo(() => [
@@ -67,7 +69,7 @@ export default function HomeBackgroundVideo() {
   useEffect(() => {
     videoRefs.current.forEach((video, index) => {
       if (video) {
-        if (index === currentSlide && carouselItems[index].type === 'video') {
+        if (isInView && index === currentSlide && carouselItems[index].type === 'video') {
           video.currentTime = 0; // Reset video to start
           video.play().catch((err) => {
             console.log('Video play error:', err);
@@ -78,7 +80,19 @@ export default function HomeBackgroundVideo() {
         }
       }
     });
-  }, [currentSlide, carouselItems]);
+  }, [currentSlide, carouselItems, isInView]);
+
+  // Only autoplay videos when hero is in viewport
+  useEffect(() => {
+    if (!sectionRef.current) return;
+    const el = sectionRef.current;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInView(entry.isIntersecting),
+      { threshold: 0.25 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Touch/swipe handlers
   const handleTouchStart = (e) => {
@@ -148,6 +162,7 @@ export default function HomeBackgroundVideo() {
 
   return (
     <section
+      ref={sectionRef}
       className="relative w-full h-screen overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -169,10 +184,10 @@ export default function HomeBackgroundVideo() {
                 loop
                 muted
                 playsInline
-                preload="auto"
-                autoPlay={index === currentSlide}
+                preload="metadata"
+                autoPlay={isInView && index === currentSlide}
               >
-                <source src={item.src} type="video/mp4" />
+                {index === currentSlide && <source src={item.src} type="video/mp4" />}
                 Your browser does not support the video tag.
               </video>
             ) : (

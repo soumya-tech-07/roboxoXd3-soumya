@@ -299,7 +299,8 @@ export default function OrdersPage() {
                               src={item.productImage}
                               alt={item.product_name}
                               fill
-                              unoptimized={item.productImage.startsWith('https://')}
+                                    quality={60}
+                                    loading="lazy"
                               className="object-cover"
                               sizes="64px"
                             />
@@ -408,7 +409,8 @@ export default function OrdersPage() {
                                   src={item.productImage}
                                   alt={item.product_name}
                                   fill
-                                  unoptimized={item.productImage.startsWith('https://')}
+                                      quality={60}
+                                      loading="lazy"
                                   className="object-cover"
                                   sizes="80px"
                                 />

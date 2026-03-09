@@ -333,7 +333,8 @@ export default function OrderConfirmationPage() {
                       src={item.productImage}
                       alt={item.product_name}
                       fill
-                      unoptimized={typeof item.productImage === 'string' && item.productImage.startsWith('https://')}
+                      quality={60}
+                      loading="lazy"
                       className="object-cover"
                       sizes="80px"
                     />

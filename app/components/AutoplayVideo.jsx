@@ -27,6 +27,7 @@ export default function AutoplayVideo() {
         muted
         loop
         playsInline
+        preload="metadata"
       />
     </section>
   );

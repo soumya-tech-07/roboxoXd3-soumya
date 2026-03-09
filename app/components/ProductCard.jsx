@@ -66,19 +66,22 @@ export default function ProductCard({
             alt={product.name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            unoptimized={primaryImage.startsWith('https://')}
+            quality={60}
+            loading="lazy"
             className={`object-cover transition-opacity duration-500 ${hasHoverImage && hovered ? 'opacity-0' : 'opacity-100'
               }`}
           />
 
           {/* Hover Image */}
-          {hasHoverImage && (
+          {/* Only render hover image when hovered to avoid extra download */}
+          {hasHoverImage && hovered && (
             <Image
               src={hoverImage}
               alt={`${product.name} - Back`}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              unoptimized={hoverImage.startsWith('https://')}
+              quality={55}
+              loading="lazy"
               className={`object-cover transition-opacity duration-500 ${hovered ? 'opacity-100' : 'opacity-0'
                 }`}
             />
