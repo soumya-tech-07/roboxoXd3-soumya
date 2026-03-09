@@ -120,36 +120,89 @@ export default function OrdersPage() {
   };
 
   const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'completed':
-        return 'text-green-600 bg-green-50';
-      case 'processing':
-        return 'text-blue-600 bg-blue-50';
-      case 'shipped':
-        return 'text-purple-600 bg-purple-50';
-      case 'cancelled':
-        return 'text-red-600 bg-red-50';
-      default:
-        return 'text-gray-600 bg-gray-50';
+    const s = (status || '').toLowerCase();
+    if (s === 'cancelled') {
+      return 'border border-gray-300 text-gray-800 bg-white';
     }
+    if (s === 'delivered' || s === 'completed') {
+      return 'border border-brand/30 text-brand bg-white';
+    }
+    // pending / processing / shipped / confirmed / others
+    return 'border border-gray-300 text-gray-800 bg-white';
   };
 
-  const getPaymentMethodDisplay = (paymentMethod, paymentStatus) => {
-    if (paymentMethod === 'COD') {
+  const getPaymentMethodDisplay = (paymentMethod, paymentStatus, orderStatus) => {
+    const method = (paymentMethod || '').toUpperCase();
+    const payStatus = (paymentStatus || '').toLowerCase();
+    const orderStat = (orderStatus || '').toLowerCase();
+    const isOrderCancelled = orderStat === 'cancelled';
+    const isOrderDelivered = ['delivered', 'completed'].includes(orderStat);
+    const isPaid = payStatus === 'paid' || payStatus === 'completed' || isOrderDelivered;
+
+    // Wallet-only orders
+    if (method === 'WALLET') {
       return {
-        text: 'Pay on Delivery',
-        color: 'text-yellow-600 bg-yellow-50',
-      };
-    } else if (paymentMethod === 'ONLINE') {
-      return {
-        text: 'Paid',
-        color: 'text-green-600 bg-green-50',
+        method: 'Wallet',
+        status: isPaid ? 'Paid' : (paymentStatus || 'Pending'),
+        color: isPaid
+          ? 'border border-brand/30 text-brand bg-white'
+          : 'border border-gray-300 text-gray-800 bg-white',
       };
     }
+
+    // COD
+    if (method === 'COD') {
+      if (isOrderCancelled) {
+        return {
+          method: 'Cash on Delivery',
+          status: 'Cancelled',
+          color: 'border border-gray-300 text-gray-800 bg-white',
+        };
+      }
+      if (isPaid) {
+        return {
+          method: 'Cash on Delivery',
+          status: 'Paid',
+          color: 'border border-brand/30 text-brand bg-white',
+        };
+      }
+      return {
+        method: 'Cash on Delivery',
+        status: 'Pay on delivery',
+        color: 'border border-gray-300 text-gray-800 bg-white',
+      };
+    }
+
+    // Online / prepaid
+    if (method === 'ONLINE' || method === 'RAZORPAY' || method === 'PREPAID') {
+      if (payStatus === 'refunded') {
+        return {
+          method: 'Online Payment',
+          status: 'Refunded',
+          color: 'border border-gray-300 text-gray-800 bg-white',
+        };
+      }
+      if (isPaid) {
+        return {
+          method: 'Online Payment',
+          status: 'Paid',
+          color: 'border border-brand/30 text-brand bg-white',
+        };
+      }
+      return {
+        method: 'Online Payment',
+        status: paymentStatus || 'Pending',
+        color: 'border border-gray-300 text-gray-800 bg-white',
+      };
+    }
+
     // Fallback
     return {
-      text: paymentStatus === 'paid' ? 'Paid' : 'Pending',
-      color: paymentStatus === 'paid' ? 'text-green-600 bg-green-50' : 'text-yellow-600 bg-yellow-50',
+      method: paymentMethod || '—',
+      status: isPaid ? 'Paid' : (paymentStatus || 'Pending'),
+      color: isPaid
+        ? 'border border-brand/30 text-brand bg-white'
+        : 'border border-gray-300 text-gray-800 bg-white',
     };
   };
 
@@ -173,18 +226,15 @@ export default function OrdersPage() {
   };
 
   const getExchangeReturnStatusColor = (status) => {
-    switch ((status || '').toLowerCase()) {
-      case 'pending':
-        return 'text-amber-700 bg-amber-50';
-      case 'approved':
-        return 'text-blue-700 bg-blue-50';
-      case 'rejected':
-        return 'text-red-700 bg-red-50';
-      case 'processed':
-        return 'text-green-700 bg-green-50';
-      default:
-        return 'text-gray-700 bg-gray-50';
+    const s = (status || '').toLowerCase();
+    if (s === 'processed' || s === 'approved') {
+      return 'border border-brand/30 text-brand bg-white';
     }
+    if (s === 'rejected') {
+      return 'border border-gray-300 text-gray-800 bg-white';
+    }
+    // pending / others
+    return 'border border-gray-300 text-gray-800 bg-white';
   };
 
   if (authLoading || loading) {
@@ -241,13 +291,24 @@ export default function OrdersPage() {
                           {getDeliveryStatus(order.status)}
                         </span>
                         {(() => {
-                          const paymentDisplay = getPaymentMethodDisplay(order.payment_method, order.payment_status);
+                          const paymentDisplay = getPaymentMethodDisplay(
+                            order.payment_method,
+                            order.payment_status,
+                            order.status
+                          );
                           return (
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide ${paymentDisplay.color}`}
-                            >
-                              {paymentDisplay.text}
-                            </span>
+                            <div className="flex flex-col gap-1 text-[11px] sm:text-xs">
+                              <span
+                                className={`px-3 py-1 rounded-full font-medium uppercase tracking-wide ${paymentDisplay.color}`}
+                              >
+                                Method: {paymentDisplay.method}
+                              </span>
+                              <span
+                                className={`px-3 py-1 rounded-full font-medium uppercase tracking-wide ${paymentDisplay.color}`}
+                              >
+                                Status: {paymentDisplay.status}
+                              </span>
+                            </div>
                           );
                         })()}
                       </div>
@@ -366,29 +427,31 @@ export default function OrdersPage() {
                         <h4 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
                           Payment Information
                         </h4>
-                        <div className="text-sm text-gray-600 space-y-2">
-                          <div className="flex justify-between">
-                            <span>Payment Method:</span>
-                            <span className="font-medium text-gray-900">
-                              {order.payment_method === 'COD'
-                                ? 'Cash on Delivery'
-                                : 'Online Payment (Razorpay)'}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Payment Status:</span>
-                            {(() => {
-                              const paymentDisplay = getPaymentMethodDisplay(order.payment_method, order.payment_status);
-                              return (
+                        {(() => {
+                          const paymentDisplay = getPaymentMethodDisplay(
+                            order.payment_method,
+                            order.payment_status,
+                            order.status
+                          );
+                          return (
+                            <div className="text-sm text-gray-600 space-y-2">
+                              <div className="flex justify-between">
+                                <span>Payment Method:</span>
+                                <span className="font-medium text-gray-900">
+                                  {paymentDisplay.method}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span>Payment Status:</span>
                                 <span
                                   className={`px-2 py-1 rounded text-xs font-medium uppercase ${paymentDisplay.color}`}
                                 >
-                                  {paymentDisplay.text}
+                                  {paymentDisplay.status}
                                 </span>
-                              );
-                            })()}
-                          </div>
-                        </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
 

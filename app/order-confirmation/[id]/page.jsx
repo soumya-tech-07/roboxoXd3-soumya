@@ -15,19 +15,43 @@ function getStatusDisplay(status) {
   const s = (status || '').toLowerCase();
   switch (s) {
     case 'pending':
-      return { label: 'Order Placed', message: 'Your order has been received and is being processed.', color: 'text-amber-700 bg-amber-50' };
+      return {
+        label: 'Order Placed',
+        message: 'Your order has been received and is being processed.',
+        color: 'border border-gray-300 text-gray-800 bg-white',
+      };
     case 'processing':
     case 'confirmed':
-      return { label: 'Processing', message: 'Your order is being prepared for shipment.', color: 'text-blue-700 bg-blue-50' };
+      return {
+        label: 'Processing',
+        message: 'Your order is being prepared for shipment.',
+        color: 'border border-gray-300 text-gray-800 bg-white',
+      };
     case 'shipped':
-      return { label: 'Shipped', message: 'Your order is on its way.', color: 'text-purple-700 bg-purple-50' };
+      return {
+        label: 'Shipped',
+        message: 'Your order is on its way.',
+        color: 'border border-gray-300 text-gray-800 bg-white',
+      };
     case 'delivered':
     case 'completed':
-      return { label: 'Delivered', message: 'Your order has been delivered.', color: 'text-green-700 bg-green-50' };
+      return {
+        label: 'Delivered',
+        message: 'Your order has been delivered.',
+        color: 'border border-brand/30 text-brand bg-white',
+      };
     case 'cancelled':
-      return { label: 'Cancelled', message: 'This order has been cancelled.', color: 'text-red-700 bg-red-50' };
+      return {
+        label: 'Cancelled',
+        message: 'This order has been cancelled.',
+        color: 'border border-gray-300 text-gray-800 bg-white',
+      };
     default:
-      return { label: status || 'Pending', message: 'Your order is being processed.', color: 'text-gray-700 bg-gray-50' };
+      return {
+        label: status || 'Pending',
+        message: 'Your order is being processed.',
+        color: 'border border-gray-300 text-gray-800 bg-white',
+      };
   }
 }
 
@@ -42,42 +66,53 @@ function getPaymentDisplay(paymentMethod, paymentStatus, orderStatus) {
   const isOrderCancelled = orderStat === 'cancelled';
   const isOrderDelivered = ['delivered', 'completed'].includes(orderStat);
 
+  if (method === 'WALLET') {
+    const isPaid = payStatus === 'paid' || payStatus === 'completed';
+    return {
+      method: 'Wallet',
+      status: isPaid || isOrderDelivered ? 'Paid' : (paymentStatus || 'Pending'),
+      statusColor: isPaid || isOrderDelivered
+        ? 'text-brand'
+        : 'text-gray-800',
+    };
+  }
+
   if (payStatus === 'refunded') {
-    return { method: method === 'COD' ? 'Cash on Delivery' : 'Online Payment', status: 'Refunded', statusColor: 'text-gray-600' };
+    return { method: method === 'COD' ? 'Cash on Delivery' : 'Online Payment', status: 'Refunded', statusColor: 'text-gray-800' };
   }
   if (payStatus === 'refund_initiated' || payStatus === 'refund_pending') {
-    return { method: method === 'COD' ? 'Cash on Delivery' : 'Online Payment', status: 'Refund initiated', statusColor: 'text-amber-600' };
+    return { method: method === 'COD' ? 'Cash on Delivery' : 'Online Payment', status: 'Refund initiated', statusColor: 'text-gray-800' };
   }
 
   if (method === 'COD') {
-    if (isOrderCancelled) return { method: 'Cash on Delivery', status: 'Cancelled', statusColor: 'text-red-600' };
-    if (isOrderDelivered) return { method: 'Cash on Delivery', status: 'Paid', statusColor: 'text-green-600' };
-    return { method: 'Cash on Delivery', status: 'Pay on delivery', statusColor: 'text-amber-600' };
+    if (isOrderCancelled) return { method: 'Cash on Delivery', status: 'Cancelled', statusColor: 'text-gray-800' };
+    if (isOrderDelivered) return { method: 'Cash on Delivery', status: 'Paid', statusColor: 'text-brand' };
+    return { method: 'Cash on Delivery', status: 'Pay on delivery', statusColor: 'text-gray-800' };
   }
 
   if (method === 'ONLINE' || method === 'RAZORPAY' || method === 'PREPAID') {
-    if (isOrderCancelled) return { method: 'Online Payment', status: 'Refunded', statusColor: 'text-gray-600' };
+    if (isOrderCancelled) return { method: 'Online Payment', status: 'Refunded', statusColor: 'text-gray-800' };
     const isPaid = payStatus === 'paid' || payStatus === 'completed';
-    if (isPaid || isOrderDelivered) return { method: 'Online Payment', status: 'Paid', statusColor: 'text-green-600' };
-    return { method: 'Online Payment', status: paymentStatus || 'Pending', statusColor: 'text-amber-600' };
+    if (isPaid || isOrderDelivered) return { method: 'Online Payment', status: 'Paid', statusColor: 'text-brand' };
+    return { method: 'Online Payment', status: paymentStatus || 'Pending', statusColor: 'text-gray-800' };
   }
 
-  return { method: paymentMethod || '—', status: paymentStatus || 'Pending', statusColor: payStatus === 'paid' ? 'text-green-600' : 'text-gray-600' };
+  return { method: paymentMethod || '—', status: paymentStatus || 'Pending', statusColor: payStatus === 'paid' ? 'text-brand' : 'text-gray-800' };
 }
 
 function getExchangeReturnStatusDisplay(status) {
   const s = (status || '').toLowerCase();
   switch (s) {
     case 'pending':
-      return { label: 'Pending', color: 'text-amber-700 bg-amber-50' };
+      return { label: 'Pending', color: 'border border-gray-300 text-gray-800 bg-white' };
     case 'approved':
-      return { label: 'Approved', color: 'text-blue-700 bg-blue-50' };
+      return { label: 'Approved', color: 'border border-brand/30 text-brand bg-white' };
     case 'rejected':
-      return { label: 'Rejected', color: 'text-red-700 bg-red-50' };
+      return { label: 'Rejected', color: 'border border-gray-300 text-gray-800 bg-white' };
     case 'processed':
-      return { label: 'Processed', color: 'text-green-700 bg-green-50' };
+      return { label: 'Processed', color: 'border border-brand/30 text-brand bg-white' };
     default:
-      return { label: status || 'Pending', color: 'text-gray-700 bg-gray-50' };
+      return { label: status || 'Pending', color: 'border border-gray-300 text-gray-800 bg-white' };
   }
 }
 

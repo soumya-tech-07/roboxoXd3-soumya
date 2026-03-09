@@ -47,6 +47,12 @@ export default function CheckoutPage() {
   const [couponError, setCouponError] = useState('');
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
+  // Wallet
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [walletError, setWalletError] = useState('');
+  const [useWallet, setUseWallet] = useState(false);
+
   // Cart items already have product data from CartContext
   const cartItems = useMemo(() => {
     return cart.filter((item) => item.product); // Filter out any items with missing products
@@ -62,7 +68,6 @@ export default function CheckoutPage() {
   }, [cartItems]);
 
   const shippingCost = cartTotal >= 2499 ? 0 : 99;
-  const codFee = paymentMethod === 'COD' ? 99 : 0;
 
   // Discount from coupon (applies to subtotal only)
   const discountAmount = useMemo(() => {
@@ -82,7 +87,25 @@ export default function CheckoutPage() {
     return 0;
   }, [appliedCoupon, cartTotal]);
 
-  const total = Math.max(0, cartTotal + shippingCost + codFee - discountAmount);
+  // Subtotal after coupon + shipping, before COD and wallet
+  const grossTotal = useMemo(
+    () => Math.max(0, cartTotal + shippingCost - discountAmount),
+    [cartTotal, shippingCost, discountAmount]
+  );
+
+  const walletDeduction = useMemo(() => {
+    if (!useWallet || walletBalance <= 0) return 0;
+    return Math.min(walletBalance, grossTotal);
+  }, [useWallet, walletBalance, grossTotal]);
+
+  const amountAfterWallet = useMemo(
+    () => Math.max(0, grossTotal - walletDeduction),
+    [grossTotal, walletDeduction]
+  );
+
+  const codFee = amountAfterWallet > 0 && paymentMethod === 'COD' ? 99 : 0;
+
+  const total = Math.max(0, amountAfterWallet + codFee);
 
   // Redirect to home and open login modal if not authenticated
   useEffect(() => {
@@ -168,6 +191,38 @@ export default function CheckoutPage() {
       router.push('/cart');
     }
   }, [cart.length, cartLoading, router]);
+
+  // Load wallet balance
+  useEffect(() => {
+    const loadWallet = async () => {
+      if (!user) return;
+      try {
+        setWalletLoading(true);
+        setWalletError('');
+        const { data, error } = await supabase
+          .from('wallet_balances')
+          .select('balance')
+          .eq('user_id', user.id)
+          .eq('currency', 'INR')
+          .maybeSingle();
+        if (error) {
+          console.error('Error loading wallet balance:', error);
+          setWalletBalance(0);
+        } else {
+          setWalletBalance(Number(data?.balance) || 0);
+        }
+      } catch (err) {
+        console.error('Error loading wallet balance:', err);
+        setWalletError('Failed to load wallet balance.');
+        setWalletBalance(0);
+      } finally {
+        setWalletLoading(false);
+      }
+    };
+    if (isAuthenticated && user) {
+      loadWallet();
+    }
+  }, [isAuthenticated, user]);
 
   // Load Razorpay script
   useEffect(() => {
@@ -314,7 +369,7 @@ export default function CheckoutPage() {
 
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: Math.round(total * 100), // Convert to paise
+        amount: Math.round(total * 100), // Convert to paise (after wallet & coupons)
         currency: 'INR',
         name: 'Retro Louve',
         description: `Order #${orderId}`,
@@ -380,15 +435,18 @@ export default function CheckoutPage() {
       country: address.country,
     };
 
+    const walletOnly = walletDeduction > 0 && amountAfterWallet <= 0;
+
     // Create order using the function (pass discount and coupon if applied)
     const { data: orderId, error } = await supabase.rpc('create_order_from_cart', {
       p_user_id: user.id,
       p_shipping_address: shippingAddress,
       p_billing_address: shippingAddress,
-      p_payment_method: paymentMethod,
+      p_payment_method: walletOnly ? 'WALLET' : paymentMethod,
       p_notes: null,
       p_discount: discountAmount || 0,
       p_coupon_id: appliedCoupon?.id || null,
+      p_wallet_deduction: walletDeduction || 0,
     });
 
     if (error) throw error;
@@ -440,6 +498,21 @@ export default function CheckoutPage() {
 
     setLoading(true);
     try {
+      const walletOnly = walletDeduction > 0 && amountAfterWallet <= 0;
+
+      if (walletOnly) {
+        // Wallet covers full amount: create order directly, no external payment step
+        const orderId = await createOrderInDatabase();
+
+        clearCart();
+        showSuccess('Order placed successfully using wallet balance.');
+
+        setTimeout(() => {
+          router.push(`/order-confirmation/${orderId}`);
+        }, 1000);
+        return;
+      }
+
       if (paymentMethod === 'ONLINE') {
         // For online payment, create Razorpay order first
         if (!razorpayLoaded || !window.Razorpay) {
@@ -775,72 +848,98 @@ export default function CheckoutPage() {
                   PAYMENT METHOD
                 </h2>
 
-                <div className="space-y-4">
-                  <div
-                    onClick={() => setPaymentMethod('COD')}
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
-                      paymentMethod === 'COD'
-                        ? 'border-brand bg-brand/5'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                          paymentMethod === 'COD' ? 'border-brand' : 'border-gray-300'
-                        }`}>
-                          {paymentMethod === 'COD' && (
-                            <div className="w-3 h-3 rounded-full bg-brand" />
-                          )}
+                {amountAfterWallet <= 0 ? (
+                  <div className="text-sm text-gray-700">
+                    <p>Your wallet balance will cover this order in full.</p>
+                    <p className="mt-1">No additional payment method is required.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-4">
+                      <div
+                        onClick={() => setPaymentMethod('COD')}
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                          paymentMethod === 'COD'
+                            ? 'border-brand bg-brand/5'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                              paymentMethod === 'COD' ? 'border-brand' : 'border-gray-300'
+                            }`}>
+                              {paymentMethod === 'COD' && (
+                                <div className="w-3 h-3 rounded-full bg-brand" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">Cash on Delivery (COD)</p>
+                              <p className="text-sm text-gray-600">Pay when you receive • ₹99 COD fee applies</p>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900">Cash on Delivery (COD)</p>
-                          <p className="text-sm text-gray-600">Pay when you receive • ₹99 COD fee applies</p>
+                      </div>
+
+                      <div
+                        onClick={() => setPaymentMethod('ONLINE')}
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                          paymentMethod === 'ONLINE'
+                            ? 'border-brand bg-brand/5'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                              paymentMethod === 'ONLINE' ? 'border-brand' : 'border-gray-300'
+                            }`}>
+                              {paymentMethod === 'ONLINE' && (
+                                <div className="w-3 h-3 rounded-full bg-brand" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">Online Payment</p>
+                              <p className="text-sm text-gray-600">Razorpay - Credit/Debit Card, UPI, Net Banking</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div
-                    onClick={() => setPaymentMethod('ONLINE')}
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
-                      paymentMethod === 'ONLINE'
-                        ? 'border-brand bg-brand/5'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                          paymentMethod === 'ONLINE' ? 'border-brand' : 'border-gray-300'
-                        }`}>
-                          {paymentMethod === 'ONLINE' && (
-                            <div className="w-3 h-3 rounded-full bg-brand" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">Online Payment</p>
-                          <p className="text-sm text-gray-600">Razorpay - Credit/Debit Card, UPI, Net Banking</p>
-                        </div>
-                      </div>
+                    <div className="mt-8 flex justify-between">
+                      <button
+                        onClick={handleBack}
+                        className="px-8 py-3 border border-gray-300 text-gray-700 text-sm tracking-wider hover:border-brand hover:text-brand transition-colors cursor-pointer"
+                      >
+                        BACK
+                      </button>
+                      <button
+                        onClick={handleNext}
+                        className="px-8 py-3 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors cursor-pointer"
+                      >
+                        CONTINUE TO REVIEW
+                      </button>
                     </div>
-                  </div>
-                </div>
+                  </>
+                )}
 
-                <div className="mt-8 flex justify-between">
-                  <button
-                    onClick={handleBack}
-                    className="px-8 py-3 border border-gray-300 text-gray-700 text-sm tracking-wider hover:border-brand hover:text-brand transition-colors cursor-pointer"
-                  >
-                    BACK
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    className="px-8 py-3 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors cursor-pointer"
-                  >
-                    CONTINUE TO REVIEW
-                  </button>
-                </div>
+                {amountAfterWallet <= 0 && (
+                  <div className="mt-8 flex justify-between">
+                    <button
+                      onClick={handleBack}
+                      className="px-8 py-3 border border-gray-300 text-gray-700 text-sm tracking-wider hover:border-brand hover:text-brand transition-colors cursor-pointer"
+                    >
+                      BACK
+                    </button>
+                    <button
+                      onClick={handleNext}
+                      className="px-8 py-3 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors cursor-pointer"
+                    >
+                      CONTINUE TO REVIEW
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -878,7 +977,11 @@ export default function CheckoutPage() {
                     Payment Method
                   </h3>
                   <p className="text-sm text-gray-600">
-                    {paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment'}
+                    {amountAfterWallet <= 0
+                      ? 'Wallet balance (no additional payment)'
+                      : paymentMethod === 'COD'
+                        ? 'Cash on Delivery'
+                        : 'Online Payment'}
                   </p>
                   <button
                     onClick={() => setStep(2)}
@@ -950,6 +1053,28 @@ export default function CheckoutPage() {
               </h2>
 
               <div className="space-y-3 mb-6">
+                {/* Wallet */}
+                <div className="flex items-center justify-between text-sm text-gray-700">
+                  <div>
+                    <p className="font-medium">
+                      Wallet balance: ₹ {walletBalance.toLocaleString('en-IN')}
+                    </p>
+                    {walletError && (
+                      <p className="text-xs text-red-600 mt-1">{walletError}</p>
+                    )}
+                  </div>
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={useWallet}
+                      disabled={walletLoading || walletBalance <= 0 || grossTotal <= 0}
+                      onChange={(e) => setUseWallet(e.target.checked)}
+                      className="h-3.5 w-3.5"
+                    />
+                    <span>Use wallet</span>
+                  </label>
+                </div>
+
                 {/* Coupon */}
                 <div className="space-y-2">
                   {appliedCoupon ? (
@@ -1006,6 +1131,12 @@ export default function CheckoutPage() {
                   <div className="flex justify-between text-sm text-gray-700">
                     <span>COD Fee</span>
                     <span>₹ {codFee.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+                {walletDeduction > 0 && (
+                  <div className="flex justify-between text-sm text-gray-700">
+                    <span>Wallet</span>
+                    <span className="text-green-600">-₹ {walletDeduction.toLocaleString('en-IN')}</span>
                   </div>
                 )}
                 {discountAmount > 0 && (

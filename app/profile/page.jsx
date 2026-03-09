@@ -60,6 +60,13 @@ export default function ProfilePage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingPassword, setEditingPassword] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(null);
+  const [walletCurrency, setWalletCurrency] = useState('INR');
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [walletError, setWalletError] = useState('');
+  const [walletTransactions, setWalletTransactions] = useState([]);
+  const [walletTopupAmount, setWalletTopupAmount] = useState('');
+  const [walletTopupLoading, setWalletTopupLoading] = useState(false);
 
   // Redirect to home and open login modal if not authenticated
   useEffect(() => {
@@ -75,6 +82,13 @@ export default function ProfilePage() {
   useEffect(() => {
     if (isAuthenticated && user && activeTab === 'orders') {
       loadOrders();
+    }
+  }, [isAuthenticated, user, activeTab]);
+
+  // Load wallet when wallet tab is active
+  useEffect(() => {
+    if (isAuthenticated && user && activeTab === 'wallet') {
+      loadWallet();
     }
   }, [isAuthenticated, user, activeTab]);
 
@@ -259,6 +273,47 @@ export default function ProfilePage() {
     }
   };
 
+  const loadWallet = async () => {
+    if (!user) return;
+    try {
+      setWalletLoading(true);
+      setWalletError('');
+
+      const { data: balanceRow, error: balanceError } = await supabase
+        .from('wallet_balances')
+        .select('wallet_id, currency, balance')
+        .eq('user_id', user.id)
+        .eq('currency', 'INR')
+        .maybeSingle();
+
+      if (balanceError) {
+        console.error('Error loading wallet balance:', balanceError);
+        setWalletBalance(0);
+      } else if (balanceRow) {
+        setWalletBalance(Number(balanceRow.balance) || 0);
+        setWalletCurrency(balanceRow.currency || 'INR');
+
+        const { data: txs } = await supabase
+          .from('wallet_transactions')
+          .select('id, type, amount, source, reference_type, reference_id, note, created_at')
+          .eq('wallet_id', balanceRow.wallet_id)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        setWalletTransactions(txs || []);
+      } else {
+        setWalletBalance(0);
+        setWalletTransactions([]);
+      }
+    } catch (error) {
+      console.error('Error loading wallet:', error);
+      setWalletError('Failed to load wallet. Please try again later.');
+      setWalletBalance(0);
+      setWalletTransactions([]);
+    } finally {
+      setWalletLoading(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'completed':
@@ -379,6 +434,17 @@ export default function ProfilePage() {
               style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
             >
               BODY MEASUREMENTS
+            </button>
+            <button
+              onClick={() => setActiveTab('wallet')}
+              className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm transition-all cursor-pointer ${
+                activeTab === 'wallet'
+                  ? 'border-black text-black'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+              style={{ transitionTimingFunction: 'cubic-bezier(0.2, 0.0, 0, 1)', transitionDuration: '200ms' }}
+            >
+              WALLET
             </button>
           </nav>
         </div>
@@ -1045,6 +1111,239 @@ export default function ProfilePage() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Body Measurements Tab */}
+          {activeTab === 'measurements' && (
+            <div className="max-w-3xl">
+              <div className="border border-gray-200 rounded-lg p-6 sm:p-8">
+                <div className="mb-6">
+                  <h2 className="text-lg font-medium text-gray-900 mb-2" style={{ letterSpacing: '-0.02em' }}>
+                    YOUR MEASUREMENTS
+                  </h2>
+                  <p className="text-sm text-gray-600" style={{ lineHeight: '1.6' }}>
+                    Save your measurements to get personalized size recommendations on product pages.
+                  </p>
+                </div>
+                <MeasurementForm
+                  loadAllCharts={true}
+                  showSizeChart={true}
+                  submitButtonText="UPDATE MEASUREMENTS"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Wallet Tab */}
+          {activeTab === 'wallet' && (
+            <div className="max-w-3xl">
+              <div className="border border-gray-200 rounded-lg p-6 sm:p-8">
+                <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-900 mb-1" style={{ letterSpacing: '-0.02em' }}>
+                      WALLET BALANCE
+                    </h2>
+                    <p className="text-sm text-gray-600" style={{ lineHeight: '1.6' }}>
+                      Use your Retro Louve wallet to pay faster at checkout.
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    {walletLoading ? (
+                      <p className="text-sm text-gray-500">Loading...</p>
+                    ) : (
+                      <p className="text-2xl font-semibold text-gray-900">
+                        ₹ {(walletBalance ?? 0).toLocaleString('en-IN')}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">{walletCurrency}</p>
+                  </div>
+                </div>
+
+                {/* Top-up form */}
+                <div className="mb-8 border-t border-gray-200 pt-6">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
+                    Add Money to Wallet
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="number"
+                      min="100"
+                      step="50"
+                      value={walletTopupAmount}
+                      onChange={(e) => setWalletTopupAmount(e.target.value)}
+                      className="w-full sm:w-48 border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+                      placeholder="Amount (min ₹100)"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const raw = walletTopupAmount.trim();
+                        const amount = Number(raw);
+                        if (!raw || isNaN(amount) || amount <= 0) {
+                          showError('Enter a valid amount');
+                          return;
+                        }
+                        if (amount < 100) {
+                          showError('Minimum top-up amount is ₹100');
+                          return;
+                        }
+                        try {
+                          setWalletTopupLoading(true);
+                          if (typeof window === 'undefined') {
+                            showError('Payment is only available in the browser.');
+                            return;
+                          }
+                          if (!window.Razorpay) {
+                            await new Promise((resolve, reject) => {
+                              const script = document.createElement('script');
+                              script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                              script.async = true;
+                              script.onload = resolve;
+                              script.onerror = () => reject(new Error('Failed to load payment gateway'));
+                              document.body.appendChild(script);
+                            });
+                          }
+
+                          const timestamp = Date.now().toString().slice(-10);
+                          const userIdShort = user.id.substring(0, 8);
+                          const receipt = `RLWALLET_${timestamp}_${userIdShort}`.substring(0, 40);
+
+                          const orderRes = await fetch('/api/razorpay/create-order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              amount,
+                              currency: 'INR',
+                              receipt,
+                              notes: {
+                                user_id: user.id,
+                                purpose: 'wallet_topup',
+                              },
+                            }),
+                          });
+
+                          if (!orderRes.ok) {
+                            const errorData = await orderRes.json().catch(() => ({}));
+                            throw new Error(errorData.error || 'Failed to create wallet top-up order');
+                          }
+
+                          const razorpayOrder = await orderRes.json();
+
+                          const paymentData = await new Promise((resolve, reject) => {
+                            const options = {
+                              key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                              amount: Math.round(amount * 100),
+                              currency: 'INR',
+                              name: 'Retro Louve Wallet',
+                              description: 'Wallet top-up',
+                              order_id: razorpayOrder.id,
+                              handler: async function (response) {
+                                try {
+                                  const verifyRes = await fetch('/api/razorpay/verify-payment', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      razorpay_order_id: response.razorpay_order_id,
+                                      razorpay_payment_id: response.razorpay_payment_id,
+                                      razorpay_signature: response.razorpay_signature,
+                                    }),
+                                  });
+                                  const verifyData = await verifyRes.json();
+                                  if (verifyData.verified) {
+                                    resolve(verifyData);
+                                  } else {
+                                    reject(new Error('Payment verification failed'));
+                                  }
+                                } catch (err) {
+                                  reject(err);
+                                }
+                              },
+                              prefill: {
+                                name: `${firstName || ''} ${lastName || ''}`.trim() || user.email || '',
+                                email: user.email || '',
+                                contact: phone || '',
+                              },
+                              theme: { color: '#000000' },
+                              modal: {
+                                ondismiss: function () {
+                                  reject(new Error('Payment cancelled by user'));
+                                },
+                              },
+                            };
+                            const razorpay = new window.Razorpay(options);
+                            razorpay.open();
+                          });
+
+                          await supabase.rpc('wallet_apply_topup', {
+                            p_amount: amount,
+                            p_currency: 'INR',
+                            p_razorpay_order_id: paymentData.order_id,
+                            p_razorpay_payment_id: paymentData.payment_id,
+                          });
+
+                          showSuccess('Wallet top-up successful');
+                          setWalletTopupAmount('');
+                          await loadWallet();
+                        } catch (err) {
+                          console.error('Wallet top-up error:', err);
+                          showError(err.message || 'Wallet top-up failed. Please try again.');
+                        } finally {
+                          setWalletTopupLoading(false);
+                        }
+                      }}
+                      disabled={walletTopupLoading}
+                      className="px-6 py-2.5 bg-black text-white text-xs tracking-widest rounded hover:bg-gray-800 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    >
+                      {walletTopupLoading ? 'PROCESSING...' : 'ADD MONEY'}
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Payments are processed securely via Razorpay. Minimum top-up ₹100.
+                  </p>
+                  {walletError && <p className="mt-2 text-xs text-red-600">{walletError}</p>}
+                </div>
+
+                {/* Recent Transactions */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
+                    Recent Activity
+                  </h3>
+                  {walletTransactions.length === 0 ? (
+                    <p className="text-sm text-gray-500">No wallet transactions yet.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {walletTransactions.map((tx) => (
+                        <div
+                          key={tx.id}
+                          className="flex items-center justify-between text-sm text-gray-700 border-b border-gray-100 pb-2 last:border-b-0"
+                        >
+                          <div>
+                            <p className="font-medium">
+                              {tx.type === 'credit' ? 'Added to wallet' : 'Used for order'}
+                            </p>
+                            {tx.note && (
+                              <p className="text-xs text-gray-500">{tx.note}</p>
+                            )}
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {new Date(tx.created_at).toLocaleString('en-IN', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </p>
+                          </div>
+                          <div className={`text-sm font-semibold ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                            {tx.type === 'credit' ? '+' : '-'}₹ {Number(tx.amount).toLocaleString('en-IN')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
