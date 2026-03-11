@@ -315,12 +315,25 @@ export default function OrderConfirmationPage() {
         )}
 
         {/* Tracking (when shipped/delivered) */}
-        {hasShipped && (order.tracking_number || order.courier_name || order.shipped_at) && (
+        {hasShipped && (order.tracking_number || order.tracking_url || order.courier_name || order.shipped_at) && (
           <div className="bg-gray-50 border border-gray-200 p-6 sm:p-8 mb-8">
             <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">Tracking</h3>
             <div className="space-y-2 text-sm text-gray-700">
               {order.courier_name && <p><span className="font-medium">Courier:</span> {order.courier_name}</p>}
               {order.tracking_number && <p><span className="font-medium">Tracking number:</span> {order.tracking_number}</p>}
+              {order.tracking_url && (
+                <p className="break-all">
+                  <span className="font-medium">Tracking link:</span>{' '}
+                  <a
+                    href={order.tracking_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-brand underline hover:opacity-80"
+                  >
+                    {order.tracking_url}
+                  </a>
+                </p>
+              )}
               {order.shipped_at && (
                 <p><span className="font-medium">Shipped on:</span> {new Date(order.shipped_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               )}
