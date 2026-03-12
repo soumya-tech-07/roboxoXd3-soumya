@@ -308,7 +308,7 @@ export default function CheckoutPage() {
       const now = new Date().toISOString();
       const { data, error } = await supabase
         .from('discount_coupons')
-        .select('id, code, discount_type, discount_value, min_order_amount, max_discount_amount, valid_from, valid_until, usage_limit, used_count')
+        .select('id, code, discount_type, discount_value, min_order_amount, max_discount_amount, valid_from, valid_until, usage_limit, used_count, show_to')
         .ilike('code', code)
         .eq('is_active', true)
         .maybeSingle();
@@ -325,6 +325,19 @@ export default function CheckoutPage() {
       if (data.valid_until && new Date(data.valid_until) < new Date()) {
         setCouponError('This coupon has expired');
         return;
+      }
+      // Enforce \"new users\" rule at application level as well:
+      // if coupon is restricted to new users, only allow when the customer has 0 orders.
+      const showTo = (data.show_to || '').toLowerCase().trim();
+      if (showTo === 'new_users') {
+        const { count: orderCount, error: orderCountError } = await supabase
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+        if (!orderCountError && (orderCount ?? 0) > 0) {
+          setCouponError('This coupon is only valid for new customers.');
+          return;
+        }
       }
       // Per-user usage limit: check how many times this user has already used this coupon
       const limit = data.usage_limit != null ? Number(data.usage_limit) : null;
