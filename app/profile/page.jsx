@@ -41,6 +41,8 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const [orderSearch, setOrderSearch] = useState('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState('all');
   const [firstName, setFirstName] = useState(profile?.first_name || '');
   const [lastName, setLastName] = useState(profile?.last_name || '');
   const [phone, setPhone] = useState(profile?.phone || '');
@@ -810,7 +812,53 @@ export default function ProfilePage() {
                 </div>
               ) : orders.length > 0 ? (
                 <div className="space-y-6">
-                  {orders.map((order) => (
+                  <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div className="flex-1 flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={orderSearch}
+                        onChange={(e) => setOrderSearch(e.target.value)}
+                        placeholder="Search by order # or product name"
+                        className="w-full md:max-w-xs border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 px-3 py-2.5 text-sm rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Status
+                      </label>
+                      <select
+                        value={orderStatusFilter}
+                        onChange={(e) => setOrderStatusFilter(e.target.value)}
+                        className="border border-gray-300 bg-white text-gray-900 px-3 py-2 text-xs rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black cursor-pointer"
+                      >
+                        <option value="all">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered / Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                  </div>
+                  {orders
+                    .filter((order) => {
+                      const term = orderSearch.trim().toLowerCase();
+                      if (!term) return true;
+                      const orderNumber = (order.order_number || '').toLowerCase();
+                      const productNames = (order.items || [])
+                        .map((i) => (i.product_name || '').toLowerCase())
+                        .join(' ');
+                      return orderNumber.includes(term) || productNames.includes(term);
+                    })
+                    .filter((order) => {
+                      if (orderStatusFilter === 'all') return true;
+                      const status = (order.status || '').toLowerCase();
+                      if (orderStatusFilter === 'delivered') {
+                        return status === 'delivered' || status === 'completed';
+                      }
+                      return status === orderStatusFilter;
+                    })
+                    .map((order) => (
                     <div
                       key={order.id}
                       className="bg-white border border-gray-200 rounded-lg overflow-hidden"
