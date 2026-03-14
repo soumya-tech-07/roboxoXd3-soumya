@@ -7,13 +7,32 @@ import {
 import { createPublicClient } from '@/lib/supabase/public';
 import ProductCard from './ProductCard';
 
+const DEFAULT_WINTER_ARC_BG = '/images/men.jpeg';
+const DEFAULT_WINTER_ARC_HEADING = 'THE WINTER ARC DROP';
+
 export default function LatestDrop() {
   const [dbProducts, setDbProducts] = useState([]);
+  const [sectionConfig, setSectionConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const supabase = createPublicClient();
+
+    const fetchSection = async () => {
+      const { data } = await supabase
+        .from('section_backgrounds')
+        .select('background_url, heading')
+        .eq('section_key', 'winter_arc_drop')
+        .eq('is_active', true)
+        .maybeSingle();
+      if (data) setSectionConfig(data);
+    };
+    fetchSection();
   }, []);
 
   useEffect(() => {
@@ -80,12 +99,15 @@ export default function LatestDrop() {
     return null;
   }
 
+  const bgUrl = sectionConfig?.background_url?.trim() || DEFAULT_WINTER_ARC_BG;
+  const heading = sectionConfig?.heading?.trim() || DEFAULT_WINTER_ARC_HEADING;
+
   if (loading && products.length === 0) {
     return (
       <section className="bg-gray-100 py-8 sm:py-12 md:py-16 relative overflow-hidden min-h-[600px] sm:min-h-[700px]">
         <div className="absolute inset-0 bg-black/30 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-          <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>THE WINTER ARC DROP</h1>
+          <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>{heading}</h1>
           {/* Skeleton Loading Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[...Array(8)].map((_, i) => (
@@ -106,7 +128,7 @@ export default function LatestDrop() {
       <section className="bg-gray-100 py-8 sm:py-12 md:py-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/30 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-          <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>THE WINTER ARC DROP</h1>
+          <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>{heading}</h1>
           <p className="text-white/80 text-sm">
             Products couldn’t be loaded. Please reload.
           </p>
@@ -120,7 +142,8 @@ export default function LatestDrop() {
       id="winter-arc-section"
       className="bg-gray-100 py-8 sm:py-12 md:py-16 relative overflow-hidden"
       style={{
-        backgroundImage: `url('/images/men.jpeg')`, backgroundSize: 'cover',
+        backgroundImage: `url('${bgUrl}')`,
+        backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
       }}
@@ -130,7 +153,7 @@ export default function LatestDrop() {
       {/* Reduced white overlay for more impact */}
       <div className="absolute inset-0 bg-black/30 z-0"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-        <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>THE WINTER ARC DROP</h1>
+        <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>{heading}</h1>
         {/* Product Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {products.map((product) => (

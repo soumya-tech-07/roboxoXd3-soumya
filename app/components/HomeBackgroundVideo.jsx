@@ -2,16 +2,39 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import Image from 'next/image';
+import { createPublicClient } from '@/lib/supabase/public';
+
+// Default hero slides when DB has no rows or URLs are null (fallback)
+const DEFAULT_HERO_SLIDES = [
+  { type: 'video', mobileSrc: '/videos/mobile.mp4', desktopSrc: '/videos/desktop.mp4', alt: 'Fashion Video' },
+  { type: 'image', mobileSrc: '/images/1.JPG', desktopSrc: '/images/1.JPEG', alt: 'Fashion Collection' },
+  { type: 'image', mobileSrc: '/images/2.2.jpg', desktopSrc: '/images/2.jpg', alt: 'Street Style Fashion' },
+  { type: 'image', mobileSrc: '/images/3.JPG', desktopSrc: '/images/3.JPEG', alt: 'Modern Fashion' },
+];
 
 export default function HomeBackgroundVideo() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(true);
   const [isInView, setIsInView] = useState(true);
+  const [heroSlides, setHeroSlides] = useState([]);
   const videoRefs = useRef([]);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const sectionRef = useRef(null);
+
+  // Fetch hero_slides from Supabase (is_active, ordered by slide_order)
+  useEffect(() => {
+    const supabase = createPublicClient();
+    (async () => {
+      const { data, error } = await supabase
+        .from('hero_slides')
+        .select('slide_order, type, mobile_url, desktop_url, alt_text')
+        .eq('is_active', true)
+        .order('slide_order', { ascending: true });
+      if (!error && data?.length) setHeroSlides(data);
+    })();
+  }, []);
 
   // Check screen size
   useEffect(() => {
@@ -24,38 +47,21 @@ export default function HomeBackgroundVideo() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // mounted state kept for backward compatibility (always true)
-
-  // Carousel items - mix of images and videos
-  const carouselItems = useMemo(
-    () => [
-      {
-        type: 'video',
-        mobileSrc: '/videos/mobile.mp4',
-        desktopSrc: '/videos/desktop.mp4',
-        alt: 'Fashion Video',
-      },
-      {
-        type: 'image',
-        mobileSrc: '/images/1.JPG',
-        desktopSrc: '/images/1.JPEG',
-        alt: 'Fashion Collection',
-      },
-      {
-        type: 'image',
-        mobileSrc: '/images/2.2.jpg',
-        desktopSrc: '/images/2.jpg',
-        alt: 'Street Style Fashion',
-      },
-      {
-        type: 'image',
-        mobileSrc: '/images/3.JPG',
-        desktopSrc: '/images/3.JPEG',
-        alt: 'Modern Fashion',
-      },
-    ],
-    []
-  );
+  // Carousel items: from Supabase when available, with fallback to default URLs when null
+  const carouselItems = useMemo(() => {
+    if (!heroSlides.length) return DEFAULT_HERO_SLIDES;
+    return heroSlides.map((row, i) => {
+      const def = DEFAULT_HERO_SLIDES[i] ?? DEFAULT_HERO_SLIDES[0];
+      const mobileSrc = (row.mobile_url?.trim() || def.mobileSrc);
+      const desktopSrc = (row.desktop_url?.trim() || def.desktopSrc);
+      return {
+        type: row.type || def.type,
+        mobileSrc,
+        desktopSrc,
+        alt: (row.alt_text?.trim() || def.alt) || 'Slide',
+      };
+    });
+  }, [heroSlides]);
 
 
   // Handle video play/pause when slide changes
@@ -191,34 +197,58 @@ export default function HomeBackgroundVideo() {
                   {isMobile ? (
                     (() => {
                       const mobileSrc = item.mobileSrc || item.src;
-                      return mobileSrc && mobileSrc.trim() !== '' ? (
+                      if (!mobileSrc || !mobileSrc.trim()) return null;
+                      const isExternal = /^https?:\/\//i.test(mobileSrc);
+                      return (
                         <div className="absolute inset-0 w-full h-full">
-                          <Image
-                            src={mobileSrc}
-                            alt={item.alt}
-                            fill
-                            className="object-cover"
-                            priority={index === 0}
-                            sizes="100vw"
-                          />
+                          {isExternal ? (
+                            <img
+                              src={mobileSrc}
+                              alt={item.alt}
+                              className="absolute inset-0 w-full h-full object-cover"
+                              loading={index === 0 ? 'eager' : 'lazy'}
+                              decoding="async"
+                            />
+                          ) : (
+                            <Image
+                              src={mobileSrc}
+                              alt={item.alt}
+                              fill
+                              className="object-cover"
+                              priority={index === 0}
+                              sizes="100vw"
+                            />
+                          )}
                         </div>
-                      ) : null;
+                      );
                     })()
                   ) : (
                     (() => {
                       const desktopSrc = item.desktopSrc || item.src;
-                      return desktopSrc && desktopSrc.trim() !== '' ? (
+                      if (!desktopSrc || !desktopSrc.trim()) return null;
+                      const isExternal = /^https?:\/\//i.test(desktopSrc);
+                      return (
                         <div className="absolute inset-0 w-full h-full">
-                          <Image
-                            src={desktopSrc}
-                            alt={item.alt}
-                            fill
-                            className="object-cover"
-                            priority={index === 0}
-                            sizes="100vw"
-                          />
+                          {isExternal ? (
+                            <img
+                              src={desktopSrc}
+                              alt={item.alt}
+                              className="absolute inset-0 w-full h-full object-cover"
+                              loading={index === 0 ? 'eager' : 'lazy'}
+                              decoding="async"
+                            />
+                          ) : (
+                            <Image
+                              src={desktopSrc}
+                              alt={item.alt}
+                              fill
+                              className="object-cover"
+                              priority={index === 0}
+                              sizes="100vw"
+                            />
+                          )}
                         </div>
-                      ) : null;
+                      );
                     })()
                   )}
                 </>
