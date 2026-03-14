@@ -162,4 +162,4 @@ uploadImages()
     process.exit(1);
   });
 
-//push to github
+
