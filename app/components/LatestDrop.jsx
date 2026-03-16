@@ -105,7 +105,7 @@ export default function LatestDrop() {
   if (loading && products.length === 0) {
     return (
       <section className="bg-gray-100 py-8 sm:py-12 md:py-16 relative overflow-hidden min-h-[600px] sm:min-h-[700px]">
-        <div className="absolute inset-0 bg-black/30 z-0"></div>
+        <div className="absolute inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
           <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>{heading}</h1>
           {/* Skeleton Loading Grid */}
@@ -126,7 +126,7 @@ export default function LatestDrop() {
   if (error && products.length === 0) {
     return (
       <section className="bg-gray-100 py-8 sm:py-12 md:py-16 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/30 z-0"></div>
+        <div className="absolute inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
           <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>{heading}</h1>
           <p className="text-white/80 text-sm">
@@ -151,7 +151,7 @@ export default function LatestDrop() {
       {/* Gradient overlay for depth */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/30 z-0"></div>
       {/* Reduced white overlay for more impact */}
-      <div className="absolute inset-0 bg-black/30 z-0"></div>
+      <div className="absolute inset-0 z-0"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>{heading}</h1>
         {/* Product Grid */}

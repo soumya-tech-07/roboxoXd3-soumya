@@ -97,7 +97,7 @@ export default function MensSection() {
   if (loading && mensProducts.length === 0) {
     return (
       <section className="bg-white py-8 sm:py-12 md:py-16 scroll-mt-20 relative overflow-hidden min-h-[600px] sm:min-h-[700px]">
-        <div className="absolute inset-0 bg-black/30 z-0"></div>
+        <div className="absolute inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
           <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>{heading}</h1>
           {/* Skeleton Loading Grid */}
@@ -118,7 +118,7 @@ export default function MensSection() {
   if (error && mensProducts.length === 0) {
     return (
       <section className="bg-white py-8 sm:py-12 md:py-16 scroll-mt-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/30 z-0"></div>
+        <div className="absolute inset-0 z-0"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
           <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>{heading}</h1>
           <p className="text-white/80 text-sm">
@@ -143,7 +143,7 @@ export default function MensSection() {
       {/* Gradient overlay for depth and readability */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/20 to-black/40 z-0"></div>
       {/* Reduced white overlay for more visible background */}
-      <div className="absolute inset-0 bg-black/30 z-0"></div>
+      <div className="absolute inset-0 z-0"></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         <h1 className="text-brand mb-4 sm:mb-6 text-2xl sm:text-3xl lg:text-4xl" style={{ fontFamily: 'Gliker, sans-serif' }}>{heading}</h1>
         {/* Product Grid */}
