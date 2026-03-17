@@ -35,7 +35,7 @@ export default function DiscountBanner() {
         const { data, error } = await supabasePublic
           .from('discount_coupons')
           .select('id, code, discount_type, discount_value, title, description, show_to, valid_from, valid_until')
-          .eq('is_active', true);
+          .eq('is_banner', true);
 
         if (error) throw error;
         const now = new Date();
