@@ -21,8 +21,8 @@ import { ensurePublicImageUrl } from '@/lib/image-helpers';
 export default function ProductCard({
   product,
   aspectRatio = 'aspect-3/4',
-  textColor = 'text-white',
-  priceColor = 'text-white',
+  textColor = 'text-gray-700',
+  priceColor = 'text-gray-700',
   showHoverImage = true,
   showNewBadge = false,
   onRemove,

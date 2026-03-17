@@ -151,8 +151,8 @@ export default function WomensSection() {
               key={product.id}
               product={product}
               aspectRatio="aspect-3/4"
-              textColor="text-white"
-              priceColor="text-white"
+              textColor="text-gray-700"
+              priceColor="text-gray-700"
               showHoverImage={true}
             />
           ))}

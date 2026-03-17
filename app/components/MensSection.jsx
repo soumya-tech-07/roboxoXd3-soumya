@@ -154,6 +154,8 @@ export default function MensSection() {
               product={product}
               aspectRatio="aspect-3/4"
               showHoverImage={true}
+              textColor="text-gray-700"
+              priceColor="text-gray-700"
             />
           ))}
         </div>
