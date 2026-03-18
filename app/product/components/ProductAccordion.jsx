@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 const accordionSections = [
   { id: 'measurements', title: 'PRODUCT MEASUREMENTS' },
-  { id: 'composition', title: 'COMPOSITION, CARE & ORIGIN' },
+  { id: 'composition', title: 'COMPOSITION & CARE' },
   { id: 'shipping', title: 'SHIPPING, EXCHANGES AND RETURNS' },
 ];
 
@@ -20,7 +20,6 @@ export default function ProductAccordion({ product }) {
   const materials = product?.materials || [];
   const composition = product?.composition || '';
   const care = product?.care || '';
-  const origin = product?.origin || '';
 
   return (
     <div className="border-t border-gray-200">
@@ -89,12 +88,7 @@ export default function ProductAccordion({ product }) {
                       <p className="mt-1 whitespace-pre-line">{care}</p>
                     </div>
                   )}
-                  {origin && (
-                    <p>
-                      <strong>Origin:</strong> {origin}
-                    </p>
-                  )}
-                  {!materials.length && !composition && !care && !origin && (
+                  {!materials.length && !composition && !care && (
                     <p className="text-gray-500">Product details not available</p>
                   )}
                 </div>

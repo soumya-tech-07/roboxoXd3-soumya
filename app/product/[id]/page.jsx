@@ -133,15 +133,13 @@ export default function ProductPage() {
         : ['https://placehold.co/800x1200/e5d4e8/666666?text=Image'],
       sizes,
       sizesWithStock,
-      description:
-        dbProduct.description ||
-        'Premium garment crafted for comfort and durability.',
+      description: dbProduct.description ?? '',
       category: dbProduct.category ?? 'APPAREL',
       materials:
         dbProduct.materials && Array.isArray(dbProduct.materials) ? dbProduct.materials : [],
-      composition: dbProduct.composition || '',
-      care: dbProduct.care || '',
-      origin: dbProduct.origin || '',
+      composition: dbProduct.composition ?? '',
+      measurements: dbProduct.measurements ?? '',
+      care: dbProduct.care ?? '',
       modelInfo: { size: dbProduct.model_size || '', height: dbProduct.model_height || '' },
     };
   }, [dbProduct]);
@@ -253,6 +251,12 @@ export default function ProductPage() {
               price={product.price}
               description={product.description}
               sku={product.sku}
+              composition={product.composition}
+              materials={product.materials}
+              measurements={product.measurements}
+              care={product.care}
+              modelSize={product.modelInfo?.size}
+              modelHeight={product.modelInfo?.height}
             />
 
             <div className="border-t border-gray-200 pt-6 mb-6">
