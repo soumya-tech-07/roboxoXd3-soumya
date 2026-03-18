@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useAuthModal } from '../context/AuthModalContext';
+import { useCart } from '../context/CartContext';
 import { createClient } from '@/lib/supabase';
 import ProductCard from '../components/ProductCard';
 
@@ -16,6 +17,7 @@ export default function WishlistPage() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { openLogin } = useAuthModal();
   const { wishlist, removeFromWishlist } = useWishlist();
+  const { addToCart, openCart, loading: cartLoading } = useCart();
   const [wishlistProducts, setWishlistProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -154,8 +156,22 @@ export default function WishlistPage() {
                   />
                   <button
                     type="button"
+                    disabled={cartLoading}
+                    onClick={async () => {
+                      const res = await addToCart(product.id, null, 1);
+                      if (res?.success) {
+                        await removeFromWishlist(product.id);
+                        openCart();
+                      }
+                    }}
+                    className="mt-3 w-full cursor-pointer py-2.5 px-3 text-xs font-semibold tracking-wider border-2 border-black bg-black text-white hover:bg-gray-900 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {cartLoading ? 'ADDING…' : 'ADD TO CART'}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => removeFromWishlist(product.id)}
-                    className="mt-3 w-full cursor-pointer hover:bg-brand hover:text-white py-2.5 px-3 text-xs font-medium tracking-wider border-2 border-gray-300 text-gray-700 hover:border-gray-400 transition-colors"
+                    className="mt-2 w-full cursor-pointer hover:bg-brand hover:text-white py-2.5 px-3 text-xs font-medium tracking-wider border-2 border-gray-300 text-gray-700 hover:border-gray-400 transition-colors"
                   >
                     REMOVE FROM WISHLIST
                   </button>

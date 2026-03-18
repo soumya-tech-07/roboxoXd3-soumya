@@ -225,3 +225,123 @@ body {
 .cart-badge-pulse {
   animation: cartBadgePulse 2s ease-in-out infinite;
 }
+
+/* ─── Curtain Intro ─────────────────────────────────────────── */
+@keyframes shutterUp {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+@keyframes curtainLogoFade {
+  0%   { opacity: 1; }
+  35%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* Outer wrapper — intercepts clicks */
+.curtain-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* Single full-screen shutter panel — slight transparency, no backdrop-filter (keeps animation smooth) */
+.curtain-shutter {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(6, 6, 6, 0.93);
+  will-change: transform;
+  overflow: visible; /* let hem protrude below */
+}
+
+/* Lifts upward to reveal the page below */
+.curtain-shutter.curtain-shutter-open {
+  animation: shutterUp 1.3s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+/* ── Curtain hem (scalloped bottom edge) ── */
+@keyframes curtainBounce {
+  0%,  100% { transform: translateY(0); }
+  40%       { transform: translateY(-10px); }
+  60%       { transform: translateY(-5px); }
+}
+
+@keyframes hemFadeOut {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.curtain-hem {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;      /* last 80px of the curtain shows the hem & arrow */
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.curtain-hem-svg {
+  width: 100%;
+  height: 48px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.curtain-hem-hide {
+  animation: hemFadeOut 0.3s ease forwards;
+}
+
+/* Bouncing pull-hint arrow — lives below the scallop, inside the hem */
+.curtain-pull-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  animation: curtainBounce 1.6s ease-in-out infinite;
+}
+
+/* Logo sits in its own centred fixed layer — never clipped by panels */
+.curtain-logo {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;   /* above the panels */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.curtain-logo-fade {
+  animation: curtainLogoFade 1.2s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+.curtain-brand {
+  font-family: 'Gliker', serif;
+  font-size: clamp(1.8rem, 5vw, 3.2rem);
+  letter-spacing: 0.28em;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.curtain-line {
+  display: block;
+  width: 60px;
+  height: 1px;
+  background: var(--brand);
+}
+
+.curtain-tagline {
+  font-size: clamp(0.65rem, 1.4vw, 0.8rem);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+

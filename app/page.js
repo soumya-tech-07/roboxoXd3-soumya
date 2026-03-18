@@ -10,6 +10,7 @@ import HomeBackgroundVideo from "./components/HomeBackgroundVideo";
 import SplitHeroSection from "./components/SplitHeroSection";
 import MensSection from "./components/MensSection";
 import WomensSection from "./components/WomensSection";
+import CurtainIntro from "./components/CurtainIntro";
 
 // CRITICAL: Force dynamic rendering to prevent production caching
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,7 @@ export const revalidate = 0;
 export default function Home() {
   return (
     <>
+    <CurtainIntro />
     <HomeBackgroundVideo/>
     <div className="relative z-10">
       <LatestDrop/>
@@ -31,4 +33,3 @@ export default function Home() {
     </>
   );
 }
-
