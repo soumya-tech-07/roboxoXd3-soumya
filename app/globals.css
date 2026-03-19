@@ -245,13 +245,17 @@ body {
   z-index: 9999;
   cursor: pointer;
   pointer-events: auto;
+  /* Apply blur at wrapper level so full viewport is always frosted */
+  background: rgba(14, 14, 14, 0.52);
+  backdrop-filter: blur(42px) saturate(120%);
+  -webkit-backdrop-filter: blur(42px) saturate(120%);
 }
 
-/* Single full-screen shutter panel — slight transparency, no backdrop-filter (keeps animation smooth) */
+/* Single full-screen shutter panel — heavy frosted glass, background not legible */
 .curtain-shutter {
   position: absolute;
   inset: 0;
-  background-color: rgba(6, 6, 6, 0.93);
+  background: rgba(255, 255, 255, 0.04);
   will-change: transform;
   overflow: visible; /* let hem protrude below */
 }
@@ -324,10 +328,11 @@ body {
 }
 
 .curtain-brand {
-  font-family: 'Gliker', serif;
+  font-family: 'Dream Avenue', 'Gliker', serif;
   font-size: clamp(1.8rem, 5vw, 3.2rem);
   letter-spacing: 0.28em;
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.96);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.25);
   white-space: nowrap;
 }
 
@@ -342,6 +347,38 @@ body {
   font-size: clamp(0.65rem, 1.4vw, 0.8rem);
   letter-spacing: 0.32em;
   text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes curtainTapPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.04); }
+}
+
+.curtain-tap-hint {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: curtainTapPulse 2s ease-in-out infinite;
+}
+
+.curtain-tap-hint-text {
+  font-size: clamp(0.6rem, 1.2vw, 0.72rem);
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
   color: rgba(255, 255, 255, 0.55);
+}
+
+.curtain-tap-hint-icon {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 

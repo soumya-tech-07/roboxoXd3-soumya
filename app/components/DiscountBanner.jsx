@@ -8,7 +8,9 @@ import { useAuth } from '../context/AuthContext';
 const supabasePublic = createPublicClient();
 
 const DISMISSED_KEY = 'discountBannerLastDismissed';
+const CURTAIN_KEY = 'rl_curtain_shown';
 const ONCE_PER_DAY_MS = 24 * 60 * 60 * 1000;
+const BANNER_DELAY_MS = 8000;
 
 function formatDiscountDisplay(coupon) {
   if (!coupon) return { percent: null, text: '' };
@@ -90,19 +92,38 @@ export default function DiscountBanner() {
     return null;
   }, [coupons, isAuthenticated, orderCount]);
 
-  // When to show: new users (not logged in) → every visit and every reload. Logged-in → once per day.
+  // Show banner only after curtain is gone + BANNER_DELAY_MS seconds.
+  // If curtain was already dismissed this session, start timer immediately.
   useEffect(() => {
     if (loading || !couponToShow) return;
-    let shouldShow = true;
+
+    // Check if this user/session has already dismissed the banner recently
     if (isAuthenticated && typeof window !== 'undefined') {
       const raw = localStorage.getItem(DISMISSED_KEY);
       const dismissedAt = raw ? parseInt(raw, 10) : 0;
-      if (dismissedAt && Date.now() - dismissedAt < ONCE_PER_DAY_MS) shouldShow = false;
+      if (dismissedAt && Date.now() - dismissedAt < ONCE_PER_DAY_MS) return;
     }
-    if (shouldShow) {
-      const timer = setTimeout(() => setIsVisible(true), 3000);
-      return () => clearTimeout(timer);
+
+    let timer = null;
+    const startTimer = () => {
+      timer = setTimeout(() => setIsVisible(true), BANNER_DELAY_MS);
+    };
+
+    // Curtain already gone in this session — start timer right away
+    const curtainAlreadyDone =
+      typeof window !== 'undefined' && sessionStorage.getItem(CURTAIN_KEY);
+
+    if (curtainAlreadyDone) {
+      startTimer();
+    } else {
+      // Curtain is still up — wait for it to be fully dismissed first
+      window.addEventListener('rl:curtain-dismissed', startTimer, { once: true });
     }
+
+    return () => {
+      window.removeEventListener('rl:curtain-dismissed', startTimer);
+      if (timer) clearTimeout(timer);
+    };
   }, [loading, couponToShow, isAuthenticated]);
 
   const handleClose = () => {
@@ -139,7 +160,7 @@ export default function DiscountBanner() {
   const description = couponToShow.description || `Use code ${couponToShow.code} at checkout.`;
 
   return (
-    <div className={`fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
+    <div className={`fixed inset-0 z-110 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
       isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
     }`}>
       <div className={`relative bg-white rounded-lg shadow-2xl max-w-2xl w-full overflow-hidden transition-all duration-500 transform ${
@@ -156,7 +177,7 @@ export default function DiscountBanner() {
         </button>
 
         <div className="flex flex-col md:flex-row">
-          <div className="relative w-full md:w-1/2 h-48 md:h-auto bg-gradient-to-br from-brand/20 to-brand/5">
+          <div className="relative w-full md:w-1/2 h-48 md:h-auto bg-linear-to-br from-brand/20 to-brand/5">
             <div className="absolute inset-0 flex items-center justify-center p-6">
               <div className="text-center">
                 <div className="text-6xl md:text-7xl font-bold text-brand mb-2">

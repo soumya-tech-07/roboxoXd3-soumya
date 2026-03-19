@@ -1,43 +1,61 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const SESSION_KEY = 'rl_curtain_shown';
-const AUTO_OPEN_DELAY = 2500;
+const SWIPE_THRESHOLD_PX = 60;
 
 export default function CurtainIntro() {
+  // All state starts false/null — safe for SSR, no hydration mismatch
   const [visible, setVisible] = useState(false);
   const [opening, setOpening] = useState(false);
   const [unmounted, setUnmounted] = useState(false);
+  const [touchStartY, setTouchStartY] = useState(null);
+  const initialized = useRef(false);
 
+  // Runs only on the client after mount — safe to access sessionStorage here
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (initialized.current) return;
+    initialized.current = true;
+    let timer;
     if (sessionStorage.getItem(SESSION_KEY)) {
-      setUnmounted(true);
-      return;
+      // Already shown this session — skip curtain and let banner know immediately
+      timer = setTimeout(() => {
+        setUnmounted(true);
+        window.dispatchEvent(new CustomEvent('rl:curtain-dismissed'));
+      }, 0);
+    } else {
+      timer = setTimeout(() => setVisible(true), 0);
     }
-    setVisible(true);
+    return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    if (!visible) return;
-    const timer = setTimeout(open, AUTO_OPEN_DELAY);
-    return () => clearTimeout(timer);
-  }, [visible]);
-
-  const open = () => {
+  const open = useCallback(() => {
     if (opening) return;
     sessionStorage.setItem(SESSION_KEY, '1');
     setOpening(true);
-    setTimeout(() => setUnmounted(true), 1500);
-  };
+    setTimeout(() => {
+      setUnmounted(true);
+      window.dispatchEvent(new CustomEvent('rl:curtain-dismissed'));
+    }, 1500);
+  }, [opening]);
 
   if (unmounted || !visible) return null;
 
   return (
     <div
-      className="curtain-wrapper"
+      className="curtain-wrapper backdrop-blur-sm"
       onClick={open}
+      onTouchStart={(e) => {
+        if (e.touches?.length) setTouchStartY(e.touches[0].clientY);
+      }}
+      onTouchEnd={(e) => {
+        if (touchStartY == null || !e.changedTouches?.length) return;
+        const endY = e.changedTouches[0].clientY;
+        const deltaY = touchStartY - endY;
+        if (deltaY > SWIPE_THRESHOLD_PX) open();
+        setTouchStartY(null);
+      }}
       aria-hidden="true"
     >
       {/* Main shutter body */}
@@ -59,13 +77,13 @@ export default function CurtainIntro() {
                  C840,20  960,60 1080,30 
                  C1200,0  1320,60 1440,30 
                  L1440,60 L0,60 Z"
-              fill="#1a1a1a"
+              fill="rgba(255,255,255,0.30)"
             />
           </svg>
 
           {/* Bounce arrow — nudges user to pull the curtain */}
           <div className="curtain-pull-hint">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.5" strokeLinecap="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="1.5" strokeLinecap="round">
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </div>
@@ -76,7 +94,16 @@ export default function CurtainIntro() {
       <div className={`curtain-logo ${opening ? 'curtain-logo-fade' : ''}`}>
         <span className="curtain-brand">RETRO LOUVE</span>
         <span className="curtain-line" />
-        <span className="curtain-tagline">Slow Fashion. Real Style.</span>
+        <span className="curtain-tagline">Refined Fabrics. Elevated Feels.</span>
+
+        <div className="curtain-tap-hint">
+          <span className="curtain-tap-hint-text">Tap to enter</span>
+          <span className="curtain-tap-hint-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="18 15 12 9 6 15" />
+            </svg>
+          </span>
+        </div>
       </div>
     </div>
   );
