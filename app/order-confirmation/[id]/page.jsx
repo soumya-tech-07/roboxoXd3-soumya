@@ -126,6 +126,7 @@ export default function OrderConfirmationPage() {
   const [orderItems, setOrderItems] = useState([]);
   const [exchangeReturnRequests, setExchangeReturnRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [copiedField, setCopiedField] = useState('');
 
   const orderId = Array.isArray(params?.id) ? params?.id[0] : params?.id;
 
@@ -206,6 +207,20 @@ export default function OrderConfirmationPage() {
       setOrder(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCopyToClipboard = async (value, fieldKey) => {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(String(value));
+      setCopiedField(fieldKey);
+      setTimeout(() => {
+        setCopiedField((prev) => (prev === fieldKey ? '' : prev));
+      }, 1500);
+    } catch (error) {
+      console.error('Copy failed:', error);
+      showError('Unable to copy. Please try again.');
     }
   };
 
@@ -320,19 +335,41 @@ export default function OrderConfirmationPage() {
             <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">Tracking</h3>
             <div className="space-y-2 text-sm text-gray-700">
               {order.courier_name && <p><span className="font-medium">Courier:</span> {order.courier_name}</p>}
-              {order.tracking_number && <p><span className="font-medium">Tracking number:</span> {order.tracking_number}</p>}
-              {order.tracking_url && (
-                <p className="break-all">
-                  <span className="font-medium">Tracking link:</span>{' '}
-                  <a
-                    href={order.tracking_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-brand underline hover:opacity-80"
+              {order.tracking_number && (
+                <div className="flex items-start justify-between gap-3">
+                  <p className="min-w-0 break-all">
+                    <span className="font-medium">Tracking number:</span> {order.tracking_number}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyToClipboard(order.tracking_number, 'tracking_number')}
+                    className="shrink-0 text-xs cursor-pointer px-2.5 py-1.5 border border-gray-300 rounded text-gray-700 hover:border-brand hover:text-brand transition-colors"
                   >
-                    {order.tracking_url}
-                  </a>
-                </p>
+                    {copiedField === 'tracking_number' ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+              )}
+              {order.tracking_url && (
+                <div className="flex items-start justify-between gap-3">
+                  <p className="min-w-0 break-all">
+                    <span className="font-medium">Tracking link:</span>{' '}
+                    <a
+                      href={order.tracking_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-brand underline hover:opacity-80"
+                    >
+                      {order.tracking_url}
+                    </a>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyToClipboard(order.tracking_url, 'tracking_url')}
+                    className="shrink-0 text-xs cursor-pointer px-2.5 py-1.5 border border-gray-300 rounded text-gray-700 hover:border-brand hover:text-brand transition-colors"
+                  >
+                    {copiedField === 'tracking_url' ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
               )}
               {order.shipped_at && (
                 <p><span className="font-medium">Shipped on:</span> {new Date(order.shipped_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
