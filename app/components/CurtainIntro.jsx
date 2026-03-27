@@ -44,7 +44,7 @@ export default function CurtainIntro() {
 
   return (
     <div
-      className="curtain-wrapper backdrop-blur-sm"
+      className="curtain-wrapper backdrop-blur-[3px]"
       onClick={open}
       onTouchStart={(e) => {
         if (e.touches?.length) setTouchStartY(e.touches[0].clientY);
