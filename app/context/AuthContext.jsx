@@ -344,10 +344,12 @@ export function AuthProvider({ children }) {
 
   const signUp = async (email, password, metadata = {}) => {
     try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          ...(origin ? { emailRedirectTo: `${origin}/auth/callback` } : {}),
           data: {
             first_name: metadata.firstName || '',
             last_name: metadata.lastName || '',

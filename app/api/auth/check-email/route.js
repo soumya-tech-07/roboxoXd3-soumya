@@ -6,11 +6,6 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export async function POST(request) {
   try {
-    // Log for debugging
-    console.log('🔍 Checking email endpoint called');
-    console.log('Service key configured:', !!supabaseServiceKey);
-    console.log('Supabase URL:', supabaseUrl);
-
     if (!supabaseServiceKey) {
       console.error('❌ SUPABASE_SERVICE_ROLE_KEY is not configured');
       return NextResponse.json(
@@ -20,7 +15,6 @@ export async function POST(request) {
     }
 
     const { email } = await request.json();
-    console.log('Email to check:', email);
 
     if (!email) {
       return NextResponse.json(
@@ -28,6 +22,8 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
 
     // Create admin client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
@@ -37,27 +33,31 @@ export async function POST(request) {
       },
     });
 
-    // Check if user exists using admin API
-    console.log('🔍 Querying auth.users for email:', email.toLowerCase());
-    const { data, error } = await supabase.auth.admin.listUsers();
+    // IMPORTANT: listUsers is paginated. We must paginate to be accurate.
+    // We'll scan pages until we find the email or exhaust results.
+    const perPage = 1000;
+    const maxPages = 50; // hard cap to avoid runaway loops
 
-    if (error) {
-      console.error('❌ Error listing users:', error);
-      return NextResponse.json(
-        { error: 'Failed to check email', details: error.message },
-        { status: 500 }
-      );
+    for (let page = 1; page <= maxPages; page += 1) {
+      const { data, error } = await supabase.auth.admin.listUsers({ page, perPage });
+
+      if (error) {
+        console.error('❌ Error listing users:', error);
+        return NextResponse.json(
+          { error: 'Failed to check email', details: error.message },
+          { status: 500 }
+        );
+      }
+
+      const users = data?.users || [];
+      const exists = users.some((u) => u.email?.toLowerCase() === normalizedEmail);
+      if (exists) return NextResponse.json({ exists: true }, { status: 200 });
+
+      // No more users, stop early.
+      if (users.length < perPage) break;
     }
 
-    // Check if any user has this email
-    const exists = data.users.some(
-      user => user.email?.toLowerCase() === email.toLowerCase()
-    );
-
-    console.log('✅ Email exists:', exists);
-    console.log('Total users found:', data.users.length);
-
-    return NextResponse.json({ exists }, { status: 200 });
+    return NextResponse.json({ exists: false }, { status: 200 });
   } catch (error) {
     console.error('❌ Unexpected error in check-email:', error);
     return NextResponse.json(
