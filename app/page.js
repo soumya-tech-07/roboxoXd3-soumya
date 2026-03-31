@@ -12,9 +12,9 @@ import MensSection from "./components/MensSection";
 import WomensSection from "./components/WomensSection";
 import CurtainIntro from "./components/CurtainIntro";
 
-// CRITICAL: Force dynamic rendering to prevent production caching
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Cache the homepage at the edge and revalidate periodically.
+// This prevents traffic spikes from triggering per-visitor renders & Supabase calls.
+export const revalidate = 60;
 
 export default function Home() {
   return (
