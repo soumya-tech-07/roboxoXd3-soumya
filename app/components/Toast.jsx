@@ -2,16 +2,16 @@
 
 import { useEffect } from 'react';
 
-export default function Toast({ message, type = 'info', isVisible, onClose }) {
+export default function Toast({ message, type = 'info', isVisible, onClose, durationMs = 3000 }) {
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => {
         onClose();
-      }, 3000); // Auto-close after 3 seconds
+      }, durationMs);
 
       return () => clearTimeout(timer);
     }
-  }, [isVisible, onClose]);
+  }, [isVisible, onClose, durationMs]);
 
   if (!isVisible) return null;
 
@@ -52,10 +52,10 @@ export default function Toast({ message, type = 'info', isVisible, onClose }) {
       }`}
     >
       <div
-        className={`${typeStyles[type]} border rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 min-w-[300px] max-w-md`}
+        className={`${typeStyles[type]} border rounded-lg shadow-lg px-4 py-3 flex items-start gap-3 min-w-[300px] max-w-md`}
       >
-        <div className="flex-shrink-0">{icons[type]}</div>
-        <p className="text-sm font-medium flex-1">{message}</p>
+        <div className="flex-shrink-0 mt-0.5">{icons[type]}</div>
+        <p className="text-sm font-medium flex-1 break-words leading-snug">{message}</p>
         <button
           onClick={onClose}
           className="flex-shrink-0 text-current opacity-70 hover:opacity-100 transition-opacity"

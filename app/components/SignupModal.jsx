@@ -20,8 +20,6 @@ export default function SignupModal() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [successVariant, setSuccessVariant] = useState(''); // 'verify_email' | ''
   const [loading, setLoading] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
@@ -49,8 +47,6 @@ export default function SignupModal() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess(false);
-    setSuccessVariant('');
     setLoading(true);
 
     // Validation
@@ -125,22 +121,10 @@ export default function SignupModal() {
         return;
       }
 
-      // Success
       const needsEmailVerification = !data?.session;
-      setSuccess(true);
       setLoading(false);
-      if (needsEmailVerification) {
-        setSuccessVariant('verify_email');
-        showSuccess('Account created. Please verify your email to continue.');
-        return;
-      }
-      showSuccess('Account created successfully!');
-      
-      // Close modal after 2 seconds
-      setTimeout(() => {
-        closeModal();
-        setSuccess(false);
-        setSuccessVariant('');
+
+      const resetForm = () => {
         setFormData({
           firstName: '',
           lastName: '',
@@ -149,6 +133,22 @@ export default function SignupModal() {
           confirmPassword: '',
         });
         setAgreeToTerms(false);
+      };
+
+      if (needsEmailVerification) {
+        showSuccess(
+          `Verify your email to continue. We’ve sent a verification link to ${formData.email}. Open your inbox (check Spam/Promotions), click the link, then log in.`,
+          12000
+        );
+        closeModal();
+        resetForm();
+        return;
+      }
+
+      showSuccess('Account created successfully!');
+      setTimeout(() => {
+        closeModal();
+        resetForm();
       }, 2000);
     } catch (err) {
       const errorMessage = 'An unexpected error occurred. Please try again.';
@@ -206,72 +206,6 @@ export default function SignupModal() {
                 {error}
               </div>
             )}
-            {success && (
-              <div className="bg-green-50 border border-green-200 text-green-900 px-4 py-4 rounded">
-                {successVariant === 'verify_email' ? (
-                  <div className="flex gap-3">
-                    <div className="shrink-0 mt-0.5">
-                      <div className="w-9 h-9 rounded-full bg-green-100 border border-green-200 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-18 12h18a2 2 0 002-2V6a2 2 0 00-2-2H3a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm sm:text-base font-semibold">
-                        Verify your email to continue
-                      </p>
-
-                      <p className="text-xs sm:text-sm text-green-800 mt-1 leading-relaxed">
-                        We’ve sent a verification link to
-                      </p>
-
-                      <div className="mt-2">
-                        <span className="inline-flex max-w-full items-center px-2.5 py-1 rounded-full bg-white border border-green-200 text-xs sm:text-sm font-medium text-green-900 break-all">
-                          {formData.email}
-                        </span>
-                      </div>
-
-                      <ul className="mt-3 space-y-1 text-xs sm:text-sm text-green-800">
-                        <li className="flex gap-2">
-                          <span className="mt-0.5 text-green-700">•</span>
-                          <span>Open your inbox (and check Spam/Promotions).</span>
-                        </li>
-                        <li className="flex gap-2">
-                          <span className="mt-0.5 text-green-700">•</span>
-                          <span>Click the verification link.</span>
-                        </li>
-                        <li className="flex gap-2">
-                          <span className="mt-0.5 text-green-700">•</span>
-                          <span>Come back and log in.</span>
-                        </li>
-                      </ul>
-
-                      <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                        <button
-                          type="button"
-                          onClick={switchToLogin}
-                          className="w-full sm:w-auto px-4 py-2 bg-brand text-white text-xs tracking-wider hover:bg-brand/90 transition-colors"
-                        >
-                          GO TO LOGIN
-                        </button>
-                        <button
-                          type="button"
-                          onClick={closeModal}
-                          className="w-full sm:w-auto px-4 py-2 border border-green-200 bg-white text-green-900 text-xs tracking-wider hover:border-brand hover:text-brand transition-colors"
-                        >
-                          CLOSE
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-sm text-green-800">Account created successfully!</p>
-                )}
-              </div>
-            )}
-
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -421,10 +355,10 @@ export default function SignupModal() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || success}
+              disabled={loading}
               className="w-full py-4 bg-brand text-white text-sm tracking-wider hover:bg-brand/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'CREATING ACCOUNT...' : success ? 'ACCOUNT CREATED!' : 'CREATE ACCOUNT'}
+              {loading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
             </button>
           </form>
 

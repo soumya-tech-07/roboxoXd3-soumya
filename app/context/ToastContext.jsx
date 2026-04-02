@@ -10,13 +10,15 @@ export function ToastProvider({ children }) {
     message: '',
     type: 'info',
     isVisible: false,
+    durationMs: 3000,
   });
 
-  const showToast = useCallback((message, type = 'info') => {
+  const showToast = useCallback((message, type = 'info', durationMs = 3000) => {
     setToast({
       message,
       type,
       isVisible: true,
+      durationMs,
     });
   }, []);
 
@@ -24,8 +26,8 @@ export function ToastProvider({ children }) {
     setToast((prev) => ({ ...prev, isVisible: false }));
   }, []);
 
-  const showSuccess = useCallback((message) => {
-    showToast(message, 'success');
+  const showSuccess = useCallback((message, durationMs = 3000) => {
+    showToast(message, 'success', durationMs);
   }, [showToast]);
 
   const showError = useCallback((message) => {
@@ -55,6 +57,7 @@ export function ToastProvider({ children }) {
         message={toast.message}
         type={toast.type}
         isVisible={toast.isVisible}
+        durationMs={toast.durationMs}
         onClose={hideToast}
       />
     </ToastContext.Provider>
