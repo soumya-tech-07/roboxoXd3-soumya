@@ -919,7 +919,7 @@ export default function ProfilePage() {
                         <div className="flex flex-wrap gap-4">
                           {order.items?.slice(0, 3).map((item, index) => (
                             <div key={index} className="flex items-center gap-3">
-                              <div className="relative w-16 h-20 bg-gray-100 flex-shrink-0 rounded overflow-hidden">
+                              <div className="relative w-16 h-20 bg-gray-100 shrink-0 rounded overflow-hidden">
                                 {item.productImage ? (
                                   <Image
                                     src={item.productImage}
@@ -1029,7 +1029,7 @@ export default function ProfilePage() {
                                   key={index}
                                   className="flex gap-4 pb-4 border-b border-gray-200 last:border-b-0"
                                 >
-                                  <div className="relative w-20 h-24 bg-gray-100 flex-shrink-0 rounded overflow-hidden">
+                                  <div className="relative w-20 h-24 bg-gray-100 shrink-0 rounded overflow-hidden">
                                     {item.productImage ? (
                                       <Image
                                         src={item.productImage}
@@ -1177,6 +1177,7 @@ export default function ProfilePage() {
                 <MeasurementForm
                   loadAllCharts={true}
                   showSizeChart={true}
+                  sizeChartPosition="bottom"
                   submitButtonText="UPDATE MEASUREMENTS"
                 />
               </div>

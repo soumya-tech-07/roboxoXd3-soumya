@@ -19,7 +19,6 @@ export default function SignupModal() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
@@ -41,35 +40,33 @@ export default function SignupModal() {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     // Validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Please fill in all fields');
+      showError('Please fill in all fields');
       setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      showError('Passwords do not match');
       setLoading(false);
       return;
     }
 
     if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      showError('Password must be at least 8 characters long');
       setLoading(false);
       return;
     }
 
     if (!agreeToTerms) {
-      setError('Please agree to the terms and conditions');
+      showError('Please agree to the terms and conditions');
       setLoading(false);
       return;
     }
@@ -88,7 +85,6 @@ export default function SignupModal() {
         if (checkResponse.ok) {
           const { exists } = await checkResponse.json();
           if (exists) {
-            setError('An account with this email already exists. Please try logging in instead.');
             showError('An account with this email already exists. Please try logging in instead.');
             setLoading(false);
             return;
@@ -115,7 +111,6 @@ export default function SignupModal() {
         const displayMessage = isDuplicate
           ? 'An account with this email already exists. Please try logging in instead.'
           : errorMessage;
-        setError(displayMessage);
         showError(displayMessage);
         setLoading(false);
         return;
@@ -137,7 +132,7 @@ export default function SignupModal() {
 
       if (needsEmailVerification) {
         showSuccess(
-          `Verify your email to continue. We’ve sent a verification link to ${formData.email}. Open your inbox (check Spam/Promotions), click the link, then log in.`,
+          `We’ve sent a verification link to ${formData.email}. Check inbox/spam/promotions to verify and continue.`,
           12000
         );
         closeModal();
@@ -152,7 +147,6 @@ export default function SignupModal() {
       }, 2000);
     } catch (err) {
       const errorMessage = 'An unexpected error occurred. Please try again.';
-      setError(errorMessage);
       showError(errorMessage);
       setLoading(false);
     }
@@ -201,11 +195,6 @@ export default function SignupModal() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
-                {error}
-              </div>
-            )}
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>

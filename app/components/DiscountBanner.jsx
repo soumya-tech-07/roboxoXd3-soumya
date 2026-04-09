@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { createPublicClient } from '@/lib/supabase/public';
 import { createClient } from '@/lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useAuthModal } from '../context/AuthModalContext';
+import { useCart } from '../context/CartContext';
 
 const supabasePublic = createPublicClient();
 
@@ -23,11 +25,14 @@ function formatDiscountDisplay(coupon) {
 
 export default function DiscountBanner() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { isOpen: isAuthModalOpen } = useAuthModal();
+  const { isCartOpen } = useCart();
   const [isVisible, setIsVisible] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [coupons, setCoupons] = useState([]);
   const [orderCount, setOrderCount] = useState(null);
   const [loading, setLoading] = useState(true);
+  const isOverlayOpen = isAuthModalOpen || isCartOpen;
 
   // Fetch active coupons; filter by validity and usage in JS
   useEffect(() => {
@@ -96,6 +101,7 @@ export default function DiscountBanner() {
   // If curtain was already dismissed this session, start timer immediately.
   useEffect(() => {
     if (loading || !couponToShow) return;
+    if (isOverlayOpen) return;
 
     // Check if this user/session has already dismissed the banner recently
     if (isAuthenticated && typeof window !== 'undefined') {
@@ -124,7 +130,12 @@ export default function DiscountBanner() {
       window.removeEventListener('rl:curtain-dismissed', startTimer);
       if (timer) clearTimeout(timer);
     };
-  }, [loading, couponToShow, isAuthenticated]);
+  }, [loading, couponToShow, isAuthenticated, isOverlayOpen]);
+
+  // If another overlay opens while banner is visible, hide it.
+  useEffect(() => {
+    if (isOverlayOpen && isVisible) setIsVisible(false);
+  }, [isOverlayOpen, isVisible]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -148,6 +159,7 @@ export default function DiscountBanner() {
   const display = useMemo(() => formatDiscountDisplay(couponToShow), [couponToShow]);
 
   if (loading || !couponToShow) return null;
+  if (isOverlayOpen) return null;
 
   // Logged-in: hide if dismissed in last 24h (already handled in useEffect; here we avoid rendering the overlay until visible)
   if (isAuthenticated && typeof window !== 'undefined') {

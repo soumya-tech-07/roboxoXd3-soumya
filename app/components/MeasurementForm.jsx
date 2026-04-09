@@ -14,6 +14,7 @@ export default function MeasurementForm({
   onSave = null,
   submitButtonText = "SAVE PREFERENCES",
   loadAllCharts = false, // NEW: Load all size charts
+  sizeChartPosition = "top", // 'top' | 'bottom'
 }) {
   const [sizeCharts, setSizeCharts] = useState([]); // Changed to array for multiple charts
   const [loading, setLoading] = useState(false);
@@ -243,7 +244,7 @@ export default function MeasurementForm({
   return (
     <div className="space-y-6">
       {/* Size Charts Section */}
-      {showSizeChart && (
+      {showSizeChart && sizeChartPosition === "top" && (
         <div className="space-y-6">
           <div className="text-center">
             <h2 className="text-lg font-medium text-gray-900 tracking-wide uppercase mb-1" style={{ letterSpacing: '-0.02em' }}>
@@ -528,7 +529,7 @@ export default function MeasurementForm({
                 </div>
               </div>
               <p className="text-[10px] text-gray-700" style={{ lineHeight: '1.6' }}>
-                Enter your body measurements in {bodyMeasurementUnit === "CM" ? "centimeters" : "inches"} (as shown in the size chart above)
+                Enter your body measurements in {bodyMeasurementUnit === "CM" ? "centimeters" : "inches"} (as shown in the size chart {sizeChartPosition === "bottom" ? "below" : "above"})
               </p>
             </div>
 
@@ -577,6 +578,62 @@ export default function MeasurementForm({
           </button>
         </div>
       </form>
+
+      {showSizeChart && sizeChartPosition === "bottom" && (
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-lg font-medium text-gray-900 tracking-wide uppercase mb-1" style={{ letterSpacing: '-0.02em' }}>
+              SIZE GUIDES
+            </h2>
+            <p className="text-xs text-gray-600 text-right pr-2">
+              All measurements in inches
+            </p>
+          </div>
+
+          {/* Display all size charts */}
+          {loading ? (
+            <div className="w-full border border-gray-200 rounded-lg p-8 text-center">
+              <p className="text-sm text-gray-600">Loading size charts...</p>
+            </div>
+          ) : sizeCharts && sizeCharts.length > 0 ? (
+            <div className="space-y-6">
+              {sizeCharts.map((chart, index) => (
+                <div key={chart.id || index} className="space-y-4">
+                  {/* Chart Title */}
+                  <h3 className="text-sm font-medium text-gray-900 uppercase tracking-wide border-b border-gray-200 pb-2">
+                    {chart.name || chart.category}
+                  </h3>
+
+                  {/* Chart Table */}
+                  {chart.measurements && (
+                    <SizeChartTable measurements={chart.measurements} />
+                  )}
+
+                  {/* Measurement Diagram */}
+                  {chart.image_url && (
+                    <div className="flex justify-center items-center">
+                      <div className="relative w-40 max-w-40">
+                        <Image
+                          src={chart.image_url}
+                          alt={`${chart.name} measurement diagram`}
+                          width={600}
+                          height={800}
+                          className="w-full h-auto object-contain"
+                          unoptimized
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="w-full border border-gray-200 rounded-lg p-8 text-center">
+              <p className="text-sm text-gray-600">No size charts available.</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

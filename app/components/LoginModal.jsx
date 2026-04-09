@@ -12,7 +12,6 @@ export default function LoginModal() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
@@ -32,12 +31,11 @@ export default function LoginModal() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     // Basic validation
     if (!email || !password) {
-      setError('Please fill in all fields');
+      showError('Please fill in all fields');
       setLoading(false);
       return;
     }
@@ -47,7 +45,6 @@ export default function LoginModal() {
       
       if (signInError) {
         const errorMessage = signInError.message || 'Invalid email or password. Please try again.';
-        setError(errorMessage);
         showError(errorMessage);
         setLoading(false);
         return;
@@ -58,9 +55,9 @@ export default function LoginModal() {
       closeModal();
       setEmail('');
       setPassword('');
+      setLoading(false);
     } catch (err) {
       const errorMessage = 'An unexpected error occurred. Please try again.';
-      setError(errorMessage);
       showError(errorMessage);
       setLoading(false);
     }
@@ -68,10 +65,9 @@ export default function LoginModal() {
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
-    setError('');
 
     if (!email) {
-      setError('Please enter your email address');
+      showError('Please enter your email address');
       return;
     }
 
@@ -80,7 +76,6 @@ export default function LoginModal() {
       
       if (resetError) {
         const errorMessage = resetError.message || 'Failed to send reset email. Please try again.';
-        setError(errorMessage);
         showError(errorMessage);
         return;
       }
@@ -89,7 +84,6 @@ export default function LoginModal() {
       showSuccess('Password reset email sent! Check your inbox.');
     } catch (err) {
       const errorMessage = 'An unexpected error occurred. Please try again.';
-      setError(errorMessage);
       showError(errorMessage);
     }
   };
@@ -102,7 +96,7 @@ export default function LoginModal() {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={handleOverlayClick}
     >
       <div className="bg-white w-full max-w-md rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
@@ -137,12 +131,6 @@ export default function LoginModal() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
-                {error}
-              </div>
-            )}
-
             {/* Email Input */}
             <div>
               <label
@@ -233,9 +221,6 @@ export default function LoginModal() {
             {/* Reset Email Sent Confirmation */}
             {resetEmailSent && (
               <div className="space-y-4">
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-sm">
-                  Password reset email sent! Please check your inbox.
-                </div>
                 <button
                   type="button"
                   onClick={() => {
